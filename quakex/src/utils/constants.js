@@ -107,5 +107,5 @@ export const CHART_CONFIG = {
 export const APP_SETTINGS = {
     dataRefreshInterval: 300000, // 5 minutes in milliseconds
     requestTimeout: 30000, // 30 seconds
-    maxEarthquakesToDisplay: 10000,
+    maxEarthquakesToDisplay: 10000, // https://earthquake.usgs.gov/fdsnws/event/1/#:~:text=The%20service%20limits%20queries%20to%2020000
 }
