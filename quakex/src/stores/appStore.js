@@ -8,9 +8,9 @@ export const useAppStore = defineStore('app', () => {
         magnitudeRange: [2.5, 10.0],
         dateRange: {
             start: null,
-            end: null
+            end: null,
         },
-        depthCategories: [] // Optional: ['SHALLOW', 'INTERMEDIATE', 'DEEP']
+        depthCategories: [], // Optional: ['SHALLOW', 'INTERMEDIATE', 'DEEP']
     })
     const selectedEarthquake = ref(null)
     const loading = ref(false)
@@ -56,23 +56,20 @@ export const useAppStore = defineStore('app', () => {
                 total: 0,
                 avgMagnitude: 0,
                 avgDepth: 0,
-                strongest: null
+                strongest: null,
             }
         }
 
         const total = filtered.length
-        const avgMagnitude =
-            filtered.reduce((sum, eq) => sum + eq.magnitude, 0) / total
+        const avgMagnitude = filtered.reduce((sum, eq) => sum + eq.magnitude, 0) / total
         const avgDepth = filtered.reduce((sum, eq) => sum + eq.depth, 0) / total
-        const strongest = filtered.reduce((max, eq) =>
-            eq.magnitude > max.magnitude ? eq : max
-        )
+        const strongest = filtered.reduce((max, eq) => (eq.magnitude > max.magnitude ? eq : max))
 
         return {
             total,
             avgMagnitude: Number(avgMagnitude.toFixed(2)),
             avgDepth: Math.round(avgDepth),
-            strongest
+            strongest,
         }
     })
 
@@ -107,9 +104,9 @@ export const useAppStore = defineStore('app', () => {
             magnitudeRange: [2.5, 10.0],
             dateRange: {
                 start: null,
-                end: null
+                end: null,
             },
-            depthCategories: []
+            depthCategories: [],
         }
     }
 
@@ -140,6 +137,6 @@ export const useAppStore = defineStore('app', () => {
         setLoading,
         setError,
         clearError,
-        resetFilters
+        resetFilters,
     }
 })
