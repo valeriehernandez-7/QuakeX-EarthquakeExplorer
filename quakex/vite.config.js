@@ -16,6 +16,7 @@ export default defineConfig({
     }
   },
   server: {
+    open: true,
     proxy: {
       '/api/drill': {
         target: 'http://localhost:8047',
