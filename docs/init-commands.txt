@@ -1,0 +1,69 @@
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> npm config set strict-ssl false
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> npm create vue@latest
+Need to install the following packages:
+create-vue@3.18.2
+Ok to proceed? (y) y
+
+
+> npx
+> create-vue
+
+┌  Vue.js - The Progressive JavaScript Framework
+│
+◇  Project name (target directory):
+│  quakex
+│
+◇  Select features to include in your project: (↑/↓ to navigate, space to    
+select, a to toggle all, enter to confirm)
+│  Router (SPA development), Pinia (state management), ESLint (error
+prevention), Prettier (code formatting)
+│
+◇  Select experimental features to include in your project: (↑/↓ to navigate,space to select, a to toggle all, enter to confirm)
+│  none
+│
+◇  Skip all example code and start with a blank Vue project?
+│  Yes
+
+Scaffolding project in C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex...
+│
+└  Done. Now run:
+
+   cd quakex
+   npm install
+   npm run format
+   npm run dev
+
+| Optional: Initialize Git in your project directory with:
+
+   git init && git add -A && git commit -m "initial commit"
+
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> cd quakex
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm install
+added 236 packages, and audited 237 packages in 32s
+
+62 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm run format
+
+> quakex@0.0.0 format
+> prettier --write src/
+
+src/App.vue 54ms (unchanged)
+src/main.js 75ms (unchanged)
+src/router/index.js 10ms (unchanged)
+src/stores/counter.js 12ms (unchanged)
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm run dev
+
+> quakex@0.0.0 dev
+> vite
+
+
+  VITE v7.1.12  ready in 1296 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  Vue DevTools: Open http://localhost:5173/__devtools__/ as a separate window
+  ➜  Vue DevTools: Press Alt(⌥)+Shift(⇧)+D in App to toggle the Vue DevTools
+  ➜  press h + enter to show help
