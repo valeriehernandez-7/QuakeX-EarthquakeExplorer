@@ -1,18 +1,57 @@
 <script setup>
-import { getMagnitudeLevel, getDepthCategory, calculateMarkerSize } from '@/utils/helpers'
-import { MAGNITUDE_LEVELS, MAP_CONFIG } from '@/utils/constants'
+import { useAppStore } from '@/stores/appStore'
+import { onMounted } from 'vue'
 
-// Test the utilities
-console.log('Testing constants and helpers:')
-console.log('Magnitude 5.5:', getMagnitudeLevel(5.5))
-console.log('Depth 50km:', getDepthCategory(50))
-console.log('Marker size for M6.0:', calculateMarkerSize(6.0))
-console.log('Map config:', MAP_CONFIG)
+const store = useAppStore()
+
+onMounted(() => {
+  // Test data
+  const testEarthquakes = [
+    {
+      id: '1',
+      magnitude: 5.5,
+      depth: 50,
+      latitude: 35.0,
+      longitude: 139.0,
+      place: 'Tokyo, Japan',
+      time: new Date(),
+      url: 'https://example.com',
+      significance: 500,
+    },
+    {
+      id: '2',
+      magnitude: 6.2,
+      depth: 150,
+      latitude: -33.0,
+      longitude: -70.0,
+      place: 'Santiago, Chile',
+      time: new Date(),
+      url: 'https://example.com',
+      significance: 700,
+    },
+  ]
+
+  store.setEarthquakes(testEarthquakes)
+
+  console.log('Store test:')
+  console.log('Total earthquakes:', store.earthquakes.length)
+  console.log('Filtered earthquakes:', store.filteredEarthquakes.length)
+  console.log('Statistics:', store.statistics)
+})
 </script>
 
 <template>
-  <div>
-    <h1>QuakeX - Setup Complete</h1>
-    <p>Check the browser console for test output</p>
+  <div style="padding: 2rem">
+    <h1>QuakeX - Store Testing</h1>
+    <div v-if="store.earthquakes.length > 0">
+      <h2>Statistics</h2>
+      <p>Total: {{ store.statistics.total }}</p>
+      <p>Average Magnitude: {{ store.statistics.avgMagnitude }}</p>
+      <p>Average Depth: {{ store.statistics.avgDepth }} km</p>
+      <p v-if="store.statistics.strongest">
+        Strongest: M{{ store.statistics.strongest.magnitude }} -
+        {{ store.statistics.strongest.place }}
+      </p>
+    </div>
   </div>
 </template>
