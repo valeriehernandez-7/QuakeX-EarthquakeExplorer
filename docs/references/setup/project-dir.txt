@@ -1,0 +1,41 @@
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> Get-PSTree -Exclude node_modules
+
+
+   Source: C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer      
+
+Mode            Length Hierarchy
+----            ------ ---------
+d-----        66.00  B QuakeX-EarthquakExplorer
+-a----        66.00  B ├── .gitattributes
+d-----         0.00  B ├── docs
+d-----         0.00  B │   └── references
+d-----         0.00  B │       ├── external-docs
+d-----         0.00  B │       └── setup
+d-----       176.94 KB └── quakex
+-a----       216.00  B     ├── .editorconfig
+-a----       755.00  B     ├── .env
+-a----        19.00  B     ├── .gitattributes
+-a----       386.00  B     ├── .gitignore
+-a----       120.00  B     ├── .prettierrc.json
+-a----       596.00  B     ├── eslint.config.js
+-a----       329.00  B     ├── index.html
+-a----       116.00  B     ├── jsconfig.json
+-a----         1.04 KB     ├── package.json
+-a----       171.80 KB     ├── package-lock.json
+-a----         1.07 KB     ├── README.md
+-a----       573.00  B     ├── vite.config.js
+d-----       660.00  B     ├── .vscode
+-a----       140.00  B     │   ├── extensions.json
+-a----       520.00  B     │   └── settings.json
+d-----         0.00  B     ├── data
+d-----         4.19 KB     ├── public
+-a----         4.19 KB     │   └── favicon.ico
+d-----       436.00  B     └── src
+-a----       222.00  B         ├── App.vue
+-a----       214.00  B         ├── main.js
+d-----         0.00  B         ├── components
+d-----         0.00  B         ├── router
+d-----         0.00  B         ├── services
+d-----         0.00  B         ├── stores
+d-----         0.00  B         ├── utils
+d-----         0.00  B         └── views

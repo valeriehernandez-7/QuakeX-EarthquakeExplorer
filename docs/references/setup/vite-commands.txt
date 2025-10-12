@@ -54,6 +54,37 @@ src/App.vue 54ms (unchanged)
 src/main.js 75ms (unchanged)
 src/router/index.js 10ms (unchanged)
 src/stores/counter.js 12ms (unchanged)
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm install primevue primeicons @primevue/themes
+added 9 packages, and audited 246 packages in 8s
+
+62 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm install -D tailwindcss @tailwindcss/vite     
+
+added 12 packages, and audited 258 packages in 11s
+
+65 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm install axios dayjs chart.js pinia pinia-plugin-persistedstate
+
+added 30 packages, and audited 288 packages in 10s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm install leaflet leaflet.markercluster
+
+added 2 packages, and audited 290 packages in 4s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
 PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> npm run dev
 
 > quakex@0.0.0 dev
