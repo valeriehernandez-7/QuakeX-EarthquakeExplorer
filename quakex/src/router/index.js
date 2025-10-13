@@ -8,14 +8,14 @@ const router = createRouter({
         {
             path: '/',
             name: 'earthquake-test',
-            component: EarthquakeTest
+            component: EarthquakeTest,
         },
         {
             path: '/weather-test',
             name: 'weather-test',
-            component: WeatherTest
-        }
-    ]
+            component: WeatherTest,
+        },
+    ],
 })
 
 export default router
