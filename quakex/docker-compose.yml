@@ -1,0 +1,77 @@
+# ****************************************
+# Apache Drill - Docker Compose Configuration
+# QuakeX Earthquake Explorer
+# ****************************************
+#
+# This configuration runs Apache Drill in embedded mode with:
+# - Web UI on port 8047
+# - JDBC access on port 31010
+# - Persistent data storage in ./data
+#
+# Quick Start:
+#   docker-compose up -d        # Start in background
+#   docker-compose logs -f      # View logs
+#   docker-compose down         # Stop and remove
+#
+# Web UI: http://localhost:8047
+# ****************************************
+
+services:
+  drill:
+    # Official Apache Drill image with OpenJDK 11
+    image: apache/drill:latest-openjdk-11
+
+    # Container name for easy reference
+    container_name: quakex-drill
+
+    # Ports exposed to host
+    ports:
+      - "8047:8047" # Web UI and REST API
+      - "31010:31010" # JDBC/ODBC connections
+
+    # Mount local data folder to /data in container
+    # This is where Drill will read your earthquake JSON files
+    volumes:
+      - ./data:/data:rw # Read-Write access
+
+    # Environment variables for Drill configuration
+    environment:
+      # JVM Heap memory allocation (default: 4G)
+      # Reduced to 2G for development/low-memory systems
+      - DRILL_HEAP=2G
+
+      # Direct memory for query processing (default: 8G)
+      # Reduced to 4G for development
+      - DRILL_MAX_DIRECT_MEMORY=4G
+      # - DRILL_LOG_LEVEL=INFO # Optional: Set log level (uncomment if needed)
+
+    # Keep STDIN open and allocate pseudo-TTY
+    # Required for drill-embedded to stay running
+    stdin_open: true
+    tty: true
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Health check to monitor Drill status
+    healthcheck:
+      # Check if Web UI is responding
+      test: [ "CMD-SHELL", "curl -f http://localhost:8047 || exit 1" ]
+
+      # Wait 40 seconds before first check (Drill startup time)
+      start_period: 40s
+
+      # Check every 30 seconds
+      interval: 30s
+
+      # Timeout after 10 seconds
+      timeout: 10s
+
+      # Mark unhealthy after 3 consecutive failures
+      retries: 3
+
+    # Define custom network (optional - for multi-container setups)
+    # networks:
+    #   quakex-network:
+    #     driver: bridge
+    #     name: quakex-network

@@ -35,3 +35,10 @@ package-lock.json
 
 # Vitest
 __screenshots__/
+
+# Apache Drill - Data files
+data/*.json
+data/*.csv
+data/*.parquet
+!data/.gitkeep
+!data/sample-earthquakes.json
