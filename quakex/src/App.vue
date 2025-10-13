@@ -22,6 +22,12 @@ import { RouterView } from 'vue-router'
                         @click="$router.push('/weather-test')"
                         text
                     />
+                    <Button
+                        label="Countries"
+                        icon="pi pi-flag"
+                        @click="$router.push('/countries-test')"
+                        text
+                    />
                 </div>
             </template>
         </Toolbar>
