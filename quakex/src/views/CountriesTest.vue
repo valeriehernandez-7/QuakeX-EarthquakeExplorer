@@ -95,6 +95,10 @@ async function clearCache() {
     clearCountriesCache()
     await loadCountries(true)
 }
+
+function openLink(url) {
+    window.open(url, '_blank')
+}
 </script>
 
 <template>
@@ -316,7 +320,7 @@ async function clearCache() {
                                     icon="pi pi-map"
                                     size="small"
                                     text
-                                    @click="window.open(searchResult.googleMaps, '_blank')"
+                                    @click="openLink(searchResult.googleMaps)"
                                 />
                                 <Button
                                     v-if="searchResult.openStreetMaps"
@@ -324,7 +328,7 @@ async function clearCache() {
                                     icon="pi pi-map-marker"
                                     size="small"
                                     text
-                                    @click="window.open(searchResult.openStreetMaps, '_blank')"
+                                    @click="openLink(searchResult.openStreetMaps)"
                                 />
                             </div>
                         </div>
