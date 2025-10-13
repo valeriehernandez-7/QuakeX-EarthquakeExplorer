@@ -5,10 +5,10 @@ import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
  * Weather Service
  * Handles historical weather data fetching from Open-Meteo Archive API
  * API Documentation: https://open-meteo.com/en/docs/historical-weather-api
- *
+ * 
  * Icons: Uses Material Design Icons (MDI) for weather conditions
  * Icon Library: https://pictogrammers.com/library/mdi/category/weather/
- *
+ * 
  * Note: Historical weather data has a 5-day delay
  * For recent data (last 5 days), use the Forecast API with past_days parameter
  */
@@ -28,15 +28,15 @@ const weatherClient = axios.create({
  * Matches the exact parameters from API documentation
  */
 const HOURLY_VARIABLES = [
-    'temperature_2m', // Temperature at 2 meters above ground
-    'precipitation', // Precipitation (rain + snow)
-    'surface_pressure', // Atmospheric pressure at surface level
-    'pressure_msl', // Atmospheric pressure at mean sea level (meteorological standard)
-    'weather_code', // WMO weather code
-    'cloud_cover', // Cloud cover percentage
-    'relative_humidity_2m', // Relative humidity
-    'wind_speed_10m', // Wind speed at 10 meters
-    'wind_direction_10m', // Wind direction in degrees
+    'temperature_2m',           // Temperature at 2 meters above ground
+    'precipitation',            // Precipitation (rain + snow)
+    'surface_pressure',         // Atmospheric pressure at surface level
+    'pressure_msl',             // Atmospheric pressure at mean sea level (meteorological standard)
+    'weather_code',             // WMO weather code
+    'cloud_cover',              // Cloud cover percentage
+    'relative_humidity_2m',     // Relative humidity
+    'wind_speed_10m',           // Wind speed at 10 meters
+    'wind_direction_10m',       // Wind direction in degrees
 ]
 
 /**
@@ -226,7 +226,7 @@ function findClosestHourIndex(timeArray, targetTime) {
     const targetHour = target.getHours()
 
     // Find exact hour match first
-    const exactMatch = timeArray.findIndex((timeStr) => {
+    const exactMatch = timeArray.findIndex(timeStr => {
         const hour = new Date(timeStr).getHours()
         return hour === targetHour
     })
@@ -323,7 +323,7 @@ function getWeatherDescription(code) {
  * Get Material Design Icon name for weather code
  * Uses vue-material-design-icons component names
  * Icons from: https://pictogrammers.com/library/mdi/category/weather/
- *
+ * 
  * @param {number} code - WMO weather code
  * @returns {string} MDI component name (PascalCase)
  */
@@ -331,46 +331,46 @@ function getWeatherMDIIcon(code) {
     // Map WMO codes to Material Design Icon component names
     const iconMap = {
         // Clear conditions
-        0: 'WeatherSunny', // Clear sky
-        1: 'WeatherPartlyCloudy', // Mainly clear
+        0: 'WeatherSunny',           // Clear sky
+        1: 'WeatherPartlyCloudy',    // Mainly clear
 
         // Cloudy conditions
-        2: 'WeatherPartlyCloudy', // Partly cloudy
-        3: 'WeatherCloudy', // Overcast
+        2: 'WeatherPartlyCloudy',    // Partly cloudy
+        3: 'WeatherCloudy',          // Overcast
 
         // Fog
-        45: 'WeatherFog', // Fog
-        48: 'WeatherFog', // Depositing rime fog
+        45: 'WeatherFog',            // Fog
+        48: 'WeatherFog',            // Depositing rime fog
 
         // Drizzle
-        51: 'WeatherRainy', // Light drizzle
-        53: 'WeatherRainy', // Moderate drizzle
-        55: 'WeatherPouring', // Dense drizzle
-        56: 'WeatherSnowyRainy', // Light freezing drizzle
-        57: 'WeatherSnowyRainy', // Dense freezing drizzle
+        51: 'WeatherRainy',          // Light drizzle
+        53: 'WeatherRainy',          // Moderate drizzle
+        55: 'WeatherPouring',        // Dense drizzle
+        56: 'WeatherPartlySnowyRainy',     // Light freezing drizzle
+        57: 'WeatherPartlySnowyRainy',     // Dense freezing drizzle
 
         // Rain
-        61: 'WeatherRainy', // Slight rain
-        63: 'WeatherPouring', // Moderate rain
-        65: 'WeatherPouring', // Heavy rain
-        66: 'WeatherSnowyRainy', // Light freezing rain
-        67: 'WeatherSnowyRainy', // Heavy freezing rain
+        61: 'WeatherRainy',          // Slight rain
+        63: 'WeatherPouring',        // Moderate rain
+        65: 'WeatherPouring',        // Heavy rain
+        66: 'WeatherPartlySnowyRainy',     // Light freezing rain
+        67: 'WeatherPartlySnowyRainy',     // Heavy freezing rain
 
         // Snow
-        71: 'WeatherSnowy', // Slight snow
-        73: 'WeatherSnowy', // Moderate snow
-        75: 'WeatherSnowyHeavy', // Heavy snow
-        77: 'WeatherSnowy', // Snow grains
+        71: 'WeatherPartlySnowy',          // Slight snow
+        73: 'WeatherSnowy',          // Moderate snow
+        75: 'WeatherSnowyHeavy',     // Heavy snow
+        77: 'WeatherSnowy',          // Snow grains
 
         // Showers
-        80: 'WeatherRainy', // Slight rain showers
-        81: 'WeatherPouring', // Moderate rain showers
-        82: 'WeatherPouring', // Violent rain showers
-        85: 'WeatherSnowy', // Slight snow showers
-        86: 'WeatherSnowyHeavy', // Heavy snow showers
+        80: 'WeatherRainy',          // Slight rain showers
+        81: 'WeatherPouring',        // Moderate rain showers
+        82: 'WeatherPouring',        // Violent rain showers
+        85: 'WeatherSnowy',          // Slight snow showers
+        86: 'WeatherSnowyHeavy',     // Heavy snow showers
 
         // Thunderstorm
-        95: 'WeatherLightning', // Thunderstorm
+        95: 'WeatherLightning',      // Thunderstorm
         96: 'WeatherLightningRainy', // Thunderstorm with slight hail
         99: 'WeatherLightningRainy', // Thunderstorm with heavy hail
     }
@@ -385,15 +385,15 @@ function getWeatherMDIIcon(code) {
  */
 function getWeatherPrimeIcon(code) {
     // Map weather codes to PrimeIcons (simpler set)
-    if (code === 0 || code === 1) return 'pi-sun'
-    if (code === 2 || code === 3) return 'pi-cloud'
-    if (code >= 45 && code <= 48) return 'pi-cloud'
-    if (code >= 51 && code <= 67) return 'pi-cloud'
-    if (code >= 71 && code <= 77) return 'pi-cloud'
-    if (code >= 80 && code <= 86) return 'pi-cloud'
-    if (code >= 95 && code <= 99) return 'pi-bolt'
+    if (code === 0 || code === 1) return 'pi pi-sun'
+    if (code === 2 || code === 3) return 'pi pi-cloud'
+    if (code >= 45 && code <= 48) return 'pi pi-cloud'
+    if (code >= 51 && code <= 67) return 'pi pi-cloud'
+    if (code >= 71 && code <= 77) return 'pi pi-cloud'
+    if (code >= 80 && code <= 86) return 'pi pi-cloud'
+    if (code >= 95 && code <= 99) return 'pi pi-bolt'
 
-    return 'pi-question-circle' // Unknown
+    return 'pi pi-question-circle' // Unknown
 }
 
 /**

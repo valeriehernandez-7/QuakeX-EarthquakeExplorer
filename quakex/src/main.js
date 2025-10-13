@@ -36,6 +36,9 @@ import IconField from 'primevue/iconfield'
 import InputText from 'primevue/inputtext'
 import InputIcon from 'primevue/inputicon'
 
+// Vue Material Design Icons MDI imports
+import WeatherRainy from 'vue-material-design-icons/WeatherRainy.vue';
+
 import App from './App.vue'
 import router from './router' // https://router.vuejs.org/
 
@@ -85,5 +88,8 @@ app.component('Chart', Chart)
 app.component('IconField', IconField)
 app.component('InputText', InputText)
 app.component('InputIcon', InputIcon)
+
+// Register MDI components
+app.component('WeatherRainy', WeatherRainy)
 
 app.mount('#app')

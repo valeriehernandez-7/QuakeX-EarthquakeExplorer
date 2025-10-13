@@ -46,7 +46,7 @@ export async function fetchEarthquakes(params = {}) {
             limit: Math.min(limit, APP_SETTINGS.maxEarthquakesToDisplay),
         }
 
-        console.log('🌍 Fetching earthquakes with params:', queryParams)
+        console.log('Fetching earthquakes with params:', queryParams)
 
         const response = await usgsClient.get('', { params: queryParams })
 
@@ -56,26 +56,26 @@ export async function fetchEarthquakes(params = {}) {
         }
 
         console.log(
-            `📊 USGS API returned ${response.data.metadata.count} earthquakes (status: ${response.data.metadata.status})`,
+            `USGS API returned ${response.data.metadata.count} earthquakes (status: ${response.data.metadata.status})`,
         )
 
         // Transform GeoJSON to normalized format
         const earthquakes = transformUSGSData(response.data)
 
-        console.log(`✅ Successfully processed ${earthquakes.length} earthquakes`)
+        console.log(`Successfully processed ${earthquakes.length} earthquakes`)
 
         return earthquakes
     } catch (error) {
         if (error.response) {
             // API returned an error response
-            console.error('❌ USGS API Error:', error.response.status, error.response.statusText)
+            console.error('USGS API Error:', error.response.status, error.response.statusText)
             console.error('Response data:', error.response.data)
         } else if (error.request) {
             // Request was made but no response received
-            console.error('❌ No response from USGS API. Check network connection.')
+            console.error('No response from USGS API. Check network connection.')
         } else {
             // Something else went wrong
-            console.error('❌ Error fetching earthquakes:', error.message)
+            console.error('Error fetching earthquakes:', error.message)
         }
 
         return [] // Return empty array on error (graceful degradation)
@@ -89,7 +89,7 @@ export async function fetchEarthquakes(params = {}) {
  */
 function transformUSGSData(geojson) {
     if (!geojson || !geojson.features || !Array.isArray(geojson.features)) {
-        console.warn('⚠️ Invalid GeoJSON data received')
+        console.warn('Invalid GeoJSON data received')
         return []
     }
 
@@ -188,10 +188,10 @@ export function saveToJSON(earthquakes, filename = `earthquakes_${Date.now()}.js
             URL.revokeObjectURL(url)
         }, 100)
 
-        console.log(`💾 Earthquakes exported to ${filename}`)
+        console.log(`Earthquakes exported to ${filename}`)
         return true
     } catch (error) {
-        console.error('❌ Error exporting earthquakes to JSON:', error)
+        console.error('Error exporting earthquakes to JSON:', error)
         return false
     }
 }
@@ -216,7 +216,7 @@ export async function fetchEarthquakeById(eventId) {
 
         return null
     } catch (error) {
-        console.error(`❌ Error fetching earthquake ${eventId}:`, error.message)
+        console.error(`Error fetching earthquake ${eventId}:`, error.message)
         return null
     }
 }
