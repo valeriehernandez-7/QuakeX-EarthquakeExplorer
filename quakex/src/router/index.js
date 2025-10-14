@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import EarthquakeTest from '@/views/EarthquakeTest.vue'
 import WeatherTest from '@/views/WeatherTest.vue'
+import ElevationTest from '@/views/ElevationTest.vue'
 import CountriesTest from '@/views/CountriesTest.vue'
 
 const router = createRouter({
@@ -15,6 +16,11 @@ const router = createRouter({
             path: '/weather-test',
             name: 'weather-test',
             component: WeatherTest,
+        },
+        {
+            path: '/elevation-test',
+            name: 'elevation-test',
+            component: ElevationTest,
         },
         {
             path: '/countries-test',

@@ -23,6 +23,12 @@ import { RouterView } from 'vue-router'
                         text
                     />
                     <Button
+                        label="Elevation"
+                        icon="pi pi-angle-double-up"
+                        @click="$router.push('/elevation-test')"
+                        text
+                    />
+                    <Button
                         label="Countries"
                         icon="pi pi-flag"
                         @click="$router.push('/countries-test')"
