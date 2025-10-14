@@ -104,3 +104,213 @@ export function generateGoogleMapsUrl(lat, lng, zoom = 10) {
 export function generateGoogleMapsEmbedUrl(lat, lng, zoom = 10) {
     return `https://maps.google.com/maps?q=${lat},${lng}&z=${zoom}&output=embed`
 }
+
+/**
+ * Get time period configuration by value
+ * @param {string} value - Time period value (e.g., 'LAST_WEEK')
+ * @returns {Object} Time period configuration
+ */
+export function getTimePeriod(value) {
+    const { TIME_PERIODS, DEFAULT_TIME_PERIOD } = require('./constants')
+    return TIME_PERIODS[value] || DEFAULT_TIME_PERIOD
+}
+
+/**
+ * Calculate start date for a time period
+ * @param {string} periodValue - Time period value
+ * @returns {Date} Start date
+ */
+export function getStartDateForPeriod(periodValue) {
+    const period = getTimePeriod(periodValue)
+    const now = new Date()
+    return new Date(now.getTime() - period.days * 24 * 60 * 60 * 1000)
+}
+
+/**
+ * Calculate start and end dates for a time period
+ * @param {string} periodValue - Time period value
+ * @returns {Object} Object with startDate and endDate
+ */
+export function getDateRangeForPeriod(periodValue) {
+    const { SPECIFIC_DATE_MODE } = require('./constants')
+
+    if (periodValue === SPECIFIC_DATE_MODE.value) {
+        // For specific date mode, this will be called with actual date
+        return null
+    }
+
+    const endDate = new Date()
+    const startDate = getStartDateForPeriod(periodValue)
+
+    return { startDate, endDate }
+}
+
+/**
+ * Get date range for a specific date (single day)
+ * @param {Date|string} date - The specific date
+ * @returns {Object} Object with startDate and endDate (start and end of that day)
+ */
+export function getDateRangeForSpecificDate(date) {
+    const targetDate = new Date(date)
+
+    // Start of day (00:00:00)
+    const startDate = new Date(targetDate)
+    startDate.setHours(0, 0, 0, 0)
+
+    // End of day (23:59:59)
+    const endDate = new Date(targetDate)
+    endDate.setHours(23, 59, 59, 999)
+
+    return { startDate, endDate }
+}
+
+/**
+ * Get cache filename for a time period
+ * @param {string} periodValue - Time period value
+ * @returns {string} Cache filename
+ */
+export function getCacheFilename(periodValue) {
+    const { SPECIFIC_DATE_MODE } = require('./constants')
+
+    if (periodValue === SPECIFIC_DATE_MODE.value) {
+        // For specific dates, use the date in the filename
+        return null // Will be handled separately with date param
+    }
+
+    const period = getTimePeriod(periodValue)
+    return `${period.cacheKey}.json`
+}
+
+/**
+ * Get cache filename for a specific date
+ * @param {Date|string} date - The specific date
+ * @returns {string} Cache filename with date
+ */
+export function getCacheFilenameForDate(date) {
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+
+    return `earthquakes_${year}-${month}-${day}.json`
+}
+
+/**
+ * Check if cache is expired based on update frequency
+ * @param {number} timestamp - Cache timestamp (Date.now())
+ * @param {string} frequency - Update frequency ('hourly', 'daily', 'weekly', 'monthly')
+ * @returns {boolean} True if expired
+ */
+export function isCacheExpired(timestamp, frequency) {
+    const { CACHE_EXPIRATION } = require('./constants')
+    const expirationTime = CACHE_EXPIRATION[frequency] || CACHE_EXPIRATION.daily
+    return Date.now() - timestamp > expirationTime
+}
+
+/**
+ * Format time period as readable string
+ * @param {string} periodValue - Time period value
+ * @returns {string} Human-readable period description
+ */
+export function formatTimePeriod(periodValue) {
+    const period = getTimePeriod(periodValue)
+    return period.label
+}
+
+/**
+ * Get all available time periods for UI
+ * @returns {Array<Object>} Array of time period objects
+ */
+export function getAvailableTimePeriods() {
+    const { TIME_PERIOD_OPTIONS } = require('./constants')
+    return TIME_PERIOD_OPTIONS
+}
+
+/**
+ * Export data as JSON file (browser download)
+ * @param {Array|Object} data - Data to export
+ * @param {string} filename - Filename for download
+ * @returns {boolean} Success status
+ */
+export function exportAsJSON(data, filename) {
+    try {
+        const jsonString = JSON.stringify(data, null, 2)
+        const blob = new Blob([jsonString], { type: 'application/json' })
+        const url = URL.createObjectURL(blob)
+
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+
+        setTimeout(() => {
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+        }, 100)
+
+        return true
+    } catch (error) {
+        console.error('Error exporting JSON:', error)
+        return false
+    }
+}
+
+/**
+ * Export data as CSV file (browser download)
+ * @param {Array<Object>} data - Array of objects to export
+ * @param {string} filename - Filename for download
+ * @param {Array<string>} [columns] - Optional array of column names
+ * @returns {boolean} Success status
+ */
+export function exportAsCSV(data, filename, columns = null) {
+    try {
+        if (!data || data.length === 0) {
+            console.warn('No data to export')
+            return false
+        }
+
+        // Get columns from first object if not provided
+        const cols = columns || Object.keys(data[0])
+
+        // Create CSV header
+        const header = cols.join(',')
+
+        // Create CSV rows
+        const rows = data.map((item) => {
+            return cols
+                .map((col) => {
+                    const value = item[col]
+                    // Escape commas and quotes
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        return `"${value.replace(/"/g, '""')}"`
+                    }
+                    return value
+                })
+                .join(',')
+        })
+
+        const csvContent = [header, ...rows].join('\n')
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+        const url = URL.createObjectURL(blob)
+
+        const link = document.createElement('a')
+        link.href = url
+        link.download = filename
+        link.style.display = 'none'
+        document.body.appendChild(link)
+        link.click()
+
+        setTimeout(() => {
+            document.body.removeChild(link)
+            URL.revokeObjectURL(url)
+        }, 100)
+
+        return true
+    } catch (error) {
+        console.error('Error exporting CSV:', error)
+        return false
+    }
+}

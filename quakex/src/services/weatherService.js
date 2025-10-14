@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
+import { saveDatasetWithPeriod } from './drillService'
 
 /**
  * Weather Service
@@ -477,5 +478,161 @@ export function exportWeatherCache(filename = `weather_cache_${Date.now()}.json`
     } catch (error) {
         console.error('Error exporting weather cache:', error)
         return false
+    }
+}
+
+/**
+ * Cache weather data for all earthquakes in a time period
+ * Creates a batch weather cache for Drill queries
+ * @param {string} timePeriod - Time period key (e.g., 'LAST_WEEK')
+ * @param {Array} earthquakes - Array of earthquake objects
+ * @param {Object} [options={}] - Additional options
+ * @param {boolean} [options.saveForDrill=true] - Save to Drill-compatible JSON
+ * @returns {Promise<Array>} Array of weather data objects
+ *
+ * @example
+ * const earthquakes = await fetchEarthquakesForPeriod('LAST_WEEK')
+ * const weatherData = await cacheWeatherForPeriod('LAST_WEEK', earthquakes)
+ * // Saves to: weather_cache_last_week.json
+ */
+export async function cacheWeatherForPeriod(timePeriod, earthquakes, options = {}) {
+    try {
+        const { saveForDrill = true } = options
+
+        if (!earthquakes || earthquakes.length === 0) {
+            console.warn('No earthquakes provided for weather caching')
+            return []
+        }
+
+        console.log(
+            `Caching weather data for ${earthquakes.length} earthquakes (period: ${timePeriod})`,
+        )
+
+        const weatherDataArray = []
+        let successCount = 0
+        let failCount = 0
+
+        // Fetch weather for each earthquake
+        for (const earthquake of earthquakes) {
+            try {
+                const weatherData = await fetchWeatherAtTime({
+                    latitude: earthquake.latitude,
+                    longitude: earthquake.longitude,
+                    datetime: earthquake.time,
+                })
+
+                if (weatherData) {
+                    weatherDataArray.push({
+                        earthquakeId: earthquake.id,
+                        latitude: earthquake.latitude,
+                        longitude: earthquake.longitude,
+                        time: earthquake.time,
+                        ...weatherData,
+                    })
+                    successCount++
+                } else {
+                    failCount++
+                }
+            } catch (error) {
+                console.error(
+                    `Failed to fetch weather for earthquake ${earthquake.id}:`,
+                    error.message,
+                )
+                failCount++
+            }
+        }
+
+        console.log(`Weather cache complete: ${successCount} success, ${failCount} failed`)
+
+        // Save for Drill
+        if (saveForDrill && weatherDataArray.length > 0) {
+            const saved = saveDatasetWithPeriod('weather_cache', weatherDataArray, { timePeriod })
+            if (saved) {
+                console.log(`Weather data saved for Drill (period: ${timePeriod})`)
+            }
+        }
+
+        return weatherDataArray
+    } catch (error) {
+        console.error('Error caching weather for period:', error.message)
+        return []
+    }
+}
+
+/**
+ * Cache weather data for earthquakes on a specific date
+ * @param {Date|string} specificDate - The specific date
+ * @param {Array} earthquakes - Array of earthquake objects
+ * @param {Object} [options={}] - Additional options
+ * @returns {Promise<Array>} Array of weather data objects
+ *
+ * @example
+ * const date = new Date('2024-10-15')
+ * const earthquakes = await fetchEarthquakesForDate(date)
+ * const weatherData = await cacheWeatherForDate(date, earthquakes)
+ * // Saves to: weather_cache_2024-10-15.json
+ */
+export async function cacheWeatherForDate(specificDate, earthquakes, options = {}) {
+    try {
+        const { saveForDrill = true } = options
+
+        if (!earthquakes || earthquakes.length === 0) {
+            console.warn('No earthquakes provided for weather caching')
+            return []
+        }
+
+        const dateStr = new Date(specificDate).toISOString().split('T')[0]
+        console.log(`Caching weather data for ${earthquakes.length} earthquakes (date: ${dateStr})`)
+
+        const weatherDataArray = []
+        let successCount = 0
+        let failCount = 0
+
+        // Fetch weather for each earthquake
+        for (const earthquake of earthquakes) {
+            try {
+                const weatherData = await fetchWeatherAtTime({
+                    latitude: earthquake.latitude,
+                    longitude: earthquake.longitude,
+                    datetime: earthquake.time,
+                })
+
+                if (weatherData) {
+                    weatherDataArray.push({
+                        earthquakeId: earthquake.id,
+                        latitude: earthquake.latitude,
+                        longitude: earthquake.longitude,
+                        time: earthquake.time,
+                        ...weatherData,
+                    })
+                    successCount++
+                } else {
+                    failCount++
+                }
+            } catch (error) {
+                console.error(
+                    `Failed to fetch weather for earthquake ${earthquake.id}:`,
+                    error.message,
+                )
+                failCount++
+            }
+        }
+
+        console.log(`Weather cache complete: ${successCount} success, ${failCount} failed`)
+
+        // Save for Drill
+        if (saveForDrill && weatherDataArray.length > 0) {
+            const saved = saveDatasetWithPeriod('weather_cache', weatherDataArray, {
+                specificDate: new Date(specificDate),
+            })
+            if (saved) {
+                console.log(`Weather data saved for Drill (date: ${dateStr})`)
+            }
+        }
+
+        return weatherDataArray
+    } catch (error) {
+        console.error('Error caching weather for date:', error.message)
+        return []
     }
 }

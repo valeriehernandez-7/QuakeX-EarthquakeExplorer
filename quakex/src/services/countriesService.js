@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
+import { saveDatasetWithPeriod } from './drillService'
 
 /**
  * REST Countries Service
@@ -396,5 +397,40 @@ export async function getCountriesStatistics() {
         subregions: subregions.length,
         regionsList: regions.sort(),
         subregionsList: subregions.sort(),
+    }
+}
+
+/**
+ * Save countries data for Apache Drill with standardized filename
+ * Countries data is static, so it uses a fixed filename
+ * @returns {Promise<boolean>} Success status
+ *
+ * @example
+ * await saveCountriesForDrill()
+ * // Saves to: countries.json (always the same name)
+ */
+export async function saveCountriesForDrill() {
+    try {
+        console.log('Preparing countries data for Drill...')
+
+        const countries = await fetchAllCountries()
+
+        if (!countries || countries.length === 0) {
+            console.warn('No countries data available')
+            return false
+        }
+
+        // Save with fixed filename (no time period, static data)
+        const saved = saveDatasetWithPeriod('countries', countries, {})
+
+        if (saved) {
+            console.log(`Countries data saved for Drill (${countries.length} countries)`)
+            return true
+        }
+
+        return false
+    } catch (error) {
+        console.error('Error saving countries for Drill:', error.message)
+        return false
     }
 }

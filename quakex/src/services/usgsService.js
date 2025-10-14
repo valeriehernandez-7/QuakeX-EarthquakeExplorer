@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
+import { getDateRangeForPeriod, getDateRangeForSpecificDate } from '@/utils/helpers'
+import { saveDatasetWithPeriod } from './drillService'
 
 /**
  * USGS Earthquake Service
@@ -236,4 +238,156 @@ export async function fetchSignificantEarthquakes() {
         minMagnitude: 4.5,
         limit: 100,
     })
+}
+
+/**
+ * Fetch earthquakes for a predefined time period
+ * Automatically saves data with standardized filename for Drill
+ * @param {string} timePeriod - Time period key (e.g., 'LAST_WEEK', 'TODAY')
+ * @param {Object} [options={}] - Additional options
+ * @param {number} [options.minMagnitude=2.5] - Minimum magnitude
+ * @param {number} [options.maxMagnitude=10.0] - Maximum magnitude
+ * @param {boolean} [options.saveForDrill=true] - Save to Drill-compatible JSON
+ * @returns {Promise<Array>} Array of earthquake objects
+ *
+ * @example
+ * const earthquakes = await fetchEarthquakesForPeriod('LAST_WEEK')
+ * // Automatically saves to: earthquakes_last_week.json
+ */
+export async function fetchEarthquakesForPeriod(timePeriod, options = {}) {
+    try {
+        const { minMagnitude = 2.5, maxMagnitude = 10.0, saveForDrill = true } = options
+
+        // Get date range for the period
+        const dateRange = getDateRangeForPeriod(timePeriod)
+
+        if (!dateRange) {
+            console.error('Invalid time period:', timePeriod)
+            return []
+        }
+
+        const { startDate, endDate } = dateRange
+
+        console.log(`Fetching earthquakes for period: ${timePeriod}`)
+        console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
+
+        // Fetch earthquakes using existing function
+        const earthquakes = await fetchEarthquakes({
+            startTime: startDate,
+            endTime: endDate,
+            minMagnitude,
+            maxMagnitude,
+            limit: APP_SETTINGS.maxEarthquakesToDisplay,
+        })
+
+        console.log(`Retrieved ${earthquakes.length} earthquakes for ${timePeriod}`)
+
+        // Save for Drill if requested
+        if (saveForDrill && earthquakes.length > 0) {
+            const saved = saveDatasetWithPeriod('earthquakes', earthquakes, { timePeriod })
+            if (saved) {
+                console.log(`Earthquakes saved for Drill (period: ${timePeriod})`)
+            }
+        }
+
+        return earthquakes
+    } catch (error) {
+        console.error(`Error fetching earthquakes for period ${timePeriod}:`, error.message)
+        return []
+    }
+}
+
+/**
+ * Fetch earthquakes for a specific date
+ * Retrieves all earthquakes that occurred on the given date (00:00 to 23:59)
+ * @param {Date|string} date - The specific date to query
+ * @param {Object} [options={}] - Additional options
+ * @param {number} [options.minMagnitude=2.5] - Minimum magnitude
+ * @param {number} [options.maxMagnitude=10.0] - Maximum magnitude
+ * @param {boolean} [options.saveForDrill=true] - Save to Drill-compatible JSON
+ * @returns {Promise<Array>} Array of earthquake objects
+ *
+ * @example
+ * const earthquakes = await fetchEarthquakesForDate(new Date('2024-10-15'))
+ * // Automatically saves to: earthquakes_2024-10-15.json
+ */
+export async function fetchEarthquakesForDate(date, options = {}) {
+    try {
+        const { minMagnitude = 2.5, maxMagnitude = 10.0, saveForDrill = true } = options
+
+        // Get date range for the specific date (full day)
+        const { startDate, endDate } = getDateRangeForSpecificDate(date)
+
+        console.log(`Fetching earthquakes for date: ${startDate.toISOString().split('T')[0]}`)
+
+        // Fetch earthquakes
+        const earthquakes = await fetchEarthquakes({
+            startTime: startDate,
+            endTime: endDate,
+            minMagnitude,
+            maxMagnitude,
+            limit: APP_SETTINGS.maxEarthquakesToDisplay,
+        })
+
+        console.log(`Retrieved ${earthquakes.length} earthquakes for the date`)
+
+        // Save for Drill if requested
+        if (saveForDrill && earthquakes.length > 0) {
+            const saved = saveDatasetWithPeriod('earthquakes', earthquakes, {
+                specificDate: startDate,
+            })
+            if (saved) {
+                console.log(
+                    `✓ Earthquakes saved for Drill (date: ${startDate.toISOString().split('T')[0]})`,
+                )
+            }
+        }
+
+        return earthquakes
+    } catch (error) {
+        console.error('Error fetching earthquakes for specific date:', error.message)
+        return []
+    }
+}
+
+/**
+ * Get statistics for earthquakes in a time period
+ * Useful for quick overview without fetching all data
+ * @param {string} timePeriod - Time period key
+ * @returns {Promise<Object>} Statistics object
+ */
+export async function getEarthquakeStatsForPeriod(timePeriod) {
+    try {
+        const earthquakes = await fetchEarthquakesForPeriod(timePeriod, {
+            saveForDrill: false,
+        })
+
+        if (earthquakes.length === 0) {
+            return {
+                total: 0,
+                avgMagnitude: 0,
+                maxMagnitude: 0,
+                minMagnitude: 0,
+                avgDepth: 0,
+            }
+        }
+
+        const magnitudes = earthquakes.map((eq) => eq.magnitude)
+        const depths = earthquakes.map((eq) => eq.depth)
+
+        return {
+            total: earthquakes.length,
+            avgMagnitude: Number(
+                (magnitudes.reduce((a, b) => a + b, 0) / magnitudes.length).toFixed(2),
+            ),
+            maxMagnitude: Math.max(...magnitudes),
+            minMagnitude: Math.min(...magnitudes),
+            avgDepth: Number((depths.reduce((a, b) => a + b, 0) / depths.length).toFixed(1)),
+            maxDepth: Math.max(...depths),
+            minDepth: Math.min(...depths),
+        }
+    } catch (error) {
+        console.error('Error getting earthquake stats:', error.message)
+        return null
+    }
 }

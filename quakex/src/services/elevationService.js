@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
+import { saveDatasetWithPeriod } from './drillService'
 
 /**
  * Elevation Service
@@ -391,4 +392,192 @@ export function exportElevationCache(filename = `elevation_cache_${Date.now()}.j
  */
 export function getElevationAttribution() {
     return 'Elevation data from Copernicus DEM via Open-Meteo. Non-commercial use only.'
+}
+
+/**
+ * Cache elevation data for all earthquakes in a time period
+ * Creates a batch elevation cache for Drill queries
+ * @param {string} timePeriod - Time period key (e.g., 'LAST_WEEK')
+ * @param {Array} earthquakes - Array of earthquake objects
+ * @param {Object} [options={}] - Additional options
+ * @param {boolean} [options.saveForDrill=true] - Save to Drill-compatible JSON
+ * @returns {Promise<Array>} Array of elevation data objects
+ *
+ * @example
+ * const earthquakes = await fetchEarthquakesForPeriod('LAST_WEEK')
+ * const elevationData = await cacheElevationForPeriod('LAST_WEEK', earthquakes)
+ * // Saves to: elevation_cache_last_week.json
+ */
+export async function cacheElevationForPeriod(timePeriod, earthquakes, options = {}) {
+    try {
+        const { saveForDrill = true } = options
+
+        if (!earthquakes || earthquakes.length === 0) {
+            console.warn('No earthquakes provided for elevation caching')
+            return []
+        }
+
+        console.log(
+            `Caching elevation data for ${earthquakes.length} earthquakes (period: ${timePeriod})`,
+        )
+
+        // Extract unique coordinates to avoid duplicate API calls
+        const uniqueCoords = getUniqueCoordinates(earthquakes)
+        console.log(`Found ${uniqueCoords.length} unique coordinate pairs`)
+
+        // Fetch elevation for all unique coordinates
+        const elevationData = await fetchElevation(uniqueCoords, true)
+
+        if (!elevationData || elevationData.length === 0) {
+            console.warn('No elevation data retrieved')
+            return []
+        }
+
+        // Create coordinate -> elevation map for quick lookup
+        const elevationMap = new Map()
+        elevationData.forEach((data) => {
+            const key = `${data.latitude.toFixed(4)},${data.longitude.toFixed(4)}`
+            elevationMap.set(key, data)
+        })
+
+        // Create array with earthquake IDs for Drill JOINs
+        const elevationCacheArray = earthquakes.map((earthquake) => {
+            const key = `${earthquake.latitude.toFixed(4)},${earthquake.longitude.toFixed(4)}`
+            const elevData = elevationMap.get(key)
+
+            return {
+                earthquakeId: earthquake.id,
+                latitude: earthquake.latitude,
+                longitude: earthquake.longitude,
+                elevation: elevData?.elevation || null,
+                elevationUnit: 'meters',
+                aboveSeaLevel: elevData?.aboveSeaLevel || null,
+                description: elevData?.description || 'Unknown',
+                category: elevData?.category || 'unknown',
+            }
+        })
+
+        console.log(`Elevation cache prepared with ${elevationCacheArray.length} entries`)
+
+        // Save for Drill
+        if (saveForDrill && elevationCacheArray.length > 0) {
+            const saved = saveDatasetWithPeriod('elevation_cache', elevationCacheArray, {
+                timePeriod,
+            })
+            if (saved) {
+                console.log(`Elevation data saved for Drill (period: ${timePeriod})`)
+            }
+        }
+
+        return elevationCacheArray
+    } catch (error) {
+        console.error('Error caching elevation for period:', error.message)
+        return []
+    }
+}
+
+/**
+ * Cache elevation data for earthquakes on a specific date
+ * @param {Date|string} specificDate - The specific date
+ * @param {Array} earthquakes - Array of earthquake objects
+ * @param {Object} [options={}] - Additional options
+ * @returns {Promise<Array>} Array of elevation data objects
+ *
+ * @example
+ * const date = new Date('2024-10-15')
+ * const earthquakes = await fetchEarthquakesForDate(date)
+ * const elevationData = await cacheElevationForDate(date, earthquakes)
+ * // Saves to: elevation_cache_2024-10-15.json
+ */
+export async function cacheElevationForDate(specificDate, earthquakes, options = {}) {
+    try {
+        const { saveForDrill = true } = options
+
+        if (!earthquakes || earthquakes.length === 0) {
+            console.warn('No earthquakes provided for elevation caching')
+            return []
+        }
+
+        const dateStr = new Date(specificDate).toISOString().split('T')[0]
+        console.log(
+            `Caching elevation data for ${earthquakes.length} earthquakes (date: ${dateStr})`,
+        )
+
+        // Extract unique coordinates
+        const uniqueCoords = getUniqueCoordinates(earthquakes)
+        console.log(`Found ${uniqueCoords.length} unique coordinate pairs`)
+
+        // Fetch elevation
+        const elevationData = await fetchElevation(uniqueCoords, true)
+
+        if (!elevationData || elevationData.length === 0) {
+            console.warn('No elevation data retrieved')
+            return []
+        }
+
+        // Create map
+        const elevationMap = new Map()
+        elevationData.forEach((data) => {
+            const key = `${data.latitude.toFixed(4)},${data.longitude.toFixed(4)}`
+            elevationMap.set(key, data)
+        })
+
+        // Create array
+        const elevationCacheArray = earthquakes.map((earthquake) => {
+            const key = `${earthquake.latitude.toFixed(4)},${earthquake.longitude.toFixed(4)}`
+            const elevData = elevationMap.get(key)
+
+            return {
+                earthquakeId: earthquake.id,
+                latitude: earthquake.latitude,
+                longitude: earthquake.longitude,
+                elevation: elevData?.elevation || null,
+                elevationUnit: 'meters',
+                aboveSeaLevel: elevData?.aboveSeaLevel || null,
+                description: elevData?.description || 'Unknown',
+                category: elevData?.category || 'unknown',
+            }
+        })
+
+        console.log(`Elevation cache prepared with ${elevationCacheArray.length} entries`)
+
+        // Save for Drill
+        if (saveForDrill && elevationCacheArray.length > 0) {
+            const saved = saveDatasetWithPeriod('elevation_cache', elevationCacheArray, {
+                specificDate: new Date(specificDate),
+            })
+            if (saved) {
+                console.log(`Elevation data saved for Drill (date: ${dateStr})`)
+            }
+        }
+
+        return elevationCacheArray
+    } catch (error) {
+        console.error('Error caching elevation for date:', error.message)
+        return []
+    }
+}
+
+/**
+ * Get unique coordinates from earthquakes array
+ * Reduces API calls by removing duplicate locations
+ * @param {Array} earthquakes - Array of earthquake objects
+ * @returns {Array} Array of unique coordinate objects
+ */
+function getUniqueCoordinates(earthquakes) {
+    const coordMap = new Map()
+
+    earthquakes.forEach((eq) => {
+        // Round to 4 decimals (~11 meters precision)
+        const key = `${eq.latitude.toFixed(4)},${eq.longitude.toFixed(4)}`
+
+        if (!coordMap.has(key)) {
+            coordMap.set(key, {
+                latitude: eq.latitude,
+                longitude: eq.longitude,
+            })
+        }
+    })
+
+    return Array.from(coordMap.values())
 }
