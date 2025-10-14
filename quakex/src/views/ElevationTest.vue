@@ -1,5 +1,14 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Badge from 'primevue/badge'
+import Tag from 'primevue/tag'
+import ProgressSpinner from 'primevue/progressspinner'
+import Message from 'primevue/message'
 import {
     fetchElevation,
     fetchElevationForEarthquakes,
@@ -23,6 +32,7 @@ const loading = ref(false)
 const elevationData = ref(null)
 const earthquakeElevationData = ref(null)
 const cacheStats = ref(null)
+const errorMessage = ref(null)
 
 onMounted(() => {
     loadCacheStats()
@@ -31,6 +41,7 @@ onMounted(() => {
 async function testSingleElevation() {
     loading.value = true
     elevationData.value = null
+    errorMessage.value = null
 
     try {
         const result = await fetchElevation({
@@ -38,10 +49,16 @@ async function testSingleElevation() {
             longitude: customLng.value,
         })
 
-        elevationData.value = result
-        console.log('Single elevation result:', result)
+        if (result) {
+            elevationData.value = result
+            console.log('Single elevation result:', result)
+        } else {
+            errorMessage.value =
+                'Failed to fetch elevation data. Please check coordinates and try again.'
+        }
     } catch (error) {
         console.error('Error fetching single elevation:', error)
+        errorMessage.value = `Error: ${error.message || 'Unknown error occurred'}`
     } finally {
         loading.value = false
         loadCacheStats()
@@ -51,14 +68,20 @@ async function testSingleElevation() {
 async function testMultipleElevation() {
     loading.value = true
     elevationData.value = null
+    errorMessage.value = null
 
     try {
         const result = await fetchElevation(testCoordinates.value)
 
-        elevationData.value = result
-        console.log('Multiple elevation result:', result)
+        if (result) {
+            elevationData.value = result
+            console.log('Multiple elevation result:', result)
+        } else {
+            errorMessage.value = 'Failed to fetch elevation data for multiple coordinates.'
+        }
     } catch (error) {
         console.error('Error fetching multiple elevation:', error)
+        errorMessage.value = `Error: ${error.message || 'Unknown error occurred'}`
     } finally {
         loading.value = false
         loadCacheStats()
@@ -68,6 +91,7 @@ async function testMultipleElevation() {
 async function testEarthquakeElevation() {
     loading.value = true
     earthquakeElevationData.value = null
+    errorMessage.value = null
 
     try {
         // Sample earthquake data
@@ -94,10 +118,15 @@ async function testEarthquakeElevation() {
 
         const result = await fetchElevationForEarthquakes(sampleEarthquakes)
 
-        earthquakeElevationData.value = result
-        console.log('Earthquake elevation result:', result)
+        if (result) {
+            earthquakeElevationData.value = result
+            console.log('Earthquake elevation result:', result)
+        } else {
+            errorMessage.value = 'Failed to fetch elevation data for earthquakes.'
+        }
     } catch (error) {
         console.error('Error fetching earthquake elevation:', error)
+        errorMessage.value = `Error: ${error.message || 'Unknown error occurred'}`
     } finally {
         loading.value = false
         loadCacheStats()
@@ -110,7 +139,12 @@ async function clearCache() {
 }
 
 async function exportCache() {
-    await exportElevationCache()
+    const success = exportElevationCache()
+    if (success) {
+        console.log('Cache exported successfully')
+    } else {
+        console.warn('Failed to export cache or cache is empty')
+    }
     await loadCacheStats()
 }
 
@@ -274,6 +308,17 @@ function loadCacheStats() {
             <p style="margin-top: 1rem; color: #666">Fetching elevation data from Open-Meteo...</p>
         </div>
 
+        <!-- Error Message -->
+        <Message
+            v-if="errorMessage"
+            severity="error"
+            :closable="true"
+            @close="errorMessage = null"
+            style="margin-bottom: 2rem"
+        >
+            {{ errorMessage }}
+        </Message>
+
         <!-- Single Elevation Results -->
         <Card v-if="elevationData && !Array.isArray(elevationData)" style="margin-bottom: 1rem">
             <template #title>
@@ -317,7 +362,7 @@ function loadCacheStats() {
         <!-- Multiple Elevation Results -->
         <Card v-if="elevationData && Array.isArray(elevationData)" style="margin-bottom: 1rem">
             <template #title>
-                <div style="display: flex; align-items; center; gap: 0.5rem">
+                <div style="display: flex; align-items: center; gap: 0.5rem">
                     <i class="pi pi-check-circle" style="color: #10b981"></i>
                     <span>Multiple Elevation Results ({{ elevationData.length }} locations)</span>
                 </div>
@@ -355,7 +400,7 @@ function loadCacheStats() {
         <!-- Earthquake Elevation Results -->
         <Card v-if="earthquakeElevationData" style="margin-bottom: 1rem">
             <template #title>
-                <div style="display: flex; align-items; center; gap: 0.5rem">
+                <div style="display: flex; align-items: center; gap: 0.5rem">
                     <i class="pi pi-check-circle" style="color: #10b981"></i>
                     <span>Earthquake Elevation Integration</span>
                 </div>

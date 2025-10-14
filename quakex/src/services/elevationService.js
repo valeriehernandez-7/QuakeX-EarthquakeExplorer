@@ -40,6 +40,19 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000
  * @param {number} coordinates.longitude - Geographical longitude (-180 to 180)
  * @param {boolean} [useCache=true] - Whether to use cached data
  * @returns {Promise<Array<Object>|Object|null>} Normalized elevation data or null on error
+ *
+ * @example
+ * // Single coordinate
+ * const elevation = await fetchElevation({ latitude: 52.52, longitude: 13.41 })
+ * // Returns: { latitude: 52.52, longitude: 13.41, elevation: 38, ... }
+ *
+ * @example
+ * // Multiple coordinates (up to 100)
+ * const elevations = await fetchElevation([
+ *   { latitude: 52.52, longitude: 13.41 },
+ *   { latitude: 40.71, longitude: -74.01 }
+ * ])
+ * // Returns: [{ elevation: 38, ... }, { elevation: 10, ... }]
  */
 export async function fetchElevation(coordinates, useCache = true) {
     try {
@@ -105,7 +118,13 @@ export async function fetchElevation(coordinates, useCache = true) {
     } catch (error) {
         if (error.response) {
             console.error('Elevation API Error:', error.response.status, error.response.statusText)
-            console.error('Error details:', error.response.data)
+
+            // Handle specific error format from API: { error: true, reason: "..." }
+            if (error.response.status === 400 && error.response.data?.reason) {
+                console.error('API validation error:', error.response.data.reason)
+            } else {
+                console.error('Error details:', error.response.data)
+            }
         } else if (error.request) {
             console.error('No response from Elevation API. Check network connection.')
         } else {
