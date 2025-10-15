@@ -179,17 +179,86 @@ export const TIME_PERIOD_OPTIONS = Object.values(TIME_PERIODS)
 export const DEFAULT_TIME_PERIOD = TIME_PERIODS.LAST_WEEK
 
 export const CACHE_EXPIRATION = {
-    hourly: 60 * 60 * 1000,
-    daily: 24 * 60 * 60 * 1000,
-    weekly: 7 * 24 * 60 * 60 * 1000,
-    monthly: 30 * 24 * 60 * 60 * 1000,
+    hourly: 60 * 60 * 1000, // 1 hour
+    daily: 24 * 60 * 60 * 1000, // 1 day
+    weekly: 7 * 24 * 60 * 60 * 1000, // 7 days
+    monthly: 30 * 24 * 60 * 60 * 1000, // 30 days
 }
 
 export const CACHE_RETENTION_DAYS = 7
 
 export const DRILL_CONFIG = {
-    workspace: 'quakex',
+    // Storage plugin and workspace
     storagePlugin: 'dfs',
-    queryTimeout: 30000,
-    maxRows: 10000,
+    workspace: 'quakex',
+
+    // Query execution settings
+    queryTimeout: 30000, // 30 seconds
+    maxRows: 10000, // Maximum rows to return
+    defaultLimit: 1000, // Default LIMIT for queries without explicit limit
+
+    // Query result cache settings
+    queryCacheDuration: 5 * 60 * 1000, // 5 minutes cache for query results
+    enableQueryCache: true,
+
+    // Table names (standardized filenames)
+    tables: {
+        earthquakes: 'earthquakes.json',
+        earthquakesSample: 'sample-earthquakes.json',
+        countries: 'countries.json',
+        weatherCache: 'weather_cache.json',
+        elevationCache: 'elevation_cache.json',
+    },
+
+    // Default query settings
+    defaults: {
+        magnitudeRange: [0, 10], // Full magnitude range
+        depthRange: [0, 700], // km - typical earthquake depth range
+        orderBy: 'time DESC', // Most recent first
+        dateFormat: 'YYYY-MM-DD', // SQL date format
+    },
+
+    // Magnitude categories for statistics
+    magnitudeCategories: [
+        { name: 'Minor', min: 0, max: 3.9 },
+        { name: 'Light', min: 4.0, max: 4.9 },
+        { name: 'Moderate', min: 5.0, max: 5.9 },
+        { name: 'Strong', min: 6.0, max: 6.9 },
+        { name: 'Major', min: 7.0, max: 10.0 },
+    ],
+
+    // Depth categories for statistics (in km)
+    depthCategories: [
+        { name: 'Shallow', min: 0, max: 70 },
+        { name: 'Intermediate', min: 70, max: 300 },
+        { name: 'Deep', min: 300, max: 700 },
+    ],
+
+    // Geographic zones (for spatial queries)
+    geographicZones: {
+        northernHemisphere: { latMin: 0, latMax: 90 },
+        southernHemisphere: { latMin: -90, latMax: 0 },
+        easternHemisphere: { lonMin: 0, lonMax: 180 },
+        westernHemisphere: { lonMin: -180, lonMax: 0 },
+    },
+
+    // Statistics query settings
+    statistics: {
+        defaultDays: 30, // Default period for temporal statistics
+        bucketSize: 1, // Days per bucket for time series
+        topEarthquakesLimit: 10, // Number of strongest earthquakes to return
+    },
+
+    // Data directory (used for file operations)
+    dataDirectory: '/data',
+}
+
+// Helper: Get full table path for Drill queries
+export function getDrillTablePath(tableName) {
+    return `${DRILL_CONFIG.storagePlugin}.${DRILL_CONFIG.workspace}.\`${tableName}\``
+}
+
+// Helper: Get table name with backticks for Drill
+export function formatTableName(tableName) {
+    return `\`${tableName}\``
 }

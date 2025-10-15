@@ -1,4 +1,12 @@
-import { MAGNITUDE_LEVELS, DEPTH_CATEGORIES } from './constants'
+import {
+    MAGNITUDE_LEVELS,
+    DEPTH_CATEGORIES,
+    TIME_PERIODS,
+    DEFAULT_TIME_PERIOD,
+    SPECIFIC_DATE_MODE,
+    CACHE_EXPIRATION,
+    TIME_PERIOD_OPTIONS,
+} from './constants'
 
 /**
  * Get magnitude severity level based on magnitude value
@@ -111,7 +119,6 @@ export function generateGoogleMapsEmbedUrl(lat, lng, zoom = 10) {
  * @returns {Object} Time period configuration
  */
 export function getTimePeriod(value) {
-    const { TIME_PERIODS, DEFAULT_TIME_PERIOD } = require('./constants')
     return TIME_PERIODS[value] || DEFAULT_TIME_PERIOD
 }
 
@@ -132,8 +139,6 @@ export function getStartDateForPeriod(periodValue) {
  * @returns {Object} Object with startDate and endDate
  */
 export function getDateRangeForPeriod(periodValue) {
-    const { SPECIFIC_DATE_MODE } = require('./constants')
-
     if (periodValue === SPECIFIC_DATE_MODE.value) {
         // For specific date mode, this will be called with actual date
         return null
@@ -170,8 +175,6 @@ export function getDateRangeForSpecificDate(date) {
  * @returns {string} Cache filename
  */
 export function getCacheFilename(periodValue) {
-    const { SPECIFIC_DATE_MODE } = require('./constants')
-
     if (periodValue === SPECIFIC_DATE_MODE.value) {
         // For specific dates, use the date in the filename
         return null // Will be handled separately with date param
@@ -202,7 +205,6 @@ export function getCacheFilenameForDate(date) {
  * @returns {boolean} True if expired
  */
 export function isCacheExpired(timestamp, frequency) {
-    const { CACHE_EXPIRATION } = require('./constants')
     const expirationTime = CACHE_EXPIRATION[frequency] || CACHE_EXPIRATION.daily
     return Date.now() - timestamp > expirationTime
 }
@@ -222,7 +224,6 @@ export function formatTimePeriod(periodValue) {
  * @returns {Array<Object>} Array of time period objects
  */
 export function getAvailableTimePeriods() {
-    const { TIME_PERIOD_OPTIONS } = require('./constants')
     return TIME_PERIOD_OPTIONS
 }
 
