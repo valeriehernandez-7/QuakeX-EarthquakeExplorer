@@ -34,6 +34,12 @@ import { RouterView } from 'vue-router'
                         @click="$router.push('/countries-test')"
                         text
                     />
+                    <Button
+                        label="Drill"
+                        icon="pi pi-server"
+                        @click="$router.push('/drill-test')"
+                        text
+                    />
                 </div>
             </template>
         </Toolbar>

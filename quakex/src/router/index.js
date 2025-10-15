@@ -3,6 +3,7 @@ import EarthquakeTest from '@/views/EarthquakeTest.vue'
 import WeatherTest from '@/views/WeatherTest.vue'
 import ElevationTest from '@/views/ElevationTest.vue'
 import CountriesTest from '@/views/CountriesTest.vue'
+import DrillTest from '@/views/DrillTest.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -26,6 +27,11 @@ const router = createRouter({
             path: '/countries-test',
             name: 'countries-test',
             component: CountriesTest,
+        },
+        {
+            path: '/drill-test',
+            name: 'drill-test',
+            component: DrillTest,
         },
     ],
     scrollBehavior() {
