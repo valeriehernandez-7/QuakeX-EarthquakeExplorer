@@ -110,6 +110,29 @@ export const useAppStore = defineStore('app', () => {
         }
     }
 
+    /**
+     * Fetch earthquakes from USGS API
+     * @param {Object} params - Query parameters
+     */
+    async function fetchEarthquakes(params = {}) {
+        try {
+            setLoading(true)
+            clearError()
+
+            const { fetchEarthquakes } = await import('@/services/usgsService')
+            const earthquakes = await fetchEarthquakes(params)
+
+            setEarthquakes(earthquakes)
+            return earthquakes
+        } catch (error) {
+            setError(`Failed to fetch earthquakes: ${error.message}`)
+            console.error('Error fetching earthquakes:', error)
+            return []
+        } finally {
+            setLoading(false)
+        }
+    }
+
     // Helper function for depth category
     function getDepthCategoryKey(depth) {
         if (depth < 70) return 'SHALLOW'
@@ -138,5 +161,6 @@ export const useAppStore = defineStore('app', () => {
         setError,
         clearError,
         resetFilters,
+        fetchEarthquakes,
     }
 })
