@@ -1,7 +1,18 @@
 <template>
     <div id="app">
-        <router-view />
         <Toast />
+        <ConfirmDialog />
+
+        <Suspense>
+            <template #default>
+                <RouterView />
+            </template>
+            <template #fallback>
+                <div class="loading-screen">
+                    <ProgressSpinner />
+                </div>
+            </template>
+        </Suspense>
     </div>
 </template>
 

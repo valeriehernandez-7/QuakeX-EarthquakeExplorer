@@ -3,10 +3,7 @@
         <div ref="mapContainer" class="map-element"></div>
 
         <!-- Loading Overlay -->
-        <div v-if="store.loading" class="loading-overlay">
-            <ProgressSpinner />
-            <p>Loading earthquake data...</p>
-        </div>
+        <Skeleton v-if="store.loading" height="100vh" />
 
         <!-- Map Controls -->
         <div class="map-controls">
@@ -56,17 +53,24 @@ let map = null
 let markerCluster = null
 let tileLayer = null
 
-// Marker management - DEFINIR PRIMERO
+const markerMap = new Map() // earthquakeId -> marker
+
 const updateMarkers = () => {
-    if (!markerCluster || !store.filteredEarthquakes.length) return
+    const currentIds = new Set(store.filteredEarthquakes.map((eq) => eq.id))
 
-    // Clear existing markers
-    markerCluster.clearLayers()
+    markerMap.forEach((marker, id) => {
+        if (!currentIds.has(id)) {
+            markerCluster.removeLayer(marker)
+            markerMap.delete(id)
+        }
+    })
 
-    // Add new markers
     store.filteredEarthquakes.forEach((earthquake) => {
-        const marker = createEarthquakeMarker(earthquake)
-        markerCluster.addLayer(marker)
+        if (!markerMap.has(earthquake.id)) {
+            const marker = createEarthquakeMarker(earthquake)
+            markerCluster.addLayer(marker)
+            markerMap.set(earthquake.id, marker)
+        }
     })
 }
 
@@ -75,12 +79,13 @@ const createEarthquakeMarker = (earthquake) => {
     const magnitudeLevel = getMagnitudeLevel(magnitude)
     const markerSize = calculateMarkerSize(magnitude)
     const opacity = calculateMarkerOpacity(depth)
+    const isRecent = Date.now() - new Date(earthquake.time) < 3600000
 
     // Create custom marker icon
     const icon = L.divIcon({
         className: 'earthquake-marker',
         html: `
-            <div style="
+            <div class="${isRecent ? 'pulse-animation' : ''}" style="
                 width: ${markerSize}px;
                 height: ${markerSize}px;
                 background: ${magnitudeLevel.color};
@@ -276,5 +281,21 @@ watch(() => store.filteredEarthquakes, updateMarkers)
 
 :deep(.earthquake-popup .popup-footer) {
     text-align: center;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2);
+        opacity: 0.7;
+    }
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
 }
 </style>
