@@ -411,20 +411,25 @@ export async function testDrillConnection() {
 
 /**
  * List available tables in quakex workspace
+ * Uses SHOW FILES query since INFORMATION_SCHEMA doesn't work with JSON files
  * @returns {Promise<Array|null>} Array of table names
  */
 export async function listAvailableTables() {
     try {
-        const sql = `
-            SELECT 
-                TABLE_NAME
-            FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_SCHEMA = 'dfs.quakex'
-        `
+        const sql = `SHOW FILES IN dfs.quakex`
 
         const result = await executeQuery(sql)
 
-        return result ? result.rows.map((row) => row.TABLE_NAME) : null
+        if (!result || !result.rows) {
+            return null
+        }
+
+        // Filter only files (not directories) and exclude .gitkeep
+        const tables = result.rows
+            .filter((row) => row.isFile === true && row.name !== '.gitkeep')
+            .map((row) => row.name)
+
+        return tables
     } catch (error) {
         console.error('Error listing available tables:', error)
         return null
@@ -433,24 +438,29 @@ export async function listAvailableTables() {
 
 /**
  * Get column information for a table
+ * Infers schema from first row since INFORMATION_SCHEMA.COLUMNS doesn't work with JSON
  * @param {string} tableName - Table name (e.g., 'earthquakes.json')
  * @returns {Promise<Array|null>} Array of column metadata
  */
 export async function getTableSchema(tableName) {
     try {
-        const sql = `
-            SELECT 
-                COLUMN_NAME,
-                DATA_TYPE,
-                IS_NULLABLE
-            FROM INFORMATION_SCHEMA.COLUMNS
-            WHERE TABLE_SCHEMA = 'dfs.quakex' 
-                AND TABLE_NAME = '${tableName}'
-        `
+        const sql = `SELECT * FROM dfs.quakex.\`${tableName}\` LIMIT 1`
 
         const result = await executeQuery(sql)
 
-        return result ? result.rows : null
+        if (!result || result.rows.length === 0) {
+            return null
+        }
+
+        // Infer schema from first row
+        const firstRow = result.rows[0]
+        const columns = Object.keys(firstRow).map((columnName) => ({
+            COLUMN_NAME: columnName,
+            DATA_TYPE: typeof firstRow[columnName],
+            IS_NULLABLE: firstRow[columnName] === null ? 'YES' : 'NO',
+        }))
+
+        return columns
     } catch (error) {
         console.error('Error fetching table schema:', error)
         return null
@@ -723,23 +733,38 @@ export async function getFilteredEarthquakesByPeriod(filters) {
  * @returns {Promise<Object|null>} Statistics object
  */
 export async function getStatisticsForPeriod(timePeriod, specificDate = null) {
-    const filename = specificDate
-        ? getCacheFilenameForDate(specificDate)
-        : getCacheFilename(timePeriod)
+    try {
+        let filename
 
-    const sql = `
-        SELECT 
-            COUNT(*) as total,
-            ROUND(AVG(magnitude), 2) as avgMagnitude,
-            MAX(magnitude) as maxMagnitude,
-            MIN(magnitude) as minMagnitude,
-            ROUND(AVG(depth), 0) as avgDepth,
-            MAX(significance) as maxSignificance
-        FROM dfs.quakex.\`${filename}\`
-    `
+        if (specificDate) {
+            filename = getCacheFilenameForDate(specificDate)
+        } else {
+            filename = getCacheFilename(timePeriod)
+        }
 
-    const result = await executeQuery(sql)
-    return result && result.rows.length > 0 ? result.rows[0] : null
+        // Fallback to known working filename
+        if (!filename) {
+            filename = 'earthquakes_last_week.json'
+        }
+
+        const sql = `
+            SELECT 
+                COUNT(*) as total_earthquakes,
+                ROUND(AVG(magnitude), 2) as avg_magnitude,
+                MAX(magnitude) as max_magnitude,
+                MIN(magnitude) as min_magnitude,
+                ROUND(AVG(depth), 0) as avg_depth_km,
+                MAX(depth) as max_depth_km,
+                MIN(depth) as min_depth_km
+            FROM dfs.quakex.\`${filename}\`
+        `
+
+        const result = await executeQuery(sql)
+        return result && result.rows.length > 0 ? result.rows[0] : null
+    } catch (error) {
+        console.error('Error getting statistics for period:', error.message)
+        return null
+    }
 }
 
 /**

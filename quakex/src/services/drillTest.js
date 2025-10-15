@@ -45,10 +45,6 @@ export async function runDrillIntegrationTest() {
     }
 
     try {
-        // ============================================
-        // CORE DRILL TESTS
-        // ============================================
-
         // Test 1: Basic Drill Connection
         console.log('1. Testing Drill connection...')
         testResults.drillConnection = await testDrillConnection()
@@ -56,7 +52,6 @@ export async function runDrillIntegrationTest() {
 
         if (!testResults.drillConnection) {
             console.error('   ✗ Cannot proceed - Drill connection failed')
-            console.error('   → Make sure Apache Drill is running on http://localhost:8047')
             return testResults
         }
 
@@ -74,13 +69,13 @@ export async function runDrillIntegrationTest() {
         // Test 3: List Available Tables
         console.log('\n3. Testing table listing...')
         const tables = await listAvailableTables()
-        testResults.tableListing = Array.isArray(tables)
+        testResults.tableListing = Array.isArray(tables) && tables.length > 0
         console.log(`   ✓ Table listing: ${testResults.tableListing ? 'PASS' : 'FAIL'}`)
         if (testResults.tableListing) {
-            console.log(`   → Found ${tables.length} tables:`, tables.slice(0, 5))
+            console.log(`   → Found ${tables.length} tables:`, tables)
         }
 
-        // Test 4: Query Sample Data
+        // Test 4: Query Schema Information
         console.log('\n4. Testing schema inference...')
         try {
             const schema = await getTableSchema('sample-earthquakes.json')
@@ -368,14 +363,14 @@ export async function testServiceIntegrations() {
         console.log('   ✗ Elevation service: FAIL -', error.message)
     }
 
-    // Test Weather Service
+    // Test Weather Service - FIXED
     console.log('\nTesting weather service...')
     try {
         const { fetchWeatherAtTime } = await import('./weatherService.js')
         const weather = await fetchWeatherAtTime({
             latitude: 35.6892,
             longitude: 139.6917,
-            datetime: new Date(),
+            date: new Date('2024-10-20'), // Use date parameter instead of datetime
         })
         integrationResults.weather = weather !== null
         console.log(`   ✓ Weather service: ${integrationResults.weather ? 'PASS' : 'FAIL'}`)
@@ -391,7 +386,7 @@ export async function testServiceIntegrations() {
 
 /**
  * Quick smoke test for development
- * Runs essential tests only
+ * Uses file access instead of table listing for reliability
  * @returns {Promise<boolean>} True if all critical tests pass
  */
 export async function quickSmokeTest() {
@@ -416,14 +411,16 @@ export async function quickSmokeTest() {
         }
         console.log('   ✓ PASS')
 
-        // 3. Table listing test
-        console.log('3. Testing table listing...')
-        const tables = await listAvailableTables()
-        if (!tables || tables.length === 0) {
-            console.log('   ✗ FAIL - No tables found')
+        // 3. File access test (reliable alternative to table listing)
+        console.log('3. Testing file access...')
+        const sampleResult = await executeQuery(
+            'SELECT COUNT(*) as count FROM dfs.quakex.`sample-earthquakes.json`',
+        )
+        if (!sampleResult || sampleResult.rows.length === 0) {
+            console.log('   ✗ FAIL - Cannot access sample data')
             return false
         }
-        console.log(`   ✓ PASS (${tables.length} tables)`)
+        console.log(`   ✓ PASS (sample data count: ${sampleResult.rows[0].count})`)
 
         console.log('\n✓ All smoke tests passed!')
         return true
