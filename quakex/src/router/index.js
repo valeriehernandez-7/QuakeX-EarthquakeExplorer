@@ -1,36 +1,37 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import EarthquakeTest from '@/views/EarthquakeTest.vue'
+
+import EarthquakeTest from '@/views/EarthquakeTest.vue' //TODO: delete after testing
 import WeatherTest from '@/views/WeatherTest.vue'
 import ElevationTest from '@/views/ElevationTest.vue'
 import CountriesTest from '@/views/CountriesTest.vue'
 import DrillTest from '@/views/DrillTest.vue'
+
+import MapView from '@/views/MapView.vue'
+import AnalyticsView from '@/views/AnalyticsView.vue'
+import AboutView from '@/views/AboutView.vue'
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
     routes: [
         {
             path: '/',
-            name: 'earthquake-test',
-            component: EarthquakeTest,
+            name: 'map',
+            component: MapView,
         },
         {
-            path: '/weather-test',
-            name: 'weather-test',
-            component: WeatherTest,
+            path: '/analytics',
+            name: 'analytics',
+            component: AnalyticsView,
         },
         {
-            path: '/elevation-test',
-            name: 'elevation-test',
-            component: ElevationTest,
+            path: '/about',
+            name: 'about',
+            component: AboutView,
         },
         {
-            path: '/countries-test',
-            name: 'countries-test',
-            component: CountriesTest,
-        },
-        {
-            path: '/drill-test',
-            name: 'drill-test',
+            //TODO: delete after testing
+            path: '/test',
+            name: 'test',
             component: DrillTest,
         },
     ],
