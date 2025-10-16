@@ -19,7 +19,7 @@
                         <h3 class="earthquake-title">{{ earthquake?.place }}</h3>
                         <div class="earthquake-meta">
                             <CalendarClock :size="16" fillColor="#64748b" />
-                            <span>{{ formatDate(earthquake?.time) }}</span>
+                            <span>{{ formatDateTime(earthquake?.time) }}</span>
                         </div>
                     </div>
                 </div>
@@ -112,37 +112,12 @@
                                 </div>
                             </div>
 
-                            <Divider />
-
-                            <!-- Country Info -->
-                            <div v-if="countryInfo" class="country-section">
-                                <div class="country-header">
-                                    <FlagVariant :size="20" fillColor="#3b82f6" />
-                                    <span class="country-label">Country/Region</span>
-                                </div>
-                                <div class="country-info">
-                                    <img
-                                        :src="countryInfo.flag"
-                                        class="country-flag"
-                                        :alt="countryInfo.name"
-                                    />
-                                    <div>
-                                        <div class="country-name">{{ countryInfo.name }}</div>
-                                        <small class="country-details">
-                                            {{ countryInfo.capital }} • Population:
-                                            {{ formatPopulation(countryInfo.population) }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Elevation -->
                             <div v-if="elevation" class="elevation-section">
-                                <Divider />
                                 <div class="elevation-info">
                                     <ImageFilterHdr :size="20" fillColor="#10b981" />
                                     <div>
-                                        <div class="elevation-label">Surface Elevation</div>
+                                        <div class="elevation-label">SURFACE ELEVATION</div>
                                         <div class="elevation-value">
                                             {{ elevation.elevation }} m
                                             <Tag
@@ -158,7 +133,7 @@
                                     <WavesArrowUp :size="20" fillColor="#06b6d4" />
 
                                     <div>
-                                        <div class="elevation-label">Tsunami Alert</div>
+                                        <div class="elevation-label">TSUNAMI ALERT</div>
                                         <div class="elevation-value">
                                             <Tag
                                                 :severity="
@@ -173,6 +148,36 @@
                                             />
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Country Info -->
+                        <div v-if="countryInfo" class="country-section">
+                            <Divider />
+                            <div class="country-header">
+                                <FlagVariant :size="20" fillColor="#3b82f6" />
+                                <span class="country-label">Country/Region</span>
+                            </div>
+                            <div class="country-info">
+                                <img
+                                    :src="countryInfo.flag"
+                                    class="country-flag"
+                                    :alt="countryInfo.name"
+                                />
+                                <div>
+                                    <div class="country-name">{{ countryInfo.name }}</div>
+                                    <small class="country-details">
+                                        <span v-if="countryInfo.capital">{{
+                                            countryInfo.capital
+                                        }}</span>
+                                        <span v-if="countryInfo.capital && countryInfo.population">
+                                            •
+                                        </span>
+                                        <span v-if="countryInfo.population"
+                                            >Population:
+                                            {{ formatPopulation(countryInfo.population) }}</span
+                                        >
+                                    </small>
                                 </div>
                             </div>
                         </div>
@@ -380,7 +385,7 @@
                 <template #content>
                     <div class="map-container">
                         <iframe
-                            :src="googleMapsUrl"
+                            :src="googleMapsEmbedUrl"
                             width="100%"
                             height="300"
                             style="border: 0; border-radius: 8px"
@@ -431,7 +436,7 @@ import { fetchWeatherAtTime } from '@/services/weatherService'
 import { fetchElevation } from '@/services/elevationService'
 import { fetchAllCountries } from '@/services/countriesService'
 import { getEarthquakeStatistics } from '@/services/drillService'
-import { getMagnitudeLevel } from '@/utils/helpers'
+import { getMagnitudeLevel, generateGoogleMapsEmbedUrl } from '@/utils/helpers'
 
 // Material Design Icons
 import CrosshairsGps from 'vue-material-design-icons/CrosshairsGps.vue'
@@ -566,20 +571,58 @@ const weatherIconComponent = computed(() => {
 })
 
 // Google Maps URL
-const googleMapsUrl = computed(() => {
+const googleMapsEmbedUrl = computed(() => {
     if (!earthquake.value) return ''
-    const { latitude, longitude } = earthquake.value
-    return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${latitude},${longitude}&zoom=8`
+    return generateGoogleMapsEmbedUrl(earthquake.value.latitude, earthquake.value.longitude, 8)
 })
 
-// Extract country from place string
+/**
+ * Extract country name from USGS place string
+ * Examples:
+ * - "38 km WSW of Cantwell, Alaska" -> "Alaska"
+ * - "M 2.2 - 38 km WSW of Cantwell, Alaska" -> "Alaska"
+ * - "South of the Kermadec Islands" -> "Kermadec Islands"
+ */
 function extractCountryFromPlace(place) {
-    if (!place) return null
+    if (!place || typeof place !== 'string') return null
     const parts = place.split(',')
     if (parts.length > 1) {
         return parts[parts.length - 1].trim()
     }
-    return null
+
+    const keywords = [' of ', ' near ', ' in ']
+    for (const keyword of keywords) {
+        const index = place.toLowerCase().lastIndexOf(keyword)
+        if (index !== -1) {
+            return place.substring(index + keyword.length).trim()
+        }
+    }
+
+    return place.trim()
+}
+
+/**
+ * Find country by searching in the normalized countries data
+ * { name: string, officialName: string, region: string, ... }
+ */
+function findCountryInData(countryName, countriesData) {
+    if (!countryName || !countriesData || countriesData.length === 0) return null
+
+    const searchName = countryName.toLowerCase().trim()
+
+    return countriesData.find((c) => {
+        if (!c.name || !c.officialName) return false
+
+        const name = c.name.toLowerCase()
+        const officialName = c.officialName.toLowerCase()
+
+        if (name === searchName || officialName === searchName) return true
+
+        if (name.includes(searchName) || searchName.includes(name)) return true
+        if (officialName.includes(searchName) || searchName.includes(officialName)) return true
+
+        return false
+    })
 }
 
 // Load all data for earthquake
@@ -638,20 +681,21 @@ async function loadEarthquakeData(eq) {
         // Find country from place string
         if (countriesData && countriesData.length > 0) {
             const countryName = extractCountryFromPlace(eq.place)
+            console.log('Extracted country name:', countryName)
+
             if (countryName) {
-                const country = countriesData.find(
-                    (c) =>
-                        c.name.common.toLowerCase().includes(countryName.toLowerCase()) ||
-                        c.name.official.toLowerCase().includes(countryName.toLowerCase()),
-                )
+                const country = findCountryInData(countryName, countriesData)
 
                 if (country) {
+                    console.log('Found country:', country.name)
                     countryInfo.value = {
-                        name: country.name.common,
-                        capital: country.capital?.[0] || 'N/A',
+                        name: country.name,
+                        capital: country.capital || null,
                         population: country.population,
-                        flag: country.flags.svg || country.flags.png,
+                        flag: country.flagSvg || country.flagPng || country.flag,
                     }
+                } else {
+                    console.log('Country not found in data for:', countryName)
                 }
             }
         }
@@ -659,7 +703,9 @@ async function loadEarthquakeData(eq) {
         // Set Drill statistics
         drillStatistics.value = drillStats
 
-        console.log('Drill Statistics:', drillStats)
+        if (drillStats) {
+            console.log('Drill Statistics loaded:', drillStats)
+        }
     } catch (error) {
         console.error('Error loading earthquake data:', error)
     } finally {
@@ -679,7 +725,7 @@ watch(
 )
 
 // Formatters
-const formatDate = (date) => {
+const formatDateTime = (date) => {
     if (!date) return ''
     return new Date(date).toLocaleString('en-US', {
         year: 'numeric',
@@ -692,6 +738,7 @@ const formatDate = (date) => {
 }
 
 const formatPopulation = (pop) => {
+    if (!pop) return 'N/A'
     if (pop >= 1000000) return `${(pop / 1000000).toFixed(1)}M`
     if (pop >= 1000) return `${(pop / 1000).toFixed(0)}K`
     return pop.toString()
@@ -712,16 +759,26 @@ const openGoogleMaps = () => {
 }
 
 const share = () => {
+    if (!earthquake.value) return
+
     const text = `Earthquake M${earthquake.value.magnitude} - ${earthquake.value.place}`
+
     if (navigator.share) {
-        navigator.share({
-            title: 'QuakeX Earthquake',
-            text: text,
-            url: earthquake.value.url,
-        })
+        navigator
+            .share({
+                title: 'QuakeX Earthquake',
+                text: text,
+                url: earthquake.value.url,
+            })
+            .catch((err) => console.log('Share failed:', err))
     } else {
         // Fallback: copy to clipboard
-        navigator.clipboard.writeText(`${text}\n${earthquake.value.url}`)
+        if (navigator.clipboard) {
+            navigator.clipboard
+                .writeText(`${text}\n${earthquake.value.url}`)
+                .then(() => console.log('Copied to clipboard'))
+                .catch((err) => console.log('Copy failed:', err))
+        }
     }
 }
 </script>
@@ -880,7 +937,7 @@ const share = () => {
 }
 
 .coord-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-color-secondary);
     text-transform: uppercase;
     font-weight: 600;
