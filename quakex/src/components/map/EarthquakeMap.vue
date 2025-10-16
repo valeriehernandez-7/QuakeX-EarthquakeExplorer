@@ -67,7 +67,7 @@
                 }}</span>
                 <Tag
                     v-if="store.filteredEarthquakes.length !== store.earthquakes.length"
-                    value="Filtered"
+                    icon="pi pi-filter"
                     severity="info"
                     class="ml-2"
                 />
