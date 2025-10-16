@@ -13,7 +13,9 @@
                 <div class="header-content">
                     <div class="magnitude-badge" :style="{ background: magnitudeColor }">
                         <CrosshairsGps :size="24" fillColor="white" />
-                        <span class="magnitude-value">M{{ earthquake?.magnitude.toFixed(1) }}</span>
+                        <span class="magnitude-value"
+                            >M {{ earthquake?.magnitude.toFixed(1) }}</span
+                        >
                     </div>
                     <div class="header-info">
                         <h3 class="earthquake-title">{{ earthquake?.place }}</h3>
@@ -290,90 +292,6 @@
                 </Card>
             </div>
 
-            <!-- Regional Context from Store (Powered by Apache Drill) -->
-            <Card v-if="drillStatistics" class="regional-card">
-                <template #title>
-                    <div class="section-header">
-                        <DatabaseOutline :size="24" fillColor="#10b981" />
-                        <span>Dataset Statistics</span>
-                        <Badge value="Apache Drill" severity="success" />
-                    </div>
-                </template>
-                <template #content>
-                    <div class="drill-info-banner">
-                        <InformationOutline :size="18" fillColor="#10b981" />
-                        <span
-                            >These statistics are calculated via Apache Drill SQL queries over the
-                            earthquake dataset</span
-                        >
-                    </div>
-
-                    <div class="regional-grid">
-                        <!-- Total Earthquakes -->
-                        <div class="regional-stat">
-                            <div class="stat-icon-container" style="background: #dbeafe">
-                                <CrosshairsGps :size="28" fillColor="#3b82f6" />
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value">
-                                    {{ drillStatistics.total_earthquakes }}
-                                </div>
-                                <div class="stat-label">Total Earthquakes</div>
-                                <small class="stat-description">In entire dataset</small>
-                            </div>
-                        </div>
-
-                        <!-- Average Magnitude -->
-                        <div class="regional-stat">
-                            <div class="stat-icon-container" style="background: #fef3c7">
-                                <ChartBar :size="28" fillColor="#f59e0b" />
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value">M{{ drillStatistics.avg_magnitude }}</div>
-                                <div class="stat-label">Avg Magnitude</div>
-                                <small class="stat-description">
-                                    {{ magnitudeComparison }}
-                                </small>
-                            </div>
-                        </div>
-
-                        <!-- Max Magnitude -->
-                        <div class="regional-stat">
-                            <div class="stat-icon-container" style="background: #fee2e2">
-                                <AlertCircle :size="28" fillColor="#ef4444" />
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value">M{{ drillStatistics.max_magnitude }}</div>
-                                <div class="stat-label">Strongest Event</div>
-                                <small class="stat-description">Maximum recorded</small>
-                            </div>
-                        </div>
-
-                        <!-- Average Depth -->
-                        <div class="regional-stat">
-                            <div class="stat-icon-container" style="background: #f3e8ff">
-                                <ArrowCollapseDown :size="28" fillColor="#8b5cf6" />
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-value">{{ drillStatistics.avg_depth_km }}km</div>
-                                <div class="stat-label">Avg Depth</div>
-                                <small class="stat-description">
-                                    {{ depthComparison }}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="drill-badge-container">
-                        <small class="drill-badge">
-                            <DatabaseCog :size="14" fillColor="#10b981" />
-                            Query: SELECT COUNT(*), AVG(magnitude), MAX(magnitude), AVG(depth) FROM
-                            earthquakes.json
-                        </small>
-                    </div>
-                </template>
-            </Card>
-
             <!-- Google Maps Embed -->
             <Card class="map-card">
                 <template #title>
@@ -435,7 +353,6 @@ import { useAppStore } from '@/stores/appStore'
 import { fetchWeatherAtTime } from '@/services/weatherService'
 import { fetchElevation } from '@/services/elevationService'
 import { fetchAllCountries } from '@/services/countriesService'
-import { getEarthquakeStatistics } from '@/services/drillService'
 import { getMagnitudeLevel, generateGoogleMapsEmbedUrl } from '@/utils/helpers'
 
 // Material Design Icons
@@ -483,7 +400,6 @@ const isLoadingData = ref(false)
 const weather = ref(null)
 const elevation = ref(null)
 const countryInfo = ref(null)
-const drillStatistics = ref(null)
 
 const isVisible = computed({
     get: () => !!store.selectedEarthquake,
@@ -517,28 +433,12 @@ const magnitudeLabel = computed(() => {
     return 'Light'
 })
 
-const magnitudeComparison = computed(() => {
-    if (!drillStatistics.value || !earthquake.value) return ''
-    const diff = earthquake.value.magnitude - drillStatistics.value.avg_magnitude
-    if (Math.abs(diff) < 0.3) return 'Near dataset average'
-    return diff > 0
-        ? `${diff.toFixed(1)} above average`
-        : `${Math.abs(diff).toFixed(1)} below average`
-})
-
 // Depth Helpers
 const depthCategory = computed(() => {
     const depth = earthquake.value?.depth || 0
     if (depth < 70) return 'Shallow (<70km)'
     if (depth < 300) return 'Intermediate (70-300km)'
     return 'Deep (>300km)'
-})
-
-const depthComparison = computed(() => {
-    if (!drillStatistics.value || !earthquake.value) return ''
-    const diff = earthquake.value.depth - drillStatistics.value.avg_depth_km
-    if (Math.abs(diff) < 5) return 'Similar to average'
-    return diff > 0 ? `${Math.round(diff)}km deeper` : `${Math.round(Math.abs(diff))}km shallower`
 })
 
 // Elevation Helpers
@@ -635,11 +535,10 @@ async function loadEarthquakeData(eq) {
     weather.value = null
     elevation.value = null
     countryInfo.value = null
-    drillStatistics.value = null
 
     try {
         // Load all data in parallel
-        const [weatherData, elevationData, countriesData, drillStats] = await Promise.all([
+        const [weatherData, elevationData, countriesData] = await Promise.all([
             // Weather
             fetchWeatherAtTime({
                 latitude: eq.latitude,
@@ -663,12 +562,6 @@ async function loadEarthquakeData(eq) {
             fetchAllCountries().catch((err) => {
                 console.warn('Countries fetch failed:', err)
                 return []
-            }),
-
-            // Drill Statistics
-            getEarthquakeStatistics().catch((err) => {
-                console.warn('Drill statistics query failed:', err)
-                return null
             }),
         ])
 
@@ -698,13 +591,6 @@ async function loadEarthquakeData(eq) {
                     console.log('Country not found in data for:', countryName)
                 }
             }
-        }
-
-        // Set Drill statistics
-        drillStatistics.value = drillStats
-
-        if (drillStats) {
-            console.log('Drill Statistics loaded:', drillStats)
         }
     } catch (error) {
         console.error('Error loading earthquake data:', error)
@@ -901,7 +787,7 @@ const share = () => {
 }
 
 .info-value.magnitude-value {
-    color: #ef4444;
+    color: #00bfff;
 }
 
 .depth-category {
@@ -1037,7 +923,7 @@ const share = () => {
     align-items: center;
     gap: 1.5rem;
     padding: 1rem;
-    background: linear-gradient(135deg, #dbeafe 0%, #f0f9ff 100%);
+    background: linear-gradient(135deg, #b0e0e6 0%, #f0f9ff 100%);
     border-radius: 12px;
 }
 
@@ -1077,93 +963,6 @@ const share = () => {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--text-color);
-}
-
-/* Regional Context Card (Drill) */
-.regional-card {
-    border: 1px solid var(--surface-border);
-    background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
-}
-
-.drill-info-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 1.5rem;
-    border: 1px solid #10b981;
-    color: var(--text-color-secondary);
-    font-size: 0.875rem;
-}
-
-.regional-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 1rem;
-}
-
-.regional-stat {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: white;
-    border-radius: 12px;
-    border: 1px solid var(--surface-border);
-}
-
-.stat-icon-container {
-    width: 56px;
-    height: 56px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-}
-
-.stat-content {
-    flex: 1;
-}
-
-.stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--text-color);
-}
-
-.stat-label {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-color-secondary);
-    margin-top: 0.25rem;
-}
-
-.stat-description {
-    font-size: 0.75rem;
-    color: var(--text-color-secondary);
-}
-
-.drill-badge-container {
-    display: flex;
-    justify-content: center;
-    padding-top: 1rem;
-    border-top: 1px solid var(--surface-border);
-}
-
-.drill-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: white;
-    border-radius: 20px;
-    color: #10b981;
-    font-weight: 500;
-    border: 1px solid #10b981;
-    font-size: 0.75rem;
 }
 
 /* Map Card */
