@@ -1,7 +1,7 @@
 <template>
     <div class="map-view">
         <!-- App Navigation Bar -->
-        <AppNavbar @toggle-filters="showFilters = !showFilters" />
+        <AppNavbar />
 
         <!-- Main Content Area -->
         <div class="main-content">
@@ -10,7 +10,7 @@
 
             <!-- Map Container -->
             <div class="map-container">
-                <EarthquakeMap />
+                <EarthquakeMap @toggle-filters="showFilters = !showFilters" />
             </div>
         </div>
 

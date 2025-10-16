@@ -10,12 +10,17 @@ export const useAppStore = defineStore('app', () => {
             start: null,
             end: null,
         },
-        depthCategories: [], // Optional: ['SHALLOW', 'INTERMEDIATE', 'DEEP']
+        depthCategories: [], // ['SHALLOW', 'INTERMEDIATE', 'DEEP']
     })
     const selectedEarthquake = ref(null)
     const loading = ref(false)
     const error = ref(null)
     const lastUpdate = ref(null)
+
+    const dataRange = ref({
+        start: null,
+        end: null,
+    })
 
     // Getters
     const filteredEarthquakes = computed(() => {
@@ -110,9 +115,45 @@ export const useAppStore = defineStore('app', () => {
         }
     }
 
+    function needsDataFetch(requestedStart, requestedEnd) {
+        if (earthquakes.value.length === 0) {
+            console.log('No data in store, fetch needed')
+            return true
+        }
+
+        if (!dataRange.value.start || !dataRange.value.end) {
+            console.log('No data range tracking, fetch needed')
+            return true
+        }
+
+        const currentStart = new Date(dataRange.value.start).getTime()
+        const currentEnd = new Date(dataRange.value.end).getTime()
+        const reqStart = new Date(requestedStart).getTime()
+        const reqEnd = new Date(requestedEnd).getTime()
+
+        const needsOlderData = reqStart < currentStart
+        const needsNewerData = reqEnd > currentEnd
+
+        if (needsOlderData || needsNewerData) {
+            console.log('Data outside current range:', {
+                current: {
+                    start: dataRange.value.start,
+                    end: dataRange.value.end,
+                },
+                requested: {
+                    start: requestedStart,
+                    end: requestedEnd,
+                },
+                needsOlderData,
+                needsNewerData,
+            })
+        }
+
+        return needsOlderData || needsNewerData
+    }
+
     /**
      * Fetch earthquakes from USGS API
-     * @param {Object} params - Query parameters
      */
     async function fetchEarthquakes(params = {}) {
         try {
@@ -120,10 +161,47 @@ export const useAppStore = defineStore('app', () => {
             clearError()
 
             const { fetchEarthquakes } = await import('@/services/usgsService')
-            const earthquakes = await fetchEarthquakes(params)
+            const newEarthquakes = await fetchEarthquakes(params)
 
-            setEarthquakes(earthquakes)
-            return earthquakes
+            // Merge existing data
+            const existingIds = new Set(earthquakes.value.map((eq) => eq.id))
+            const uniqueNewEarthquakes = newEarthquakes.filter((eq) => !existingIds.has(eq.id))
+
+            earthquakes.value = [...earthquakes.value, ...uniqueNewEarthquakes]
+
+            // Update range tracking
+            if (params.startTime) {
+                const startTime = new Date(params.startTime)
+                if (!dataRange.value.start || startTime < new Date(dataRange.value.start)) {
+                    dataRange.value.start = startTime
+                }
+            }
+
+            if (params.endTime) {
+                const endTime = new Date(params.endTime)
+                if (!dataRange.value.end || endTime > new Date(dataRange.value.end)) {
+                    dataRange.value.end = endTime
+                }
+            } else {
+                // if no end time use now()
+                const now = new Date()
+                if (!dataRange.value.end || now > new Date(dataRange.value.end)) {
+                    dataRange.value.end = now
+                }
+            }
+
+            lastUpdate.value = new Date()
+
+            console.log('Data loaded:', {
+                total: earthquakes.value.length,
+                new: uniqueNewEarthquakes.length,
+                range: {
+                    start: dataRange.value.start,
+                    end: dataRange.value.end,
+                },
+            })
+
+            return newEarthquakes
         } catch (error) {
             setError(`Failed to fetch earthquakes: ${error.message}`)
             console.error('Error fetching earthquakes:', error)
@@ -148,6 +226,7 @@ export const useAppStore = defineStore('app', () => {
         loading,
         error,
         lastUpdate,
+        dataRange,
 
         // Getters
         filteredEarthquakes,
@@ -162,5 +241,6 @@ export const useAppStore = defineStore('app', () => {
         clearError,
         resetFilters,
         fetchEarthquakes,
+        needsDataFetch,
     }
 })

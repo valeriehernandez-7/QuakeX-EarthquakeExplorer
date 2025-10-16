@@ -3,17 +3,39 @@
         <div ref="mapContainer" class="map-element"></div>
 
         <!-- Loading Overlay -->
-        <Skeleton v-if="store.loading" height="100vh" />
+        <div v-if="store.loading" class="loading-overlay">
+            <ProgressSpinner />
+            <p>Loading earthquake data...</p>
+        </div>
 
         <!-- Map Controls -->
         <div class="map-controls">
             <Button
-                icon="pi pi-crosshairs"
+                icon="pi pi-sync"
+                rounded
+                text
+                severity="secondary"
+                @click="refreshData"
+                class="control-btn"
+                v-tooltip.left="'Refresh'"
+            />
+            <Button
+                icon="pi pi-filter"
+                rounded
+                text
+                severity="secondary"
+                @click="$emit('toggleFilters')"
+                class="control-btn"
+                v-tooltip.left="'Filters'"
+            />
+            <Button
+                icon="pi pi-globe"
                 rounded
                 text
                 severity="secondary"
                 @click="resetView"
                 class="control-btn"
+                v-tooltip.left="'Global View'"
             />
             <Button
                 icon="pi pi-plus"
@@ -22,6 +44,7 @@
                 severity="secondary"
                 @click="zoomIn"
                 class="control-btn"
+                v-tooltip.left="'Zoom In'"
             />
             <Button
                 icon="pi pi-minus"
@@ -30,7 +53,25 @@
                 severity="secondary"
                 @click="zoomOut"
                 class="control-btn"
+                v-tooltip.left="'Zoom Out'"
             />
+        </div>
+
+        <!-- Results Counter -->
+        <div v-if="!store.loading" class="results-counter">
+            <div class="counter-content">
+                <i class="pi pi-map-marker"></i>
+                <span class="count">{{ store.filteredEarthquakes.length }}</span>
+                <span class="label">{{
+                    store.filteredEarthquakes.length === 1 ? 'Earthquake' : 'Earthquakes'
+                }}</span>
+                <Tag
+                    v-if="store.filteredEarthquakes.length !== store.earthquakes.length"
+                    value="Filtered"
+                    severity="info"
+                    class="ml-2"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -38,6 +79,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useAppStore } from '@/stores/appStore'
+import { useRoute } from 'vue-router'
 import { MAP_CONFIG } from '@/utils/constants'
 import { getMagnitudeLevel, calculateMarkerSize, calculateMarkerOpacity } from '@/utils/helpers'
 
@@ -46,6 +88,7 @@ import L from 'leaflet'
 import 'leaflet.markercluster'
 
 const store = useAppStore()
+const route = useRoute()
 const mapContainer = ref(null)
 
 // Leaflet instances
@@ -53,25 +96,29 @@ let map = null
 let markerCluster = null
 let tileLayer = null
 
-const markerMap = new Map() // earthquakeId -> marker
+defineEmits(['toggleFilters'])
 
+const refreshData = async () => {
+    await store.fetchEarthquakes({
+        startTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+        minMagnitude: 2.5,
+    })
+}
+
+// Marker management
 const updateMarkers = () => {
-    const currentIds = new Set(store.filteredEarthquakes.map((eq) => eq.id))
+    if (!markerCluster) return // Solo verificar que existe el cluster
 
-    markerMap.forEach((marker, id) => {
-        if (!currentIds.has(id)) {
-            markerCluster.removeLayer(marker)
-            markerMap.delete(id)
-        }
-    })
+    // Limpiar markers existentes (SIEMPRE, incluso si no hay resultados)
+    markerCluster.clearLayers()
 
+    // Agregar nuevos markers (si hay)
     store.filteredEarthquakes.forEach((earthquake) => {
-        if (!markerMap.has(earthquake.id)) {
-            const marker = createEarthquakeMarker(earthquake)
-            markerCluster.addLayer(marker)
-            markerMap.set(earthquake.id, marker)
-        }
+        const marker = createEarthquakeMarker(earthquake)
+        markerCluster.addLayer(marker)
     })
+
+    console.log(`Map updated: ${store.filteredEarthquakes.length} markers displayed`)
 }
 
 const createEarthquakeMarker = (earthquake) => {
@@ -79,13 +126,12 @@ const createEarthquakeMarker = (earthquake) => {
     const magnitudeLevel = getMagnitudeLevel(magnitude)
     const markerSize = calculateMarkerSize(magnitude)
     const opacity = calculateMarkerOpacity(depth)
-    const isRecent = Date.now() - new Date(earthquake.time) < 3600000
 
     // Create custom marker icon
     const icon = L.divIcon({
         className: 'earthquake-marker',
         html: `
-            <div class="${isRecent ? 'pulse-animation' : ''}" style="
+            <div style="
                 width: ${markerSize}px;
                 height: ${markerSize}px;
                 background: ${magnitudeLevel.color};
@@ -200,6 +246,8 @@ onMounted(() => {
 
     map.addLayer(markerCluster)
 
+    map.removeControl(map.zoomControl)
+
     // Load initial markers
     updateMarkers()
 })
@@ -212,8 +260,20 @@ onUnmounted(() => {
     }
 })
 
-// Watch for earthquake data changes - AHORA updateMarkers está definida
-watch(() => store.filteredEarthquakes, updateMarkers)
+watch(
+    () => store.filteredEarthquakes,
+    (newEarthquakes, oldEarthquakes) => {
+        console.log('Filter applied - Updating map:', {
+            previous: oldEarthquakes?.length || 0,
+            current: newEarthquakes.length,
+            total: store.earthquakes.length,
+            isFiltered: newEarthquakes.length !== store.earthquakes.length,
+        })
+
+        updateMarkers()
+    },
+    { deep: true },
+)
 </script>
 
 <style scoped>
@@ -245,7 +305,7 @@ watch(() => store.filteredEarthquakes, updateMarkers)
 .map-controls {
     position: absolute;
     top: 1rem;
-    right: 1rem;
+    left: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -256,6 +316,47 @@ watch(() => store.filteredEarthquakes, updateMarkers)
     background: white !important;
     border: 1px solid #ddd !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.control-btn:hover {
+    background: #f3f4f6 !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Results Counter */
+.results-counter {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+}
+
+.counter-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.75rem 0.75rem;
+    border-radius: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 2px solid #3b82f6;
+}
+
+.counter-content i {
+    color: #3b82f6;
+    font-size: 1.25rem;
+}
+
+.counter-content .count {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.counter-content .label {
+    font-size: 0.875rem;
+    color: #6b7280;
 }
 
 /* Popup styles */
@@ -283,19 +384,22 @@ watch(() => store.filteredEarthquakes, updateMarkers)
     text-align: center;
 }
 
-@keyframes pulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
+/* Responsive */
+@media (max-width: 768px) {
+    .map-controls {
+        bottom: 6rem;
+        top: auto;
+        right: 1rem;
+        flex-direction: row;
     }
-    50% {
-        transform: scale(1.2);
-        opacity: 0.7;
-    }
-}
 
-.pulse-animation {
-    animation: pulse 2s infinite;
+    .results-counter {
+        bottom: 1rem;
+    }
+
+    .counter-content {
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
 }
 </style>
