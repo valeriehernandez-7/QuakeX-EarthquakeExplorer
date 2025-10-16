@@ -1,4 +1,5 @@
 <template>
+    <!-- Solo mostrar el dialog cuando TODO esté cargado -->
     <Dialog
         v-model:visible="isVisible"
         :modal="true"
@@ -75,25 +76,6 @@
                             <div class="info-value">{{ earthquake.significance }}</div>
                             <small>USGS significance score</small>
                         </div>
-
-                        <!-- Tsunami -->
-                        <div class="info-item">
-                            <div class="info-label">
-                                <WavesArrowUp :size="18" fillColor="#06b6d4" />
-                                <span>Tsunami Alert</span>
-                            </div>
-                            <div class="info-value">
-                                <Tag
-                                    :severity="earthquake.tsunami ? 'danger' : 'success'"
-                                    :value="earthquake.tsunami ? 'YES' : 'NO'"
-                                    :icon="
-                                        earthquake.tsunami
-                                            ? 'pi pi-exclamation-triangle'
-                                            : 'pi pi-check'
-                                    "
-                                />
-                            </div>
-                        </div>
                     </div>
                 </template>
             </Card>
@@ -162,11 +144,32 @@
                                     <div>
                                         <div class="elevation-label">Surface Elevation</div>
                                         <div class="elevation-value">
-                                            {{ elevation.value }} m
+                                            {{ elevation.elevation }} m
                                             <Tag
                                                 :severity="elevationSeverity"
                                                 :value="elevation.description"
                                                 size="small"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- Tsunami -->
+                                <div class="elevation-info">
+                                    <WavesArrowUp :size="20" fillColor="#06b6d4" />
+
+                                    <div>
+                                        <div class="elevation-label">Tsunami Alert</div>
+                                        <div class="elevation-value">
+                                            <Tag
+                                                :severity="
+                                                    earthquake.tsunami ? 'danger' : 'success'
+                                                "
+                                                :value="earthquake.tsunami ? ' YES' : ' NO'"
+                                                :icon="
+                                                    earthquake.tsunami
+                                                        ? 'pi pi-exclamation-triangle'
+                                                        : 'pi pi-check'
+                                                "
                                             />
                                         </div>
                                     </div>
@@ -180,7 +183,7 @@
                 <Card v-if="weather" class="weather-card">
                     <template #title>
                         <div class="section-header">
-                            <component :is="weatherIconComponent" :size="24" fillColor="#3b82f6" />
+                            <CloudClockOutline :size="24" fillColor="#3b82f6" />
                             <span>Weather Conditions</span>
                         </div>
                     </template>
@@ -211,7 +214,8 @@
                                     <div>
                                         <div class="metric-label">Temperature</div>
                                         <div class="metric-value">
-                                            {{ weather.temperature.value }}°C
+                                            {{ weather.temperature.value }}
+                                            {{ weather.temperature.unit }}
                                         </div>
                                     </div>
                                 </div>
@@ -222,7 +226,7 @@
                                     <div>
                                         <div class="metric-label">Humidity</div>
                                         <div class="metric-value">
-                                            {{ weather.humidity.value }}%
+                                            {{ weather.humidity.value }} {{ weather.humidity.unit }}
                                         </div>
                                     </div>
                                 </div>
@@ -233,7 +237,8 @@
                                     <div>
                                         <div class="metric-label">Pressure</div>
                                         <div class="metric-value">
-                                            {{ weather.pressure.msl.value }} hPa
+                                            {{ weather.pressure.msl.value }}
+                                            {{ weather.pressure.msl.unit }}
                                         </div>
                                     </div>
                                 </div>
@@ -244,7 +249,9 @@
                                     <div>
                                         <div class="metric-label">Wind Speed</div>
                                         <div class="metric-value">
-                                            {{ weather.wind.speed.value }} km/h
+                                            {{ weather.wind.speed.value }}
+                                            {{ weather.wind.speed.unit }}
+                                            {{ weather.wind.direction.cardinal }}
                                         </div>
                                     </div>
                                 </div>
@@ -255,7 +262,8 @@
                                     <div>
                                         <div class="metric-label">Cloud Cover</div>
                                         <div class="metric-value">
-                                            {{ weather.cloudCover.value }}%
+                                            {{ weather.cloudCover.value }}
+                                            {{ weather.cloudCover.unit }}
                                         </div>
                                     </div>
                                 </div>
@@ -266,7 +274,8 @@
                                     <div>
                                         <div class="metric-label">Precipitation</div>
                                         <div class="metric-value">
-                                            {{ weather.precipitation.value }} mm
+                                            {{ weather.precipitation.value }}
+                                            {{ weather.precipitation.unit }}
                                         </div>
                                     </div>
                                 </div>
@@ -276,61 +285,73 @@
                 </Card>
             </div>
 
-            <!-- Regional Context (Powered by Apache Drill) -->
-            <Card v-if="regionalContext" class="regional-card">
+            <!-- Regional Context from Store (Powered by Apache Drill) -->
+            <Card v-if="drillStatistics" class="regional-card">
                 <template #title>
                     <div class="section-header">
                         <DatabaseOutline :size="24" fillColor="#10b981" />
-                        <span>Regional Seismic Context</span>
+                        <span>Dataset Statistics</span>
                         <Badge value="Apache Drill" severity="success" />
                     </div>
                 </template>
                 <template #content>
+                    <div class="drill-info-banner">
+                        <InformationOutline :size="18" fillColor="#10b981" />
+                        <span
+                            >These statistics are calculated via Apache Drill SQL queries over the
+                            earthquake dataset</span
+                        >
+                    </div>
+
                     <div class="regional-grid">
-                        <!-- Nearby Earthquakes -->
+                        <!-- Total Earthquakes -->
                         <div class="regional-stat">
                             <div class="stat-icon-container" style="background: #dbeafe">
                                 <CrosshairsGps :size="28" fillColor="#3b82f6" />
                             </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ regionalContext.nearbyCount }}</div>
-                                <div class="stat-label">Nearby Earthquakes</div>
-                                <small class="stat-description">Within 100km radius</small>
+                                <div class="stat-value">
+                                    {{ drillStatistics.total_earthquakes }}
+                                </div>
+                                <div class="stat-label">Total Earthquakes</div>
+                                <small class="stat-description">In entire dataset</small>
                             </div>
                         </div>
 
-                        <!-- Regional Average Magnitude -->
+                        <!-- Average Magnitude -->
                         <div class="regional-stat">
                             <div class="stat-icon-container" style="background: #fef3c7">
                                 <ChartBar :size="28" fillColor="#f59e0b" />
                             </div>
                             <div class="stat-content">
-                                <div class="stat-value">M{{ regionalContext.avgMagnitude }}</div>
-                                <div class="stat-label">Regional Avg Magnitude</div>
-                                <small class="stat-description">Last 30 days</small>
+                                <div class="stat-value">M{{ drillStatistics.avg_magnitude }}</div>
+                                <div class="stat-label">Avg Magnitude</div>
+                                <small class="stat-description">
+                                    {{ magnitudeComparison }}
+                                </small>
                             </div>
                         </div>
 
-                        <!-- Recent Activity -->
+                        <!-- Max Magnitude -->
                         <div class="regional-stat">
-                            <div class="stat-icon-container" style="background: #dcfce7">
-                                <TrendingUp :size="28" fillColor="#10b981" />
+                            <div class="stat-icon-container" style="background: #fee2e2">
+                                <AlertCircle :size="28" fillColor="#ef4444" />
                             </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ regionalContext.recentActivity }}</div>
-                                <div class="stat-label">Recent Events</div>
-                                <small class="stat-description">Last 7 days</small>
+                                <div class="stat-value">M{{ drillStatistics.max_magnitude }}</div>
+                                <div class="stat-label">Strongest Event</div>
+                                <small class="stat-description">Maximum recorded</small>
                             </div>
                         </div>
 
-                        <!-- Depth Comparison -->
+                        <!-- Average Depth -->
                         <div class="regional-stat">
                             <div class="stat-icon-container" style="background: #f3e8ff">
                                 <ArrowCollapseDown :size="28" fillColor="#8b5cf6" />
                             </div>
                             <div class="stat-content">
-                                <div class="stat-value">{{ regionalContext.avgDepth }}km</div>
-                                <div class="stat-label">Avg Depth (Regional)</div>
+                                <div class="stat-value">{{ drillStatistics.avg_depth_km }}km</div>
+                                <div class="stat-label">Avg Depth</div>
                                 <small class="stat-description">
                                     {{ depthComparison }}
                                 </small>
@@ -341,7 +362,8 @@
                     <div class="drill-badge-container">
                         <small class="drill-badge">
                             <DatabaseCog :size="14" fillColor="#10b981" />
-                            Data queried via Apache Drill SQL Engine
+                            Query: SELECT COUNT(*), AVG(magnitude), MAX(magnitude), AVG(depth) FROM
+                            earthquakes.json
                         </small>
                     </div>
                 </template>
@@ -408,7 +430,7 @@ import { useAppStore } from '@/stores/appStore'
 import { fetchWeatherAtTime } from '@/services/weatherService'
 import { fetchElevation } from '@/services/elevationService'
 import { fetchAllCountries } from '@/services/countriesService'
-// import { getEarthquakesByRegion } from '@/services/drillService'
+import { getEarthquakeStatistics } from '@/services/drillService'
 import { getMagnitudeLevel } from '@/utils/helpers'
 
 // Material Design Icons
@@ -433,7 +455,7 @@ import WeatherRainy from 'vue-material-design-icons/WeatherRainy.vue'
 import DatabaseOutline from 'vue-material-design-icons/DatabaseOutline.vue'
 import DatabaseCog from 'vue-material-design-icons/DatabaseCog.vue'
 import ChartBar from 'vue-material-design-icons/ChartBar.vue'
-import TrendingUp from 'vue-material-design-icons/TrendingUp.vue'
+import AlertCircle from 'vue-material-design-icons/AlertCircle.vue'
 import MapOutline from 'vue-material-design-icons/MapOutline.vue'
 
 // Weather Icons
@@ -456,7 +478,7 @@ const isLoadingData = ref(false)
 const weather = ref(null)
 const elevation = ref(null)
 const countryInfo = ref(null)
-const regionalContext = ref(null)
+const drillStatistics = ref(null)
 
 const isVisible = computed({
     get: () => !!store.selectedEarthquake,
@@ -490,6 +512,15 @@ const magnitudeLabel = computed(() => {
     return 'Light'
 })
 
+const magnitudeComparison = computed(() => {
+    if (!drillStatistics.value || !earthquake.value) return ''
+    const diff = earthquake.value.magnitude - drillStatistics.value.avg_magnitude
+    if (Math.abs(diff) < 0.3) return 'Near dataset average'
+    return diff > 0
+        ? `${diff.toFixed(1)} above average`
+        : `${Math.abs(diff).toFixed(1)} below average`
+})
+
 // Depth Helpers
 const depthCategory = computed(() => {
     const depth = earthquake.value?.depth || 0
@@ -499,12 +530,10 @@ const depthCategory = computed(() => {
 })
 
 const depthComparison = computed(() => {
-    if (!regionalContext.value || !earthquake.value) return ''
-    const diff = earthquake.value.depth - regionalContext.value.avgDepth
-    if (Math.abs(diff) < 5) return 'Similar to regional average'
-    return diff > 0
-        ? `${Math.round(diff)}km deeper than average`
-        : `${Math.round(Math.abs(diff))}km shallower`
+    if (!drillStatistics.value || !earthquake.value) return ''
+    const diff = earthquake.value.depth - drillStatistics.value.avg_depth_km
+    if (Math.abs(diff) < 5) return 'Similar to average'
+    return diff > 0 ? `${Math.round(diff)}km deeper` : `${Math.round(Math.abs(diff))}km shallower`
 })
 
 // Elevation Helpers
@@ -540,7 +569,7 @@ const weatherIconComponent = computed(() => {
 const googleMapsUrl = computed(() => {
     if (!earthquake.value) return ''
     const { latitude, longitude } = earthquake.value
-    return `https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${latitude},${longitude}&zoom=8`
+    return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${latitude},${longitude}&zoom=8`
 })
 
 // Extract country from place string
@@ -563,11 +592,11 @@ async function loadEarthquakeData(eq) {
     weather.value = null
     elevation.value = null
     countryInfo.value = null
-    regionalContext.value = null
+    drillStatistics.value = null
 
     try {
         // Load all data in parallel
-        const [weatherData, elevationData, countriesData, regionalData] = await Promise.all([
+        const [weatherData, elevationData, countriesData, drillStats] = await Promise.all([
             // Weather
             fetchWeatherAtTime({
                 latitude: eq.latitude,
@@ -593,16 +622,11 @@ async function loadEarthquakeData(eq) {
                 return []
             }),
 
-            // // Regional context from Drill
-            // getEarthquakesByRegion({
-            //     centerLat: eq.latitude,
-            //     centerLon: eq.longitude,
-            //     radiusKm: 100,
-            //     timePeriod: 'LAST_MONTH',
-            // }).catch((err) => {
-            //     console.warn('Drill regional query failed:', err)
-            //     return null
-            // }),
+            // Drill Statistics
+            getEarthquakeStatistics().catch((err) => {
+                console.warn('Drill statistics query failed:', err)
+                return null
+            }),
         ])
 
         // Set weather
@@ -632,24 +656,10 @@ async function loadEarthquakeData(eq) {
             }
         }
 
-        // Calculate regional context from Drill data
-        if (regionalData && regionalData.length > 0) {
-            const recentDate = new Date()
-            recentDate.setDate(recentDate.getDate() - 7)
+        // Set Drill statistics
+        drillStatistics.value = drillStats
 
-            const recentEvents = regionalData.filter((e) => new Date(e.time) > recentDate)
-
-            regionalContext.value = {
-                nearbyCount: regionalData.length,
-                avgMagnitude: (
-                    regionalData.reduce((sum, e) => sum + e.magnitude, 0) / regionalData.length
-                ).toFixed(2),
-                avgDepth: Math.round(
-                    regionalData.reduce((sum, e) => sum + e.depth, 0) / regionalData.length,
-                ),
-                recentActivity: recentEvents.length,
-            }
-        }
+        console.log('Drill Statistics:', drillStats)
     } catch (error) {
         console.error('Error loading earthquake data:', error)
     } finally {
@@ -1012,10 +1022,23 @@ const share = () => {
     color: var(--text-color);
 }
 
-/* Regional Context Card */
+/* Regional Context Card (Drill) */
 .regional-card {
     border: 1px solid var(--surface-border);
     background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+}
+
+.drill-info-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    border: 1px solid #10b981;
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
 }
 
 .regional-grid {
@@ -1069,7 +1092,7 @@ const share = () => {
 .drill-badge-container {
     display: flex;
     justify-content: center;
-    padding-top: 0.5rem;
+    padding-top: 1rem;
     border-top: 1px solid var(--surface-border);
 }
 
@@ -1078,11 +1101,12 @@ const share = () => {
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: var(--surface-card);
+    background: white;
     border-radius: 20px;
     color: #10b981;
-    font-weight: 600;
+    font-weight: 500;
     border: 1px solid #10b981;
+    font-size: 0.75rem;
 }
 
 /* Map Card */
