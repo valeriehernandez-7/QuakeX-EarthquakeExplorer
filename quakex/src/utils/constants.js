@@ -119,7 +119,7 @@ export const TIME_PERIODS = {
         value: 'TODAY',
         label: 'Today',
         icon: 'pi pi-sun',
-        days: 1,
+        days: 0,
         cacheKey: 'earthquakes_today',
         updateFrequency: 'hourly',
         estimatedCount: 100,

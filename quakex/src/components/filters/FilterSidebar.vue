@@ -303,9 +303,12 @@ const isPeriodSelected = (period) => {
 }
 
 const selectTimePeriod = (period) => {
-    const endDate = new Date()
     const startDate = new Date()
     startDate.setDate(startDate.getDate() - period.days)
+    startDate.setHours(0, 0, 0, 0)
+
+    const endDate = new Date()
+    endDate.setHours(23, 59, 59, 999)
 
     localDateRange.value = [startDate, endDate]
     selectedPeriod.value = period
