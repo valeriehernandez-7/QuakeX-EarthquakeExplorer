@@ -319,7 +319,7 @@ const toggleDepthCategory = (key) => {
     }
 }
 
-const applyFilters = () => {
+const applyFilters = async () => {
     // Convert localDateRange array to store format (object with start/end)
     const dateRangeForStore =
         localDateRange.value && localDateRange.value.length === 2
@@ -328,6 +328,31 @@ const applyFilters = () => {
                   end: localDateRange.value[1],
               }
             : { start: null, end: null }
+
+    if (dateRangeForStore.start && dateRangeForStore.end) {
+        const needsFetch = store.needsDataFetch(dateRangeForStore.start, dateRangeForStore.end)
+
+        if (needsFetch) {
+            console.log('Fetching additional data for date range:', {
+                start: dateRangeForStore.start.toISOString(),
+                end: dateRangeForStore.end.toISOString(),
+            })
+
+            try {
+                await store.fetchEarthquakes({
+                    startTime: dateRangeForStore.start,
+                    endTime: dateRangeForStore.end,
+                    minMagnitude: localFilters.value.magnitudeRange[0],
+                })
+
+                console.log('Additional data loaded successfully')
+            } catch (error) {
+                console.error('Failed to fetch additional data:', error)
+            }
+        } else {
+            console.log('Data already available for requested range')
+        }
+    }
 
     // Update store filters
     store.updateFilters({
