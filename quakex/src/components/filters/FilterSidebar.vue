@@ -47,23 +47,23 @@
                 <div class="magnitude-legend">
                     <div class="legend-item">
                         <div class="legend-dot" style="background: #10b981"></div>
-                        <span>Minor (0-3.9)</span>
+                        <span>Minor (0.0 - 3.9)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-dot" style="background: #3b82f6"></div>
-                        <span>Light (4.0-4.9)</span>
+                        <span>Light (4.0 - 4.9)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-dot" style="background: #f59e0b"></div>
-                        <span>Moderate (5.0-5.9)</span>
+                        <span>Moderate (5.0 - 5.9)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-dot" style="background: #ef4444"></div>
-                        <span>Strong (6.0-6.9)</span>
+                        <span>Strong (6.0 - 6.9)</span>
                     </div>
                     <div class="legend-item">
                         <div class="legend-dot" style="background: #991b1b"></div>
-                        <span>Major (7.0+)</span>
+                        <span>Major (+ 7.0)</span>
                     </div>
                 </div>
             </div>
@@ -160,7 +160,7 @@
                     <div class="stat-card">
                         <ChartLineIcon :size="24" fillColor="#ef4444" />
                         <div>
-                            <div class="stat-value">M{{ store.statistics.avgMagnitude }}</div>
+                            <div class="stat-value">M {{ store.statistics.avgMagnitude }}</div>
                             <div class="stat-label">Avg Magnitude</div>
                         </div>
                     </div>
@@ -169,7 +169,7 @@
                         <AlertIcon :size="24" fillColor="#991b1b" />
                         <div>
                             <div class="stat-value">
-                                M{{ store.statistics.strongest.magnitude }}
+                                M {{ store.statistics.strongest.magnitude }}
                             </div>
                             <div class="stat-label">Strongest</div>
                         </div>
@@ -178,7 +178,7 @@
                     <div class="stat-card">
                         <LayersIcon :size="24" fillColor="#10b981" />
                         <div>
-                            <div class="stat-value">{{ store.statistics.avgDepth }}km</div>
+                            <div class="stat-value">{{ store.statistics.avgDepth }} km</div>
                             <div class="stat-label">Avg Depth</div>
                         </div>
                     </div>
@@ -251,7 +251,7 @@ const depthCategories = [
     {
         key: 'SHALLOW',
         label: 'Shallow',
-        range: '0-70km',
+        range: '0 - 70 km',
         icon: ArrowDownBoldCircle,
         color: '#ef4444',
         description: 'Most dangerous, near surface',
@@ -259,7 +259,7 @@ const depthCategories = [
     {
         key: 'INTERMEDIATE',
         label: 'Intermediate',
-        range: '70-300km',
+        range: '70 - 300 km',
         icon: ArrowDownCircle,
         color: '#f59e0b',
         description: 'Moderate depth',
@@ -267,7 +267,7 @@ const depthCategories = [
     {
         key: 'DEEP',
         label: 'Deep',
-        range: '>300km',
+        range: '> 300 km',
         icon: ArrowCollapseDown,
         color: '#10b981',
         description: 'Less surface impact',
