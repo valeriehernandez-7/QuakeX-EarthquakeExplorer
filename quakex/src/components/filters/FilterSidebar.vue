@@ -203,6 +203,7 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
 import { ref, computed, watch } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 import { TIME_PERIODS } from '@/utils/constants'
@@ -372,15 +373,43 @@ const applyFilters = async () => {
 }
 
 const resetFilters = () => {
+    // Reset magnitude and depth filters
     localFilters.value = {
         magnitudeRange: [2.5, 10.0],
         depthCategories: [],
     }
-    localDateRange.value = null
-    selectedPeriod.value = null
 
+    const today = new Date()
+    const startOfToday = new Date(today)
+    startOfToday.setHours(0, 0, 0, 0)
+    const endOfToday = new Date(today)
+    endOfToday.setHours(23, 59, 59, 999)
+
+    localDateRange.value = [startOfToday, endOfToday]
+    selectedPeriod.value = TIME_PERIODS.TODAY
+
+    // Apply reset to store
     store.resetFilters()
+    console.log('Filters reset to TODAY')
 }
+
+onMounted(() => {
+    if (store.filters.dateRange.start && store.filters.dateRange.end) {
+        const start = new Date(store.filters.dateRange.start)
+        const end = new Date(store.filters.dateRange.end)
+        const now = new Date()
+
+        // Check range to match TODAY
+        if (
+            start.toDateString() === now.toDateString() &&
+            end.toDateString() === now.toDateString()
+        ) {
+            selectedPeriod.value = TIME_PERIODS.TODAY
+            localDateRange.value = [start, end]
+            console.log('Initial filter: TODAY')
+        }
+    }
+})
 
 // Sync local filters with store when drawer opens
 watch(

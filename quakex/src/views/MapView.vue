@@ -10,7 +10,7 @@
 
             <!-- Map Container -->
             <div class="map-container">
-                <EarthquakeMap @toggle-filters="showFilters = !showFilters" />
+                <EarthquakeMap @toggleFilters="showFilters = !showFilters" />
             </div>
         </div>
 
@@ -32,13 +32,22 @@ import EarthquakeDetailCard from '@/components/map/EarthquakeDetailCard.vue'
 const store = useAppStore()
 const showFilters = ref(false)
 
-// Load initial data
 onMounted(async () => {
     if (store.earthquakes.length === 0) {
+        // Cargar datos de HOY por default
+        const today = new Date()
+        const startOfToday = new Date(today)
+        startOfToday.setHours(0, 0, 0, 0)
+        const endOfToday = new Date(today)
+        endOfToday.setHours(23, 59, 59, 999)
+
         await store.fetchEarthquakes({
-            startTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-            minMagnitude: 2.5, // All earthquakes for map
+            startTime: startOfToday,
+            endTime: endOfToday,
+            minMagnitude: 2.5,
         })
+
+        console.log('Initial load: TODAY earthquakes')
     }
 })
 </script>

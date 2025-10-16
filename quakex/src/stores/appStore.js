@@ -1,16 +1,28 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+/**
+ * Helper function to get default date range (TODAY)
+ */
+function getDefaultDateRange() {
+    const end = new Date()
+    const start = new Date()
+    start.setHours(0, 0, 0, 0) // Start of today
+    end.setHours(23, 59, 59, 999) // End of today
+
+    return {
+        start,
+        end,
+    }
+}
+
 export const useAppStore = defineStore('app', () => {
     // State
     const earthquakes = ref([])
     const filters = ref({
         magnitudeRange: [2.5, 10.0],
-        dateRange: {
-            start: null,
-            end: null,
-        },
-        depthCategories: [], // ['SHALLOW', 'INTERMEDIATE', 'DEEP']
+        dateRange: getDefaultDateRange(),
+        depthCategories: [],
     })
     const selectedEarthquake = ref(null)
     const loading = ref(false)
@@ -107,12 +119,11 @@ export const useAppStore = defineStore('app', () => {
     function resetFilters() {
         filters.value = {
             magnitudeRange: [2.5, 10.0],
-            dateRange: {
-                start: null,
-                end: null,
-            },
+            dateRange: getDefaultDateRange(),
             depthCategories: [],
         }
+
+        console.log('Filters reset to default (TODAY)')
     }
 
     function needsDataFetch(requestedStart, requestedEnd) {
