@@ -219,6 +219,10 @@ const zoomOut = () => {
     }
 }
 
+const southWestGlobal = L.latLng(-90, -180)
+const northEastGlobal = L.latLng(90, 180)
+const globalBounds = L.latLngBounds(southWestGlobal, northEastGlobal)
+
 // Initialize map
 onMounted(() => {
     if (!mapContainer.value) return
@@ -229,6 +233,8 @@ onMounted(() => {
     // Set map bounds
     map.setMinZoom(MAP_CONFIG.minZoom)
     map.setMaxZoom(MAP_CONFIG.maxZoom)
+
+    map.setMaxBounds(globalBounds)
 
     // Add tile layer
     tileLayer = L.tileLayer(MAP_CONFIG.tileLayer.url, {
