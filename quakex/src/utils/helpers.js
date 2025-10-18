@@ -315,3 +315,46 @@ export function exportAsCSV(data, filename, columns = null) {
         return false
     }
 }
+
+/**
+ * Save data to JSON file via JSON Saver server for Apache Drill
+ * Falls back to browser download if server unavailable
+ * @param {Array|Object} data - Data to save
+ * @param {string} filename - JSON filename (e.g., 'earthquakes-2024-10.json')
+ * @returns {Promise<Object>} Result object with success status
+ */
+export async function saveForDrill(data, filename) {
+    try {
+        const response = await fetch('http://localhost:3001/api/save-json', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                filename,
+                data,
+            }),
+        })
+
+        if (response.ok) {
+            const result = await response.json()
+            console.log(`Data saved for Drill: ${filename} (${result.itemCount} items)`)
+            return result
+        }
+
+        throw new Error(`Server responded with ${response.status}: ${response.statusText}`)
+    } catch (error) {
+        console.warn('JSON Saver server unavailable, falling back to download:', error.message)
+
+        const downloadSuccess = exportAsJSON(data, filename)
+
+        return {
+            success: downloadSuccess,
+            filename,
+            fallback: true,
+            message: downloadSuccess
+                ? 'File downloaded - please place in /data directory manually'
+                : 'Failed to save file',
+        }
+    }
+}

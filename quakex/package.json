@@ -12,10 +12,9 @@
     "preview": "vite preview",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/",
-    "enrichment": "node server/enrichment-server.js",
     "drill:up": "docker-compose up -d",
     "drill:down": "docker-compose down",
-    "start:full": "npm run drill:up && npm run enrichment"
+    "server": "node server/json-saver.js"
   },
   "dependencies": {
     "@primeuix/themes": "^1.2.5",

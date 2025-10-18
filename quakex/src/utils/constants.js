@@ -65,6 +65,17 @@ export const API_ENDPOINTS = {
     DRILL: import.meta.env.VITE_DRILL_API_URL,
 }
 
+// JSON Saver Server Configuration
+export const JSON_SAVER_CONFIG = {
+    BASE_URL: 'http://localhost:3001',
+    ENDPOINTS: {
+        HEALTH: '/api/health',
+        SAVE_JSON: '/api/save-json',
+        LIST_FILES: '/api/files',
+    },
+    TIMEOUT: 10000, // 10 seconds
+}
+
 // Default Filter Values
 export const DEFAULT_FILTERS = {
     magnitudeRange: [2.5, 10.0], // USGS practical minimum

@@ -1,0 +1,18 @@
+{
+    "name": "quakex-json-saver",
+    "type": "module",
+    "version": "1.0.0",
+    "description": "Minimal JSON file saver for QuakeX Apache Drill integration",
+    "main": "json-saver.js",
+    "scripts": {
+        "start": "node json-saver.js",
+        "dev": "node json-saver.js"
+    },
+    "dependencies": {
+        "express": "^5.1.0",
+        "node": "^22.21.0"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    }
+}
