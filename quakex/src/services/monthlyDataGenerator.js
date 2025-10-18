@@ -49,7 +49,7 @@ export async function generateMonthlyData(monthKey) {
         const filename = `earthquakes-${monthKey}.json`
         const saveResult = await saveForDrill(enrichedEarthquakes, filename)
 
-        console.log(`✓ Monthly data generation completed for ${monthKey}`)
+        console.log(`Monthly data generation completed for ${monthKey}`)
 
         return {
             success: true,
@@ -137,20 +137,20 @@ async function enrichSingleEarthquake(earthquake) {
         country:
             countryData.status === 'fulfilled'
                 ? {
-                      name: countryData.value?.name,
-                      region: countryData.value?.region,
-                      subregion: countryData.value?.subregion,
-                      population: countryData.value?.population,
-                      area: countryData.value?.area,
-                  }
+                    name: countryData.value?.name,
+                    region: countryData.value?.region,
+                    subregion: countryData.value?.subregion,
+                    population: countryData.value?.population,
+                    area: countryData.value?.area,
+                }
                 : null,
 
         elevation:
             elevationData.status === 'fulfilled'
                 ? {
-                      value: elevationData.value?.elevation,
-                      category: getElevationCategory(elevationData.value?.elevation),
-                  }
+                    value: elevationData.value?.elevation,
+                    category: getElevationCategory(elevationData.value?.elevation),
+                }
                 : null,
 
         // Derived temporal data (no API calls needed)
