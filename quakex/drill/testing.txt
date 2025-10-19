@@ -373,12 +373,12 @@ us7000qb1x	4.7	44	9.6741	-84.2519	7 km SSW of Tejar, Costa Rica	2025-07-06T19:59
 -- Comprehensive statistics for Costa Rica
 SELECT 
     COUNT(*) AS total_events,
-    ROUND(AVG(`magnitude`), 2) AS avg_magnitude,
-    MAX(`magnitude`) AS max_magnitude,
-    MIN(`magnitude`) AS min_magnitude,
-    ROUND(AVG(`depth`), 1) AS avg_depth,
-    MAX(`depth`) AS max_depth,
-    MIN(`depth`) AS min_depth,
+    ROUND(AVG(CAST(`magnitude` AS DOUBLE)), 2) AS avg_magnitude,
+    MAX(CAST(`magnitude` AS DOUBLE)) AS max_magnitude,
+    MIN(CAST(`magnitude` AS DOUBLE)) AS min_magnitude,
+    ROUND(AVG(CAST(`depth` AS DOUBLE)), 1) AS avg_depth,
+    MAX(CAST(`depth` AS DOUBLE)) AS max_depth,
+    MIN(CAST(`depth` AS DOUBLE)) AS min_depth,
     SUM(CASE WHEN `magnitude` >= 5.0 THEN 1 ELSE 0 END) AS moderate_plus,
     SUM(CASE WHEN `magnitude` >= 6.0 THEN 1 ELSE 0 END) AS strong_plus,
     SUM(CASE WHEN `depth` < 70 THEN 1 ELSE 0 END) AS shallow_events,
@@ -409,69 +409,69 @@ FROM (
         `country`
     FROM dfs.`/data/earthquakes-2025-09.json`
 ) AS all_events
-WHERE `country`['name'] = 'Costa Rica';
+WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica';
 
 total_events	avg_magnitude	max_magnitude	min_magnitude	avg_depth	max_depth	min_depth	moderate_plus	strong_plus	shallow_events	tsunami_events
-6	4.65	4.8	4.5	36.2	117	10	0	0	5	0
+6	4.65	4.8	4.5	36.2	117.0	10.0	0	0	5	0
 
 ---
 
 -- Distribution of earthquakes by magnitude ranges
 SELECT 
     CASE 
-        WHEN `magnitude` >= 4.5 AND `magnitude` < 5.0 THEN '4.5-4.9'
-        WHEN `magnitude` >= 5.0 AND `magnitude` < 5.5 THEN '5.0-5.4'
-        WHEN `magnitude` >= 5.5 AND `magnitude` < 6.0 THEN '5.5-5.9'
-        WHEN `magnitude` >= 6.0 AND `magnitude` < 6.5 THEN '6.0-6.4'
-        WHEN `magnitude` >= 6.5 AND `magnitude` < 7.0 THEN '6.5-6.9'
-        WHEN `magnitude` >= 7.0 THEN '7.0+'
+        WHEN magnitude_val >= 4.5 AND magnitude_val < 5.0 THEN '4.5-4.9'
+        WHEN magnitude_val >= 5.0 AND magnitude_val < 5.5 THEN '5.0-5.4'
+        WHEN magnitude_val >= 5.5 AND magnitude_val < 6.0 THEN '5.5-5.9'
+        WHEN magnitude_val >= 6.0 AND magnitude_val < 6.5 THEN '6.0-6.4'
+        WHEN magnitude_val >= 6.5 AND magnitude_val < 7.0 THEN '6.5-6.9'
+        WHEN magnitude_val >= 7.0 THEN '7.0+'
         ELSE 'other'
     END AS magnitude_range,
     COUNT(*) AS event_count,
-    ROUND(AVG(`depth`), 1) AS avg_depth,
-    ROUND(AVG(`significance`), 0) AS avg_significance
+    ROUND(AVG(depth_val), 1) AS avg_depth,
+    ROUND(AVG(significance_val), 0) AS avg_significance
 FROM (
     SELECT 
-        `magnitude`,
-        `depth`,
-        `significance`
+        CAST(`magnitude` AS DOUBLE) AS magnitude_val,
+        CAST(`depth` AS DOUBLE) AS depth_val,
+        CAST(`significance` AS INTEGER) AS significance_val
     FROM dfs.`/data/earthquakes-2025-07.json`
     
     UNION ALL
     
     SELECT 
-        `magnitude`,
-        `depth`,
-        `significance`
+        CAST(`magnitude` AS DOUBLE) AS magnitude_val,
+        CAST(`depth` AS DOUBLE) AS depth_val,
+        CAST(`significance` AS INTEGER) AS significance_val
     FROM dfs.`/data/earthquakes-2025-08.json`
     
     UNION ALL
     
     SELECT 
-        `magnitude`,
-        `depth`,
-        `significance`
+        CAST(`magnitude` AS DOUBLE) AS magnitude_val,
+        CAST(`depth` AS DOUBLE) AS depth_val,
+        CAST(`significance` AS INTEGER) AS significance_val
     FROM dfs.`/data/earthquakes-2025-09.json`
 ) AS all_events
 GROUP BY 
     CASE 
-        WHEN `magnitude` >= 4.5 AND `magnitude` < 5.0 THEN '4.5-4.9'
-        WHEN `magnitude` >= 5.0 AND `magnitude` < 5.5 THEN '5.0-5.4'
-        WHEN `magnitude` >= 5.5 AND `magnitude` < 6.0 THEN '5.5-5.9'
-        WHEN `magnitude` >= 6.0 AND `magnitude` < 6.5 THEN '6.0-6.4'
-        WHEN `magnitude` >= 6.5 AND `magnitude` < 7.0 THEN '6.5-6.9'
-        WHEN `magnitude` >= 7.0 THEN '7.0+'
+        WHEN magnitude_val >= 4.5 AND magnitude_val < 5.0 THEN '4.5-4.9'
+        WHEN magnitude_val >= 5.0 AND magnitude_val < 5.5 THEN '5.0-5.4'
+        WHEN magnitude_val >= 5.5 AND magnitude_val < 6.0 THEN '5.5-5.9'
+        WHEN magnitude_val >= 6.0 AND magnitude_val < 6.5 THEN '6.0-6.4'
+        WHEN magnitude_val >= 6.5 AND magnitude_val < 7.0 THEN '6.5-6.9'
+        WHEN magnitude_val >= 7.0 THEN '7.0+'
         ELSE 'other'
     END
 ORDER BY magnitude_range ASC;
 
 magnitude_range	event_count	avg_depth	avg_significance
-4.5-4.9	2149	46.4	333.0
-5.0-5.4	604	37.0	409.0
-5.5-5.9	133	49.3	518.0
-6.0-6.4	35	25.4	613.0
+4.5-4.9	2147	46.3	333.0
+5.0-5.4	605	36.9	409.0
+5.5-5.9	132	49.6	518.0
+6.0-6.4	35	25.4	612.0
 6.5-6.9	8	134.1	688.0
-7.0+	7	33.4	1228.0
+7.0+	7	33.9	1228.0
 
 ---
 
@@ -479,8 +479,8 @@ magnitude_range	event_count	avg_depth	avg_significance
 SELECT 
     CAST(`time` AS DATE) AS event_date,
     COUNT(*) AS event_count,
-    ROUND(AVG(`magnitude`), 2) AS avg_magnitude,
-    MAX(`magnitude`) AS max_magnitude
+    ROUND(AVG(CAST(`magnitude` AS DOUBLE)), 2) AS avg_magnitude,
+    MAX(CAST(`magnitude` AS DOUBLE)) AS max_magnitude
 FROM (
     SELECT 
         `time`,
@@ -504,6 +504,7 @@ FROM (
 GROUP BY CAST(`time` AS DATE)
 ORDER BY event_date ASC;
 
+event_date	event_count	avg_magnitude	max_magnitude
 2025-07-01	19	4.63	5.1
 2025-07-02	39	4.83	5.6
 2025-07-03	24	4.85	5.5
@@ -548,14 +549,14 @@ ORDER BY event_date ASC;
 2025-08-11	37	4.72	5.8
 2025-08-12	38	4.8	6.3
 2025-08-13	24	4.74	5.3
-2025-08-14	20	4.81	6.3
+2025-08-14	20	4.82	6.3
 2025-08-15	18	4.73	5.7
 2025-08-16	27	4.85	5.8
 2025-08-17	20	4.82	5.5
 2025-08-18	26	4.77	5.6
 2025-08-19	23	4.75	5.4
 2025-08-20	19	4.68	5.1
-2025-08-21	29	4.74	5.8
+2025-08-21	30	4.74	5.8
 2025-08-22	29	4.89	7.5
 2025-08-23	26	4.88	6.0
 2025-08-24	26	4.72	5.4
@@ -566,7 +567,7 @@ ORDER BY event_date ASC;
 2025-08-29	21	4.77	5.5
 2025-08-30	15	4.83	5.5
 2025-08-31	8	4.66	5.2
-2025-09-01	14	4.76	5.6
+2025-09-01	16	4.75	5.6
 2025-09-02	25	4.74	5.3
 2025-09-03	26	4.81	5.9
 2025-09-04	30	4.81	5.9
@@ -583,12 +584,12 @@ ORDER BY event_date ASC;
 2025-09-15	19	4.82	6.0
 2025-09-16	11	4.89	6.0
 2025-09-17	13	4.76	5.4
-2025-09-18	74	4.92	7.8
-2025-09-19	79	4.79	6.0
-2025-09-20	35	4.74	5.3
-2025-09-21	26	4.75	5.7
+2025-09-18	74	4.91	7.8
+2025-09-19	78	4.8	6.0
+2025-09-20	33	4.76	5.3
+2025-09-21	25	4.78	5.7
 2025-09-22	41	4.77	5.6
-2025-09-23	25	4.78	5.6
+2025-09-23	24	4.8	5.6
 2025-09-24	18	4.8	6.2
 2025-09-25	34	4.91	6.3
 2025-09-26	23	4.76	5.9

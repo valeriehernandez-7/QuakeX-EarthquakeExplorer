@@ -225,44 +225,53 @@ async function enrichSingleEarthquake(earthquake) {
 
 /**
  * Add temporal analysis data to earthquake
+ * @param {Object} earthquake - Earthquake object with time and latitude
+ * @returns {Object} Temporal data (hour, day, month, season, etc.)
  */
 function addTemporalData(earthquake) {
     const date = new Date(earthquake.time)
     const isNorthernHemisphere = earthquake.latitude >= 0 // Northern: Positive | Southern: Negative
 
     return {
-        hour_of_day: date.getUTCHours(), // local time
-        day_of_week: date.getDay(), // 0 = Sunday, 6 = Saturday
-        month: date.getMonth(), // 0 = January, 11 = December
+        hour_of_day: date.getUTCHours(), // 0-23 in UTC
+        day_of_week: date.getUTCDay(), // 0 = Sunday, 6 = Saturday (UTC)
+        month: date.getUTCMonth(), // 0 = January, 11 = December (UTC)
+        year: date.getUTCFullYear(), // Full year (UTC)
+        quarter: Math.floor(date.getUTCMonth() / 3) + 1, // Q1-Q4 (UTC)
         season: getSeason(date, isNorthernHemisphere),
-        year: date.getFullYear(),
-        quarter: Math.floor(date.getMonth() / 3) + 1,  // Q1, Q2, Q3, Q4
     }
 }
 
 /**
- * Get season based on month
+ * Get season based on month and hemisphere
+ * @param {Date} date - Date object
+ * @param {boolean} isNorthernHemisphere - True if latitude >= 0
+ * @returns {string} Season name
  */
 function getSeason(date, isNorthernHemisphere) {
-    const month = date.getMonth()
-    
+    const month = date.getUTCMonth()
+
+    // Northern Hemisphere seasons
     let season = null
-    if (month >= 2 && month <= 4) season = 'spring'
-    else if (month >= 5 && month <= 7) season = 'summer'
-    else if (month >= 8 && month <= 10) season = 'autumn'
-    else season = 'winter'
-    
-    // Invert for Southern Hemisphere
+    if (month >= 2 && month <= 4)
+        season = 'spring' // Mar, Apr, May
+    else if (month >= 5 && month <= 7)
+        season = 'summer' // Jun, Jul, Aug
+    else if (month >= 8 && month <= 10)
+        season = 'autumn' // Sep, Oct, Nov
+    else season = 'winter' // Dec, Jan, Feb
+
+    // Invert seasons for Southern Hemisphere
     if (!isNorthernHemisphere) {
         const seasonMap = {
-            'spring': 'autumn',
-            'summer': 'winter',
-            'autumn': 'spring',
-            'winter': 'summer'
+            spring: 'autumn',
+            summer: 'winter',
+            autumn: 'spring',
+            winter: 'summer',
         }
         season = seasonMap[season]
     }
-    
+
     return season
 }
 
