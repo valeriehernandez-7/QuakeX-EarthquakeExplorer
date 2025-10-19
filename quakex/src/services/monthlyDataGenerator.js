@@ -5,7 +5,7 @@
  */
 
 import { fetchEarthquakes } from './usgsService.js'
-import { findCountryByCoordinates } from './countriesService.js'
+import { findCountryByCoordinates, findCountryByName } from './countriesService.js'
 import { fetchElevation } from './elevationService.js'
 import { saveForDrill } from '@/utils/helpers.js'
 import { getDateRangeForPeriod } from '@/utils/helpers.js'
@@ -95,8 +95,13 @@ async function enrichEarthquakesBatch(earthquakes) {
             } catch (error) {
                 errorCount++
                 console.warn(`Failed to enrich earthquake ${earthquake.id}:`, error.message)
-                // Return basic data without enrichment
-                return addTemporalData(earthquake)
+                // Return basic data without enrichment but with proper structure
+                return {
+                    ...earthquake,
+                    country: null,
+                    elevation: null,
+                    temporal: addTemporalData(earthquake),
+                }
             }
         })
 
@@ -118,40 +123,100 @@ async function enrichEarthquakesBatch(earthquakes) {
 }
 
 /**
+ * Extract country name from USGS place field
+ * USGS format: "distance direction of city, Country" or "region name" (if ocean)
+ * @param {string} place - USGS place string
+ * @returns {string|null} Extracted country name or null
+ */
+function extractCountryFromPlace(place) {
+    if (!place || typeof place !== 'string') return null
+
+    // Check if place contains a comma (indicates "city, Country" format)
+    const commaIndex = place.lastIndexOf(',')
+    if (commaIndex === -1) return null // No comma = ocean/international waters
+
+    // Extract text after last comma and trim
+    const countryText = place.substring(commaIndex + 1).trim()
+
+    // Validate it's not empty
+    return countryText.length > 0 ? countryText : null
+}
+
+/**
  * Enrich single earthquake with external data
  */
 async function enrichSingleEarthquake(earthquake) {
-    const [countryData, elevationData] = await Promise.allSettled([
-        findCountryByCoordinates(earthquake.latitude, earthquake.longitude),
-        fetchElevation({
+    // Try to extract country from USGS place field first (fast, reliable)
+    let countryInfo = null
+    const countryNameFromPlace = extractCountryFromPlace(earthquake.place)
+
+    if (countryNameFromPlace) {
+        try {
+            const countryByName = await findCountryByName(countryNameFromPlace)
+            if (countryByName) {
+                countryInfo = {
+                    name: countryByName.name,
+                    region: countryByName.region,
+                    subregion: countryByName.subregion,
+                    population: countryByName.population,
+                    area: countryByName.area,
+                }
+            }
+        } catch (error) {
+            console.warn(`Failed to find country by name "${countryNameFromPlace}":`, error.message)
+        }
+    }
+
+    // Fallback to coordinate-based search if place extraction failed
+    if (!countryInfo) {
+        try {
+            const countryByCoords = await findCountryByCoordinates(
+                earthquake.latitude,
+                earthquake.longitude,
+            )
+
+            if (countryByCoords) {
+                countryInfo = {
+                    name: countryByCoords.name,
+                    region: countryByCoords.region,
+                    subregion: countryByCoords.subregion,
+                    population: countryByCoords.population,
+                    area: countryByCoords.area,
+                }
+            }
+        } catch (error) {
+            console.warn(
+                `Failed to find country by coordinates for ${earthquake.id}:`,
+                error.message,
+            )
+        }
+    }
+
+    // Fetch elevation (independent of country lookup)
+    let elevationInfo = null
+    try {
+        const elevationData = await fetchElevation({
             latitude: earthquake.latitude,
             longitude: earthquake.longitude,
-        }),
-    ])
+        })
+
+        if (elevationData) {
+            elevationInfo = {
+                value: elevationData.elevation,
+                category: getElevationCategory(elevationData.elevation),
+            }
+        }
+    } catch (error) {
+        console.warn(`Failed to fetch elevation for ${earthquake.id}:`, error.message)
+    }
 
     return {
         // Core earthquake data
         ...earthquake,
 
         // High-value analytical data
-        country:
-            countryData.status === 'fulfilled'
-                ? {
-                    name: countryData.value?.name,
-                    region: countryData.value?.region,
-                    subregion: countryData.value?.subregion,
-                    population: countryData.value?.population,
-                    area: countryData.value?.area,
-                }
-                : null,
-
-        elevation:
-            elevationData.status === 'fulfilled'
-                ? {
-                    value: elevationData.value?.elevation,
-                    category: getElevationCategory(elevationData.value?.elevation),
-                }
-                : null,
+        country: countryInfo,
+        elevation: elevationInfo,
 
         // Derived temporal data (no API calls needed)
         temporal: addTemporalData(earthquake),

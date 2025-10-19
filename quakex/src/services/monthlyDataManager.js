@@ -28,7 +28,7 @@ class MonthlyDataManager {
         const missingMonths = recentMonths.filter((month) => !available.includes(month))
 
         if (missingMonths.length === 0) {
-            console.log('✓ All recent data available:', available)
+            console.log('All recent data available:', available)
             return { success: true, available, generated: [] }
         }
 
@@ -64,12 +64,12 @@ class MonthlyDataManager {
 
                 if (result.success) {
                     this.availableMonths.add(month)
-                    console.log(`✓ Successfully generated data for: ${month}`)
+                    console.log(`Successfully generated data for: ${month}`)
                 } else {
-                    console.error(`✗ Failed to generate data for: ${month}`, result.error)
+                    console.error(`Failed to generate data for: ${month}`, result.error)
                 }
             } catch (error) {
-                console.error(`✗ Error generating data for ${month}:`, error)
+                console.error(`Error generating data for ${month}:`, error)
                 results.push({ success: false, month, error: error.message })
             } finally {
                 this.loadingMonths.delete(month)

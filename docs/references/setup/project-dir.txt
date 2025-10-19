@@ -1,46 +1,3 @@
-PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> Get-PSTree -Exclude node_modules
-
-
-   Source: C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer
-
-Mode            Length Hierarchy
-----            ------ ---------
-d-----         0.00  B QuakeX-EarthquakExplorer
-d-----         0.00  B ├── docs
-d-----         0.00  B │   └── references
-d-----         0.00  B │       ├── external-docs
-d-----         0.00  B │       └── setup
-d-----       183.55 KB └── quakex
--a----       216.00  B     ├── .editorconfig
--a----       755.00  B     ├── .env
--a----        19.00  B     ├── .gitattributes
--a----       386.00  B     ├── .gitignore
--a----       120.00  B     ├── .prettierrc.json
--a----       596.00  B     ├── eslint.config.js
--a----       329.00  B     ├── index.html
--a----       116.00  B     ├── jsconfig.json
--a----         1.20 KB     ├── package.json
--a----       179.04 KB     ├── package-lock.json
--a----       851.00  B     ├── vite.config.js
-d-----       660.00  B     ├── .vscode
--a----       140.00  B     │   ├── extensions.json
--a----       520.00  B     │   └── settings.json
-d-----         0.00  B     ├── data
-d-----         4.19 KB     ├── public
--a----         4.19 KB     │   └── favicon.ico
-d-----        14.27 KB     └── src
--a----        11.45 KB         ├── App.vue
--a----         2.82 KB         ├── main.js
-d-----         0.00  B         ├── assets
-d-----         0.00  B         ├── components
-d-----         0.00  B         ├── router
-d-----         0.00  B         ├── services
-d-----         0.00  B         ├── stores
-d-----         0.00  B         ├── utils
-d-----         0.00  B         └── views
-
-
-PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer> cd quakex
 PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> Get-PSTree -Exclude node_modules
 
 
@@ -48,47 +5,119 @@ PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> Get-PSTre
 
 Mode            Length Hierarchy
 ----            ------ ---------
-d-----       183.55 KB quakex
+d-----       213.10 KB quakex
 -a----       216.00  B ├── .editorconfig
--a----       755.00  B ├── .env
+-a----       753.00  B ├── .env
 -a----        19.00  B ├── .gitattributes
--a----       386.00  B ├── .gitignore
+-a----       497.00  B ├── .gitignore
 -a----       120.00  B ├── .prettierrc.json
+-a----         2.18 KB ├── docker-compose.yml
 -a----       596.00  B ├── eslint.config.js
 -a----       329.00  B ├── index.html
 -a----       116.00  B ├── jsconfig.json
--a----         1.20 KB ├── package.json
--a----       179.04 KB ├── package-lock.json
+-a----         1.46 KB ├── package.json
+-a----       206.05 KB ├── package-lock.json
 -a----       851.00  B ├── vite.config.js
-d-----       660.00  B ├── .vscode
--a----       140.00  B │   ├── extensions.json
--a----       520.00  B │   └── settings.json
-d-----         0.00  B ├── data
+d-----       140.00  B ├── .vscode
+-a----       140.00  B │   └── extensions.json
+d-----         2.85 MB ├── data
+-a----       484.00 KB │   ├── .gitkeep
+-a----      1014.14 KB │   ├── earthquakes-2025-07.json
+-a----       775.33 KB │   ├── earthquakes-2025-08.json
+-a----       638.73 KB │   ├── earthquakes-2025-09.json
+-a----         6.16 KB │   └── sample-earthquakes.json
+d-----        35.40 KB ├── drill
+-a----         5.79 KB │   ├── drill-dfs-storage-plugin.json
+-a----         5.37 KB │   ├── queries.txt
+-a----         6.07 KB │   ├── queries-1.txt
+-a----         9.83 KB │   ├── README.md
+-a----         8.35 KB │   └── sample-queries.sql
 d-----         4.19 KB ├── public
 -a----         4.19 KB │   └── favicon.ico
-d-----        14.27 KB └── src
--a----        11.45 KB     ├── App.vue
--a----         2.82 KB     ├── main.js
-d-----       247.00  B     ├── assets
--a----       247.00  B     │   └── main.css
+d-----        41.36 KB ├── server
+-a----         6.01 KB │   ├── json-saver.js
+-a----       427.00  B │   ├── package.json
+-a----        34.93 KB │   └── package-lock.json
+d-----         3.97 KB └── src
+-a----       742.00  B     ├── App.vue
+-a----         3.25 KB     ├── main.js
+d-----       295.00  B     ├── assets
+-a----       295.00  B     │   └── main.css
 d-----         0.00  B     ├── components
-d-----         0.00  B     │   ├── analytics
-d-----         0.00  B     │   ├── common
 d-----         0.00  B     │   ├── filters
 d-----         0.00  B     │   ├── layout
 d-----         0.00  B     │   └── map
-d-----       190.00  B     ├── router
--a----       190.00  B     │   └── index.js
-d-----         8.38 KB     ├── services
--a----         0.00  B     │   ├── drillService.js
--a----         8.38 KB     │   ├── usgsService.js
--a----         0.00  B     │   └── weatherService.js
-d-----         3.78 KB     ├── stores
--a----         3.78 KB     │   └── appStore.js
-d-----         6.07 KB     ├── utils
--a----         2.89 KB     │   ├── constants.js
--a----         3.17 KB     │   └── helpers.js
-d-----         0.00  B     └── views
+d-----         1.14 KB     ├── router
+-a----         1.14 KB     │   └── index.js
+d-----       125.15 KB     ├── services
+-a----        13.12 KB     │   ├── countriesService.js
+-a----        29.14 KB     │   ├── drillService.js
+-a----        16.97 KB     │   ├── drillTest.js
+-a----        19.60 KB     │   ├── elevationService.js
+-a----         7.43 KB     │   ├── monthlyDataGenerator.js
+-a----         3.91 KB     │   ├── monthlyDataManager.js
+-a----        13.84 KB     │   ├── usgsService.js
+-a----        21.14 KB     │   └── weatherService.js
+d-----         7.37 KB     ├── stores
+-a----         7.37 KB     │   └── appStore.js
+d-----        18.29 KB     ├── utils
+-a----         7.67 KB     │   ├── constants.js
+-a----        10.62 KB     │   └── helpers.js
+d-----        94.96 KB     └── views
+-a----       317.00  B         ├── AboutView.vue
+-a----        22.43 KB         ├── DrillTest.vue
+-a----        11.45 KB         ├── EarthquakeTest.vue
+-a----        17.49 KB         ├── ElevationTest.vue
+-a----         1.94 KB         ├── MapView.vue
+-a----        20.96 KB         └── WeatherTest.vue
 
 
-PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex>
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex> cd src 
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex\src> Get-PSTree -Exclude node_modules
+
+
+   Source: C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex\src
+
+Mode            Length Hierarchy
+----            ------ ---------
+d-----         3.97 KB src
+-a----       742.00  B ├── App.vue
+-a----         3.25 KB ├── main.js
+d-----       295.00  B ├── assets
+-a----       295.00  B │   └── main.css
+d-----         0.00  B ├── components
+d-----        17.14 KB │   ├── filters
+-a----        17.14 KB │   │   └── FilterSidebar.vue
+d-----         2.04 KB │   ├── layout
+-a----         2.04 KB │   │   └── AppNavbar.vue
+d-----        43.20 KB │   └── map
+-a----        32.90 KB │       ├── EarthquakeDetailCard.vue
+-a----        10.30 KB │       └── EarthquakeMap.vue
+d-----         1.14 KB ├── router
+-a----         1.14 KB │   └── index.js
+d-----       125.15 KB ├── services
+-a----        13.12 KB │   ├── countriesService.js
+-a----        29.14 KB │   ├── drillService.js
+-a----        16.97 KB │   ├── drillTest.js
+-a----        19.60 KB │   ├── elevationService.js
+-a----         7.43 KB │   ├── monthlyDataGenerator.js
+-a----         3.91 KB │   ├── monthlyDataManager.js
+-a----        13.84 KB │   ├── usgsService.js
+-a----        21.14 KB │   └── weatherService.js
+d-----         7.37 KB ├── stores
+-a----         7.37 KB │   └── appStore.js
+d-----        18.29 KB ├── utils
+-a----         7.67 KB │   ├── constants.js
+-a----        10.62 KB │   └── helpers.js
+d-----        94.96 KB └── views
+-a----       317.00  B     ├── AboutView.vue
+-a----       332.00  B     ├── AnalyticsView.vue
+-a----        20.06 KB     ├── CountriesTest.vue
+-a----        22.43 KB     ├── DrillTest.vue
+-a----        11.45 KB     ├── EarthquakeTest.vue
+-a----        17.49 KB     ├── ElevationTest.vue
+-a----         1.94 KB     ├── MapView.vue
+-a----        20.96 KB     └── WeatherTest.vue
+
+
+PS C:\Users\velysian\Documents\GitHub\QuakeX-EarthquakExplorer\quakex\src> 
