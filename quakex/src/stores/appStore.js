@@ -7,8 +7,8 @@ import { ref, computed } from 'vue'
 function getDefaultDateRange() {
     const end = new Date()
     const start = new Date()
-    start.setHours(0, 0, 0, 0) // Start of today
-    end.setHours(23, 59, 59, 999) // End of today
+    start.setUTCHours(0, 0, 0, 0) // Start of today
+    end.setUTCHours(23, 59, 59, 999) // End of today
 
     return {
         start,

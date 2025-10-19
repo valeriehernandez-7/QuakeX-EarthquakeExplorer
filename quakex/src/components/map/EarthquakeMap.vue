@@ -167,7 +167,7 @@ const createEarthquakeMarker = (earthquake) => {
             <div class="popup-body">
                 <p><strong>Location:</strong> ${place}</p>
                 <p><strong>Depth:</strong> ${depth} km</p>
-                <p><strong>Time:</strong> ${new Date(earthquake.time).toLocaleString()}</p>
+                <p><strong>Time:</strong> ${formatDateTime(earthquake.time)}</p>
             </div>
             <div class="popup-footer">
                 <button onclick="this.dispatchEvent(new CustomEvent('viewDetails', { bubbles: true }))" 
@@ -217,6 +217,20 @@ const zoomOut = () => {
     if (map) {
         map.zoomOut()
     }
+}
+
+const formatDateTime = (date) => {
+    if (!date) return ''
+    return new Date(date).toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        timeZone: 'UTC',
+        timeZoneName: 'short',
+    })
 }
 
 const southWestGlobal = L.latLng(-90, -180)

@@ -34,12 +34,12 @@ const showFilters = ref(false)
 
 onMounted(async () => {
     if (store.earthquakes.length === 0) {
-        // Cargar datos de HOY por default
-        const today = new Date()
-        const startOfToday = new Date(today)
-        startOfToday.setHours(0, 0, 0, 0)
-        const endOfToday = new Date(today)
-        endOfToday.setHours(23, 59, 59, 999)
+        // now by default
+        const now = new Date()
+        const startOfToday = new Date(now)
+        startOfToday.setUTCHours(0, 0, 0, 0)
+        const endOfToday = new Date(now)
+        endOfToday.setUTCHours(23, 59, 59, 999)
 
         await store.fetchEarthquakes({
             startTime: startOfToday,

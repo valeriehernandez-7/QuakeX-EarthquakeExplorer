@@ -55,7 +55,20 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000
  * ])
  * // Returns: [{ elevation: 38, ... }, { elevation: 10, ... }]
  */
-export async function fetchElevation(coordinates, useCache = true) {
+export async function fetchElevation(coordinates, useCache = true, maxRetries = 2) {
+    return await fetchElevationWithRetry(coordinates, useCache, maxRetries, 0)
+}
+
+/**
+ * Internal helper function to fetch elevation with retry on rate limit (429)
+ * @private
+ * @param {Object|Array} coordinates - Coordinates to fetch
+ * @param {boolean} useCache - Whether to use cache
+ * @param {number} maxRetries - Maximum retry attempts (default: 2)
+ * @param {number} attempt - Current attempt number (0-indexed)
+ * @returns {Promise<Array<Object>|Object|null>} Elevation data or null
+ */
+async function fetchElevationWithRetry(coordinates, useCache, maxRetries, attempt) {
     try {
         // Validate input
         if (!coordinates || (Array.isArray(coordinates) && coordinates.length === 0)) {
@@ -90,7 +103,11 @@ export async function fetchElevation(coordinates, useCache = true) {
             }
         }
 
-        console.log(`Fetching elevation for ${coordsArray.length} coordinate(s)`)
+        if (attempt > 0) {
+            console.log(`Fetching elevation (attempt ${attempt + 1}/${maxRetries + 1})`)
+        } else {
+            console.log(`Fetching elevation for ${coordsArray.length} coordinate(s)`)
+        }
 
         // Build query parameters
         const queryParams = {
@@ -117,6 +134,37 @@ export async function fetchElevation(coordinates, useCache = true) {
         // Return single object for single coordinate, array for multiple
         return Array.isArray(coordinates) ? elevationData : elevationData[0]
     } catch (error) {
+        // Check if it's a 429 (Too Many Requests) error - RETRIABLE
+        if (error.response?.status === 429) {
+            if (attempt < maxRetries) {
+                // Calculate exponential backoff: 3s, 6s, 12s
+                const baseDelay = 3000 // 3 seconds
+                const delay = baseDelay * Math.pow(2, attempt)
+
+                console.warn(
+                    `Rate limit (429) for elevation API. Waiting ${delay / 1000}s before retry ${attempt + 1}/${maxRetries}...`,
+                )
+                console.warn(
+                    `   Coordinates: lat=${coordsArray[0]?.latitude}, lng=${coordsArray[0]?.longitude}`,
+                )
+
+                // Wait before retrying
+                await new Promise((resolve) => setTimeout(resolve, delay))
+
+                // Recursive retry
+                return await fetchElevationWithRetry(coordinates, useCache, maxRetries, attempt + 1)
+            } else {
+                console.error(
+                    `Rate limit exceeded after ${maxRetries + 1} attempts (waited ~${3 + 6 + (maxRetries > 1 ? 12 : 0)}s total). Returning null for elevation.`,
+                )
+                console.error(
+                    `Coordinates that failed: lat=${coordsArray[0]?.latitude}, lng=${coordsArray[0]?.longitude}`,
+                )
+                return null
+            }
+        }
+
+        // Handle other errors (non-retriable)
         if (error.response) {
             console.error('Elevation API Error:', error.response.status, error.response.statusText)
 

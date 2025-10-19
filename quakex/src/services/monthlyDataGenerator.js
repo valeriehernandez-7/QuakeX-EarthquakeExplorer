@@ -195,10 +195,11 @@ async function enrichSingleEarthquake(earthquake) {
     // Fetch elevation (independent of country lookup)
     let elevationInfo = null
     try {
-        const elevationData = await fetchElevation({
-            latitude: earthquake.latitude,
-            longitude: earthquake.longitude,
-        })
+        const elevationData = await fetchElevation(
+            { latitude: earthquake.latitude, longitude: earthquake.longitude },
+            true, // useCache
+            2, // maxRetries (default: 2, means 3 tries)
+        )
 
         if (elevationData) {
             elevationInfo = {

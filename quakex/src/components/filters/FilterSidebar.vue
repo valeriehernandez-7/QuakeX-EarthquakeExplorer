@@ -303,13 +303,14 @@ const isPeriodSelected = (period) => {
 }
 
 const selectTimePeriod = (period) => {
-    const startDate = new Date()
-    startDate.setDate(startDate.getDate() - period.days)
-    startDate.setHours(0, 0, 0, 0)
-
-    const endDate = new Date()
-    endDate.setHours(23, 59, 59, 999)
-
+    const now = new Date()
+    const startDate = new Date(now)
+    startDate.setUTCDate(startDate.getUTCDate() - period.days)
+    startDate.setUTCHours(0, 0, 0, 0)
+    
+    const endDate = new Date(now)
+    endDate.setUTCHours(23, 59, 59, 999)
+    
     localDateRange.value = [startDate, endDate]
     selectedPeriod.value = period
 }
@@ -382,11 +383,11 @@ const resetFilters = () => {
         depthCategories: [],
     }
 
-    const today = new Date()
-    const startOfToday = new Date(today)
-    startOfToday.setHours(0, 0, 0, 0)
-    const endOfToday = new Date(today)
-    endOfToday.setHours(23, 59, 59, 999)
+    const now = new Date()
+    const startOfToday = new Date(now)
+    startOfToday.setUTCHours(0, 0, 0, 0)
+    const endOfToday = new Date(now)
+    endOfToday.setUTCHours(23, 59, 59, 999)
 
     localDateRange.value = [startOfToday, endOfToday]
     selectedPeriod.value = TIME_PERIODS.TODAY
@@ -399,7 +400,9 @@ const resetFilters = () => {
 onMounted(() => {
     if (store.filters.dateRange.start && store.filters.dateRange.end) {
         const start = new Date(store.filters.dateRange.start)
+        start.setUTCHours(0, 0, 0, 0)
         const end = new Date(store.filters.dateRange.end)
+        end.setUTCHours(23, 59, 59, 999)
         const now = new Date()
 
         // Check range to match TODAY
