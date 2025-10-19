@@ -43,7 +43,7 @@ total_events	avg_magnitude	max_magnitude	min_magnitude	avg_depth	max_depth	min_d
 
 ---
 
--- Find the strongest earthquake with fallback for null country
+-- Find the 5 strongest earthquake with fallback for null country
 SELECT 
     `id`,
     `magnitude`,
@@ -85,10 +85,14 @@ FROM (
     FROM dfs.`/data/earthquakes-2025-09.json`
 ) AS all_events
 ORDER BY `magnitude` DESC
-LIMIT 1;
+LIMIT 5;
 
 id	magnitude	depth	place	time	country_name	region
-us6000qw60	8.8	35	2025 Kamchatka Peninsula, Russia Earthquake	2025-07-29T23:24:52.483Z	null	null
+us6000qw60	8.8	35	2025 Kamchatka Peninsula, Russia Earthquake	2025-07-29T23:24:52.483Z	International Waters	N/A
+us7000qx2g	7.8	30	128 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-18T18:58:15.240Z	Russia	Europe
+us6000r2xq	7.5	10	2025 Southern Drake Passage Earthquake	2025-08-22T02:16:18.246Z	Falkland Islands	Americas
+us7000qdyl	7.4	34	2025 Eastern Kamchatka, Russia Earthquake	2025-07-20T06:49:04.327Z	International Waters	N/A
+us7000qvw5	7.4	59	102 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-13T02:37:56.847Z	Russia	Europe
 
 ---
 
@@ -677,66 +681,66 @@ ORDER BY `magnitude` DESC, `time` DESC;
 
 id	magnitude	depth	place	time	country_name	region	significance	felt	alert	tsunami	status	url	significance_category
 us6000qw60	8.8	35	2025 Kamchatka Peninsula, Russia Earthquake	2025-07-29T23:24:52.483Z	null	null	2105	124	red	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw60	major
-us7000qx2g	7.8	27	138 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-18T18:58:14.940Z	null	null	1021	26	orange	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qx2g	major
+us7000qx2g	7.8	30	128 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-18T18:58:15.240Z	Russia	Europe	1021	26	orange	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qx2g	major
 us6000r2xq	7.5	10	2025 Southern Drake Passage Earthquake	2025-08-22T02:16:18.246Z	Falkland Islands	Americas	876	15	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r2xq	major
-us7000qvw5	7.4	59	102 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-13T02:37:56.847Z	null	null	861	23	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qvw5	major
+us7000qvw5	7.4	59	102 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-13T02:37:56.847Z	Russia	Europe	861	23	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qvw5	major
 us7000qdyl	7.4	34	2025 Eastern Kamchatka, Russia Earthquake	2025-07-20T06:49:04.327Z	null	null	2018	24	red	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdyl	major
 us7000qd1y	7.3	38	2025 Sand Point, Alaska Earthquake	2025-07-16T20:37:41.667Z	null	null	961	191	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd1y	major
 us6000qvsf	7.0	31	Macquarie Island region	2025-07-28T22:10:35.109Z	null	null	754	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvsf	major
-us6000qw6q	6.9	37	125 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-30T00:09:58.961Z	null	null	736	5	yellow	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw6q	strong
-us6000qxt4	6.8	30	123 km E of Severo-Kuril’sk, Russia	2025-08-03T05:37:55.148Z	null	null	717	7	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxt4	strong
+us6000qw6q	6.9	37	125 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-30T00:09:58.961Z	Russia	Europe	736	5	yellow	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw6q	strong
+us6000qxt4	6.8	30	123 km E of Severo-Kuril’sk, Russia	2025-08-03T05:37:55.148Z	Russia	Europe	717	7	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxt4	strong
 us7000qcik	6.7	71	Unknown location	2025-07-14T05:49:58.119Z	Timor-Leste	Asia	715	50	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qcik	strong
 us6000qw1a	6.6	553	south of the Fiji Islands	2025-07-29T17:53:40.918Z	Fiji	Oceania	670	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw1a	strong
 us6000quy1	6.6	314	187 km SSE of Mata-Utu, Wallis and Futuna	2025-07-24T23:37:56.601Z	Wallis and Futuna	Oceania	670	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000quy1	strong
-us7000qdyw	6.6	10	153 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-07-20T07:07:42.573Z	null	null	671	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdyw	strong
-us7000qdye	6.6	23	134 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-20T06:28:17.860Z	null	null	671	1	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdye	strong
-us7000qdz2	6.5	35	143 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-20T07:23:02.065Z	null	null	650	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdz2	strong
+us7000qdyw	6.6	10	153 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-07-20T07:07:42.573Z	Russia	Europe	671	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdyw	strong
+us7000qdye	6.6	23	134 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-20T06:28:17.860Z	Russia	Europe	671	1	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdye	strong
+us7000qdz2	6.5	35	143 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-20T07:23:02.065Z	Russia	Europe	650	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdz2	strong
 us7000quvp	6.4	10	Vanuatu region	2025-09-08T21:47:48.117Z	Fiji	Oceania	630	1	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000quvp	strong
-us6000qvpp	6.4	21	264 km WNW of Sabang, Indonesia	2025-07-28T18:41:50.299Z	null	null	638	24	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvpp	strong
-us6000rcqw	6.3	14	26 km ENE of Mene Grande, Venezuela	2025-09-25T03:51:39.539Z	Aruba	Americas	766	224	yellow	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcqw	strong
-us6000r0sa	6.3	45	115 km SSE of Lata, Solomon Islands	2025-08-14T16:22:34.235Z	Vanuatu	Oceania	611	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0sa	strong
-us6000r01m	6.3	14	195 km WNW of Abepura, Indonesia	2025-08-12T08:24:23.409Z	Papua New Guinea	Oceania	622	14	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r01m	strong
+us6000qvpp	6.4	21	264 km WNW of Sabang, Indonesia	2025-07-28T18:41:50.299Z	Indonesia	Asia	638	24	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvpp	strong
+us6000rcqw	6.3	14	26 km ENE of Mene Grande, Venezuela	2025-09-25T03:51:39.539Z	Venezuela	Americas	766	224	yellow	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcqw	strong
+us6000r0sa	6.3	45	115 km SSE of Lata, Solomon Islands	2025-08-14T16:22:34.235Z	Solomon Islands	Oceania	611	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0sa	strong
+us6000r01m	6.3	14	195 km WNW of Abepura, Indonesia	2025-08-12T08:24:23.409Z	Indonesia	Asia	622	14	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r01m	strong
 us6000qxsv	6.3	10	Pacific-Antarctic Ridge	2025-08-03T04:57:10.505Z	null	null	611	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxsv	strong
-us6000r0y5	6.3	16	94 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-29T23:30:03.032Z	null	null	611	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0y5	strong
+us6000r0y5	6.3	16	94 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-29T23:30:03.032Z	Russia	Europe	611	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0y5	strong
 us6000qugg	6.3	142	109 km W of Gorontalo, Indonesia	2025-07-23T20:50:43.792Z	Indonesia	Asia	613	5	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qugg	strong
-us6000rcnw	6.2	9	8 km ENE of Mene Grande, Venezuela	2025-09-24T22:21:55.745Z	Aruba	Americas	859	243	yellow	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcnw	strong
-us6000qxzw	6.2	16	202 km S of Severo-Kuril’sk, Russia	2025-08-04T04:20:54.562Z	null	null	591	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxzw	strong
-us6000qwuh	6.2	15	222 km SE of Severo-Kuril’sk, Russia	2025-07-31T05:27:14.789Z	null	null	591	2	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwuh	strong
-us6000qw6s	6.2	35	126 km SE of Vilyuchinsk, Russia	2025-07-30T00:16:06.520Z	null	null	591	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw6s	strong
+us6000rcnw	6.2	9	8 km ENE of Mene Grande, Venezuela	2025-09-24T22:21:55.745Z	Venezuela	Americas	859	243	yellow	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcnw	strong
+us6000qxzw	6.2	16	202 km S of Severo-Kuril’sk, Russia	2025-08-04T04:20:54.562Z	Russia	Europe	591	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxzw	strong
+us6000qwuh	6.2	15	222 km SE of Severo-Kuril’sk, Russia	2025-07-31T05:27:14.789Z	Russia	Europe	591	2	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwuh	strong
+us6000qw6s	6.2	35	126 km SE of Vilyuchinsk, Russia	2025-07-30T00:16:06.520Z	Russia	Europe	591	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw6s	strong
 us6000qvbw	6.2	17	Macquarie Island region	2025-07-26T16:15:04.546Z	null	null	591	1	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvbw	strong
 us6000qv1b	6.2	10	west of Macquarie Island	2025-07-25T11:22:02.292Z	null	null	592	1	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qv1b	strong
 us7000qe51	6.2	40	91 km SSE of Sand Point, Alaska	2025-07-20T22:28:00.041Z	null	null	605	25	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qe51	strong
 us7000qclp	6.2	10	Unknown location	2025-07-14T17:16:49.051Z	Panama	Americas	592	3	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qclp	strong
 us7000qb4s	6.2	22	213 km WSW of Riverton, New Zealand	2025-07-07T12:53:44.013Z	New Zealand	Oceania	604	23	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qb4s	strong
-us7000qx1z	6.1	28	26 km S of Nabire, Indonesia	2025-09-18T18:19:49.193Z	null	null	576	6	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qx1z	strong
 us6000r3l7	6.1	9	east of the Kuril Islands	2025-08-25T06:48:34.819Z	null	null	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r3l7	strong
-us6000qznb	6.1	10	10 km WSW of Bigadiç, Turkey	2025-08-10T16:53:47.260Z	Bulgaria	Europe	1187	237	orange	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qznb	strong
-us6000qxfn	6.1	10	215 km ESE of Severo-Kuril’sk, Russia	2025-08-01T18:20:45.177Z	null	null	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxfn	strong
-us6000qwfe	6.1	10	183 km SE of Vilyuchinsk, Russia	2025-07-30T09:56:13.780Z	null	null	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwfe	strong
-us6000r0xw	6.1	25	78 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-29T23:30:44.566Z	null	null	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0xw	strong
-us6000rge8	6.0	58	98 km ESE of Ozernovskiy, Russia	2025-09-19T14:55:40.913Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rge8	strong
-us7000qwir	6.0	63	207 km SE of Kokopo, Papua New Guinea	2025-09-16T16:59:50.035Z	Solomon Islands	Oceania	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qwir	strong
-us7000qwch	6.0	15	144 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-09-15T16:34:35.213Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qwch	strong
-us7000qr8h	6.0	40	92 km E of Severo-Kuril’sk, Russia	2025-08-27T03:49:50.441Z	null	null	556	4	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qr8h	strong
+us6000qznb	6.1	10	10 km WSW of Bigadiç, Turkey	2025-08-10T16:53:47.260Z	Turkey	Asia	1187	237	orange	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qznb	strong
+us6000qxfn	6.1	10	215 km ESE of Severo-Kuril’sk, Russia	2025-08-01T18:20:45.177Z	Russia	Europe	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxfn	strong
+us6000qwfe	6.1	10	183 km SE of Vilyuchinsk, Russia	2025-07-30T09:56:13.780Z	Russia	Europe	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwfe	strong
+us6000r0xw	6.1	25	78 km SE of Petropavlovsk-Kamchatsky, Russia	2025-07-29T23:30:44.566Z	Russia	Europe	572	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0xw	strong
+us6000rge8	6.0	58	98 km ESE of Ozernovskiy, Russia	2025-09-19T14:55:40.913Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rge8	strong
+us7000qx1z	6.0	28	26 km S of Nabire, Indonesia	2025-09-18T18:19:49.220Z	Indonesia	Asia	558	6	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qx1z	strong
+us7000qwir	6.0	63	207 km SE of Kokopo, Papua New Guinea	2025-09-16T16:59:50.035Z	Papua New Guinea	Oceania	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qwir	strong
+us7000qwch	6.0	15	144 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-09-15T16:34:35.213Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qwch	strong
+us7000qr8h	6.0	40	92 km E of Severo-Kuril’sk, Russia	2025-08-27T03:49:50.441Z	Russia	Europe	556	4	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qr8h	strong
 us6000r3at	6.0	17	88 km SW of Acajutla, El Salvador	2025-08-23T09:14:22.210Z	El Salvador	Americas	576	42	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r3at	strong
-us6000qzh9	6.0	11	265 km ESE of Severo-Kuril’sk, Russia	2025-08-09T14:04:07.171Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qzh9	strong
-us6000qxn6	6.0	17	165 km SSE of Vilyuchinsk, Russia	2025-08-02T14:14:03.328Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxn6	strong
-us6000qwk1	6.0	35	138 km SE of Severo-Kuril’sk, Russia	2025-07-30T16:07:46.668Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwk1	strong
-us6000qwhj	6.0	35	165 km SSE of Vilyuchinsk, Russia	2025-07-29T23:37:34.403Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwhj	strong
-us6000r0qc	6.0	35	124 km ENE of Ozernovskiy, Russia	2025-07-29T23:36:01.341Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0qc	strong
-us6000quxn	6.0	14	163 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-24T22:37:27.147Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000quxn	strong
-us6000qu2r	6.0	12	154 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-07-22T01:59:28.404Z	null	null	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qu2r	strong
+us6000qzh9	6.0	11	265 km ESE of Severo-Kuril’sk, Russia	2025-08-09T14:04:07.171Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qzh9	strong
+us6000qxn6	6.0	17	165 km SSE of Vilyuchinsk, Russia	2025-08-02T14:14:03.328Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxn6	strong
+us6000qwk1	6.0	35	138 km SE of Severo-Kuril’sk, Russia	2025-07-30T16:07:46.668Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwk1	strong
+us6000qwhj	6.0	35	165 km SSE of Vilyuchinsk, Russia	2025-07-29T23:37:34.403Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qwhj	strong
+us6000r0qc	6.0	35	124 km ENE of Ozernovskiy, Russia	2025-07-29T23:36:01.341Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r0qc	strong
+us6000quxn	6.0	14	163 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-24T22:37:27.147Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000quxn	strong
+us6000qu2r	6.0	12	154 km ESE of Petropavlovsk-Kamchatsky, Russia	2025-07-22T01:59:28.404Z	Russia	Europe	554	null	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qu2r	strong
 us6000rd1w	5.9	10	239 km W of Bandon, Oregon	2025-09-26T06:45:28.067Z	null	null	543	29	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rd1w	tsunami
 us7000qtm0	5.9	18	92 km SSW of Nikolski, Alaska	2025-09-03T20:57:47.645Z	null	null	536	1	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtm0	tsunami
 us7000qrj0	5.9	130	237 km W of Adak, Alaska	2025-08-28T11:07:48.125Z	null	null	536	2	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qrj0	tsunami
 us7000quwy	5.7	10	174 km WSW of Port Orford, Oregon	2025-09-09T04:08:01.584Z	null	null	520	50	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000quwy	tsunami
-pr2025217000	5.7	168	38 km SE of Boca de Yuma, Dominican Republic	2025-08-05T09:23:51.280Z	Puerto Rico	Americas	742	484	null	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/pr2025217000	widely_felt
+pr2025217000	5.7	168	38 km SE of Boca de Yuma, Dominican Republic	2025-08-05T09:23:51.280Z	Dominican Republic	Americas	742	484	null	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/pr2025217000	widely_felt
 us7000qbfv	5.7	10	3 km SSW of Amatitlán, Guatemala	2025-07-08T21:41:31.063Z	Guatemala	Americas	763	155	yellow	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qbfv	widely_felt
-us7000qtst	5.6	17	40 km WSW of Asadābād, Afghanistan	2025-09-04T16:56:26.361Z	Tajikistan	Asia	2066	84	red	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtst	alert
+us7000qtst	5.6	17	40 km WSW of Asadābād, Afghanistan	2025-09-04T16:56:26.361Z	Afghanistan	Asia	2066	84	red	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtst	alert
 ak025b7povrc	5.6	12	133 km SE of Old Harbor, Alaska	2025-09-01T11:02:09.766Z	null	null	482	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/ak025b7povrc	tsunami
 us7000qd4n	5.6	35	96 km SSE of Sand Point, Alaska	2025-07-17T04:30:37.038Z	null	null	482	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd4n	tsunami
 us7000qxp1	5.5	30	122 km SW of Adak, Alaska	2025-09-21T09:30:27.862Z	null	null	467	4	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qxp1	tsunami
-us7000qw56	5.5	29	11 km ESE of Udalguri, India	2025-09-14T11:11:51.373Z	Bhutan	Asia	1072	120	orange	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qw56	alert
+us7000qw56	5.5	29	11 km ESE of Udalguri, India	2025-09-14T11:11:51.373Z	India	Asia	1072	120	orange	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qw56	alert
 us7000qug7	5.4	38	81 km SSW of Nikolski, Alaska	2025-09-06T20:40:42.434Z	null	null	449	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qug7	tsunami
 us6000qvj2	5.3	83	23 km N of Dutch Harbor, Alaska	2025-07-27T22:47:05.173Z	null	null	447	30	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvj2	tsunami
 us6000qv9g	5.3	90	Rat Islands, Aleutian Islands, Alaska	2025-07-26T05:03:53.539Z	null	null	432	null	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qv9g	tsunami
@@ -749,7 +753,7 @@ us6000qvdz	5.1	135	Rat Islands, Aleutian Islands, Alaska	2025-07-26T23:09:39.073
 us7000qd41	5.1	37	86 km SSE of Sand Point, Alaska	2025-07-17T01:12:21.887Z	null	null	400	null	null	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd41	tsunami
 us7000quvk	5.0	10	11 km NW of Néa Stíra, Greece	2025-09-08T21:27:56.372Z	Greece	Europe	545	251	null	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000quvk	widely_felt
 us7000qd00	5.0	70	57 km E of Atka, Alaska	2025-07-16T14:21:52.330Z	null	null	386	4	green	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd00	tsunami
-us6000r1j3	4.9	10	12 km ESE of Cherbourg, Australia	2025-08-15T23:49:25.053Z	null	null	784	883	null	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r1j3	widely_felt
+us6000r1j3	4.9	10	12 km ESE of Cherbourg, Australia	2025-08-15T23:49:25.053Z	Australia	Oceania	784	883	null	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r1j3	widely_felt
 ak025by3iekl	4.6	12	117 km SE of Old Harbor, Alaska	2025-09-17T06:35:40.812Z	null	null	326	null	null	true	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/ak025by3iekl	tsunami
 ak025a0u3q2q	4.6	88	24 km WSW of Petersville, Alaska	2025-08-06T18:38:57.109Z	null	null	406	224	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/ak025a0u3q2q	widely_felt
 nc75216737	4.5	9	74 km WNW of Ferndale, CA	2025-07-29T23:18:18.760Z	null	null	355	123	green	false	reviewed	https://earthquake.usgs.gov/earthquakes/eventpage/nc75216737	widely_felt

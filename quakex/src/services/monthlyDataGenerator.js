@@ -112,9 +112,9 @@ async function enrichEarthquakesBatch(earthquakes) {
 
         enriched.push(...successfulResults)
 
-        // Rate limiting: wait 1 second between batches
+        // Rate limiting: wait 2 second between batches
         if (i + batchSize < earthquakes.length) {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 2000))
         }
     }
 
@@ -228,24 +228,42 @@ async function enrichSingleEarthquake(earthquake) {
  */
 function addTemporalData(earthquake) {
     const date = new Date(earthquake.time)
+    const isNorthernHemisphere = earthquake.latitude >= 0 // Northern: Positive | Southern: Negative
 
     return {
-        hour_of_day: date.getHours(),
+        hour_of_day: date.getUTCHours(), // local time
         day_of_week: date.getDay(), // 0 = Sunday, 6 = Saturday
         month: date.getMonth(), // 0 = January, 11 = December
-        season: getSeason(date),
+        season: getSeason(date, isNorthernHemisphere),
+        year: date.getFullYear(),
+        quarter: Math.floor(date.getMonth() / 3) + 1,  // Q1, Q2, Q3, Q4
     }
 }
 
 /**
  * Get season based on month
  */
-function getSeason(date) {
+function getSeason(date, isNorthernHemisphere) {
     const month = date.getMonth()
-    if (month >= 2 && month <= 4) return 'spring'
-    if (month >= 5 && month <= 7) return 'summer'
-    if (month >= 8 && month <= 10) return 'autumn'
-    return 'winter'
+    
+    let season = null
+    if (month >= 2 && month <= 4) season = 'spring'
+    else if (month >= 5 && month <= 7) season = 'summer'
+    else if (month >= 8 && month <= 10) season = 'autumn'
+    else season = 'winter'
+    
+    // Invert for Southern Hemisphere
+    if (!isNorthernHemisphere) {
+        const seasonMap = {
+            'spring': 'autumn',
+            'summer': 'winter',
+            'autumn': 'spring',
+            'winter': 'summer'
+        }
+        season = seasonMap[season]
+    }
+    
+    return season
 }
 
 /**
