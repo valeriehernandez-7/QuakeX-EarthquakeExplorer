@@ -1,10 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import EarthquakeTest from '@/views/EarthquakeTest.vue' //TODO: delete after testing
-import WeatherTest from '@/views/WeatherTest.vue'
-import ElevationTest from '@/views/ElevationTest.vue'
-import CountriesTest from '@/views/CountriesTest.vue'
-import DrillTestView from '@/views/DrillTestView.vue'
+import DrillTestView from '@/views/DrillTestView.vue' //TODO: delete after testing
 
 import MapView from '@/views/MapView.vue'
 import AnalyticsView from '@/views/AnalyticsView.vue'

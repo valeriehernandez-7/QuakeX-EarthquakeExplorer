@@ -514,7 +514,7 @@ const formatDate = (dateString) => {
 
 const testDirectQuery = async () => {
     try {
-        console.log('🧪 Testing direct query to Drill...')
+        console.log('Testing direct query to Drill...')
 
         // Query simple y directa
         const testQuery = `
@@ -533,26 +533,26 @@ const testDirectQuery = async () => {
             }),
         })
 
-        console.log('📡 Direct query response status:', response.status)
-        console.log('📡 Direct query response ok:', response.ok)
+        console.log('Direct query response status:', response.status)
+        console.log('Direct query response ok:', response.ok)
 
         const data = await response.json()
-        console.log('📊 Direct query result:', data)
+        console.log('Direct query result:', data)
 
         if (data.rows && data.rows.length > 0) {
-            console.log('✅ Direct query successful. Count:', data.rows[0].count)
+            console.log('Direct query successful. Count:', data.rows[0].count)
         } else {
-            console.log('❌ Direct query returned no data')
-            console.log('🔍 Full response:', data)
+            console.log('Direct query returned no data')
+            console.log('Full response:', data)
         }
     } catch (error) {
-        console.error('❌ Direct query test failed:', error)
+        console.error('Direct query test failed:', error)
     }
 }
 
 const testUnionQuery = async () => {
     try {
-        console.log('🧪 Testing UNION query...')
+        console.log('Testing UNION query...')
 
         const testQuery = `
             SELECT COUNT(*) as count, '2025-07' as month 
@@ -569,21 +569,21 @@ const testUnionQuery = async () => {
         })
 
         const data = await response.json()
-        console.log('📊 UNION query result:', data)
+        console.log('UNION query result:', data)
 
         if (data.queryState === 'FAILED') {
-            console.error('🔴 UNION query failed:', data.errorMessage)
+            console.error('UNION query failed:', data.errorMessage)
         } else {
-            console.log('✅ UNION query successful:', data.rows)
+            console.log('UNION query successful:', data.rows)
         }
     } catch (error) {
-        console.error('❌ UNION query test failed:', error)
+        console.error('UNION query test failed:', error)
     }
 }
 
 // Lifecycle
 onMounted(async () => {
-    console.log('🔧 Starting comprehensive Drill diagnostics...')
+    console.log('Starting comprehensive Drill diagnostics...')
 
     // 1. Prueba directa básica
     await testDirectQuery()
@@ -592,10 +592,10 @@ onMounted(async () => {
     await testUnionQuery()
 
     // 3. Solo entonces pruebas complejas
-    console.log('🔄 Now running main queries...')
+    console.log('Now running main queries...')
     await runAllTests()
 
-    console.log('🎯 All diagnostics completed')
+    console.log('All diagnostics completed')
 })
 </script>
 

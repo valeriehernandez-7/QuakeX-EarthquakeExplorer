@@ -7,7 +7,7 @@ import {
     generateMonthlyData,
     getLastMonths,
     checkMonthlyDataExists,
-} from './monthlyDataGenerator.js'
+} from './monthlyDataGeneratorService.js'
 
 class MonthlyDataManager {
     constructor() {

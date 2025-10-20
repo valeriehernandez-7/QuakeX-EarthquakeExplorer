@@ -89,12 +89,12 @@ app.component('InputIcon', InputIcon)
 app.mount('#app')
 
 // TODO: delete after testing
-import { monthlyManager } from '@/services/monthlyDataManager.js'
+import { monthlyManager } from '@/services/monthlyDataManagerService.js'
 if (import.meta.env.DEV) {
     window.monthlyManager = monthlyManager
     console.log('monthlyManager exposed globally for testing')
     console.log('Available methods:')
     console.log('- monthlyManager.ensureRecentData()')
-    console.log('- monthlyManager.generateMonth("2025-01")')
+    console.log('- monthlyManager.generateMonth("2025-07")')
     console.log('- monthlyManager.getAvailableMonths()')
 }

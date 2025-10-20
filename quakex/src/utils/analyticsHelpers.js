@@ -23,53 +23,11 @@ export function getLastThreeMonths() {
 }
 
 /**
- * Get human-readable period text
- * @param {Array<string>} [months] - Optional month array, defaults to last 3 months
- * @returns {string} "Últimos 3 meses (Ago - Oct 2025)"
- */
-export function getPeriodText(months = null) {
-    if (!months) {
-        months = getLastThreeMonths()
-    }
-
-    const monthNames = {
-        '01': 'Ene',
-        '02': 'Feb',
-        '03': 'Mar',
-        '04': 'Abr',
-        '05': 'May',
-        '06': 'Jun',
-        '07': 'Jul',
-        '08': 'Ago',
-        '09': 'Sep',
-        10: 'Oct',
-        11: 'Nov',
-        12: 'Dic',
-    }
-
-    const newest = months[0] // e.g., "2025-10"
-    const oldest = months[months.length - 1] // e.g., "2025-08"
-
-    const [yearNew, monthNew] = newest.split('-')
-    const [yearOld, monthOld] = oldest.split('-')
-
-    const startMonth = monthNames[monthOld]
-    const endMonth = monthNames[monthNew]
-
-    // Handle year transition
-    if (yearOld === yearNew) {
-        return `Últimos 3 meses (${startMonth} - ${endMonth} ${yearNew})`
-    } else {
-        return `Últimos 3 meses (${startMonth} ${yearOld} - ${endMonth} ${yearNew})`
-    }
-}
-
-/**
  * Get long period text in English
  * @param {Array<string>} [months] - Optional month array
  * @returns {string} "Last 3 months (Aug - Oct 2025)"
  */
-export function getPeriodTextEnglish(months = null) {
+export function getPeriodText(months = null) {
     if (!months) {
         months = getLastThreeMonths()
     }
@@ -108,26 +66,10 @@ export function getPeriodTextEnglish(months = null) {
 /**
  * Format month key to human readable
  * @param {string} monthKey - Month in format 'YYYY-MM'
- * @param {string} [language='es'] - Language 'es' or 'en'
- * @returns {string} "Julio 2025" or "July 2025"
+ * @returns {string} "July 2025"
  */
-export function formatMonth(monthKey, language = 'es') {
-    const monthNamesEs = {
-        '01': 'Enero',
-        '02': 'Febrero',
-        '03': 'Marzo',
-        '04': 'Abril',
-        '05': 'Mayo',
-        '06': 'Junio',
-        '07': 'Julio',
-        '08': 'Agosto',
-        '09': 'Septiembre',
-        10: 'Octubre',
-        11: 'Noviembre',
-        12: 'Diciembre',
-    }
-
-    const monthNamesEn = {
+export function formatMonth(monthKey) {
+    const monthNames = {
         '01': 'January',
         '02': 'February',
         '03': 'March',
@@ -141,9 +83,7 @@ export function formatMonth(monthKey, language = 'es') {
         11: 'November',
         12: 'December',
     }
-
     const [year, month] = monthKey.split('-')
-    const monthNames = language === 'es' ? monthNamesEs : monthNamesEn
 
     return `${monthNames[month]} ${year}`
 }
@@ -151,26 +91,10 @@ export function formatMonth(monthKey, language = 'es') {
 /**
  * Get month abbreviation
  * @param {string} monthKey - Month in format 'YYYY-MM'
- * @param {string} [language='es'] - Language 'es' or 'en'
- * @returns {string} "Jul" or "Julio"
+ * @returns {string} "Jul"
  */
-export function getMonthAbbr(monthKey, language = 'es') {
-    const monthNamesEs = {
-        '01': 'Ene',
-        '02': 'Feb',
-        '03': 'Mar',
-        '04': 'Abr',
-        '05': 'May',
-        '06': 'Jun',
-        '07': 'Jul',
-        '08': 'Ago',
-        '09': 'Sep',
-        10: 'Oct',
-        11: 'Nov',
-        12: 'Dic',
-    }
-
-    const monthNamesEn = {
+export function getMonthAbbr(monthKey) {
+    const monthNames = {
         '01': 'Jan',
         '02': 'Feb',
         '03': 'Mar',
@@ -184,9 +108,7 @@ export function getMonthAbbr(monthKey, language = 'es') {
         11: 'Nov',
         12: 'Dec',
     }
-
     const [year, month] = monthKey.split('-')
-    const monthNames = language === 'es' ? monthNamesEs : monthNamesEn
 
     return monthNames[month]
 }
@@ -258,6 +180,6 @@ export function getTotalDaysInPeriod(months = null) {
  *
  * // In your component
  * const months = getLastThreeMonths() // ['2025-10', '2025-09', '2025-08']
- * const periodText = getPeriodText(months) // "Últimos 3 meses (Ago - Oct 2025)"
- * const monthLabel = formatMonth('2025-07') // "Julio 2025"
+ * const periodText = getPeriodText(months) // "Last 3 months (Ago - Oct 2025)"
+ * const monthLabel = formatMonth('2025-07') // "July 2025"
  */
