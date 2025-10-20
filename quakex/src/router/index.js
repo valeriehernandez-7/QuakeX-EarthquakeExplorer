@@ -4,7 +4,7 @@ import EarthquakeTest from '@/views/EarthquakeTest.vue' //TODO: delete after tes
 import WeatherTest from '@/views/WeatherTest.vue'
 import ElevationTest from '@/views/ElevationTest.vue'
 import CountriesTest from '@/views/CountriesTest.vue'
-import DrillTest from '@/views/DrillTest.vue'
+import DrillTestView from '@/views/DrillTestView.vue'
 
 import MapView from '@/views/MapView.vue'
 import AnalyticsView from '@/views/AnalyticsView.vue'
@@ -32,7 +32,7 @@ const router = createRouter({
             //TODO: delete after testing
             path: '/test',
             name: 'test',
-            component: DrillTest,
+            component: DrillTestView,
         },
     ],
     scrollBehavior() {

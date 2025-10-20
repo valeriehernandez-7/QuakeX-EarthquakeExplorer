@@ -307,10 +307,10 @@ const selectTimePeriod = (period) => {
     const startDate = new Date(now)
     startDate.setUTCDate(startDate.getUTCDate() - period.days)
     startDate.setUTCHours(0, 0, 0, 0)
-    
+
     const endDate = new Date(now)
     endDate.setUTCHours(23, 59, 59, 999)
-    
+
     localDateRange.value = [startDate, endDate]
     selectedPeriod.value = period
 }

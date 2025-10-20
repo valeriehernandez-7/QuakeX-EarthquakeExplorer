@@ -1,65 +1,57 @@
+/**
+ * Apache Drill Service - Analytics Version
+ * Optimized for AnalyticsView with multi-month query support
+ *
+ * Connection:
+ * - Web UI: http://localhost:8047
+ * - REST API: http://localhost:8047/query.json (via proxy /api/drill)
+ * - Workspace: dfs
+ * - Data Location: /data/earthquakes-YYYY-MM.json
+ */
+
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
 import { getCacheFilename, getCacheFilenameForDate } from '@/utils/helpers'
 
-/**
- * Apache Drill Service
- * Handles SQL queries to Apache Drill via REST API
- * API Documentation: https://drill.apache.org/docs/rest-api/
- *
- * Connection Details:
- * - Web UI: http://localhost:8047
- * - REST API: http://localhost:8047/query.json
- * - Workspace: dfs.quakex (configured in drill-dfs-storage-plugin.json)
- * - Data Location: /data/*.json
- */
-
 // Create axios instance with Drill configuration
+// Uses proxy from vite.config: /api/drill -> http://localhost:8047
 const drillClient = axios.create({
-    baseURL: API_ENDPOINTS.DRILL || 'http://localhost:8047',
-    timeout: APP_SETTINGS.requestTimeout,
+    baseURL: API_ENDPOINTS.DRILL || '/api/drill',
+    timeout: APP_SETTINGS.requestTimeout || 30000,
     headers: {
         'Content-Type': 'application/json',
     },
 })
 
-/**
- * In-memory cache for query results
- * Key format: hash of SQL query
- * Prevents redundant queries for identical SQL
- */
+// In-memory cache for query results
 const queryCache = new Map()
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 /**
  * Execute SQL query against Apache Drill
- * @param {string} sql - SQL query to execute
+ * @param {string} sql - SQL query
  * @param {Object} options - Query options
  * @param {boolean} [options.useCache=true] - Use cached results
  * @param {number} [options.timeout] - Custom timeout in ms
- * @returns {Promise<Object|null>} Query result with rows and metadata
+ * @returns {Promise<Object|null>} Query result
  */
-export async function executeQuery(sql, options = {}) {
-    try {
-        const { useCache = true, timeout } = options
+async function executeQuery(sql, options = {}) {
+    const { useCache = true, timeout } = options
 
-        // Validate SQL query
-        if (!sql || typeof sql !== 'string' || sql.trim().length === 0) {
-            console.error('Invalid SQL query provided')
-            return null
-        }
+    try {
+        console.log('[drillService] Executing Drill query...')
 
         // Check cache
         const cacheKey = hashString(sql)
         if (useCache) {
             const cached = getFromCache(cacheKey)
             if (cached) {
-                console.log('Using cached query result')
+                console.log('[drillService] Using cached result')
                 return cached
             }
         }
 
-        console.log('Executing Drill query:', sql.substring(0, 100) + '...')
+        console.log('[drillService] Sending SQL:', sql.substring(0, 200) + '...')
 
         // Prepare request payload
         const payload = {
@@ -67,411 +59,87 @@ export async function executeQuery(sql, options = {}) {
             query: sql,
         }
 
-        // Execute query
+        console.log(
+            '[drillService] Sending request to:',
+            drillClient.defaults.baseURL + '/query.json',
+        )
+
+        // Execute query using drillClient (with proxy)
         const config = timeout ? { timeout } : {}
         const response = await drillClient.post('/query.json', payload, config)
 
-        // Validate response
-        if (!response.data) {
-            console.warn('Invalid response from Drill API')
+        console.log('[drillService] Received response. Status:', response.status)
+
+        if (response.data.queryState === 'FAILED') {
+            console.error('[drillService] DRILL QUERY FAILED!')
+            console.error('Full error response:', JSON.stringify(response.data, null, 2))
+            console.error('Error message:', response.data.errorMessage)
+            console.error('Error details:', response.data)
+            console.error('Failed query:', sql)
             return null
         }
+
+        // Validate response
+        if (!response.data) {
+            console.warn('[drillService] Invalid response from Drill API - no data')
+            return null
+        }
+
+        console.log('[drillService] Response data structure:', {
+            hasRows: !!response.data.rows,
+            rowCount: response.data.rows ? response.data.rows.length : 0,
+            columns: response.data.columns ? response.data.columns.length : 0,
+            queryState: response.data.queryState,
+        })
 
         // Transform response to normalized format
         const result = transformDrillResponse(response.data, sql)
 
-        // Cache the result
+        console.log('[drillService] Query completed. Returning', result.rowCount, 'rows')
+
+        // Cache result
         if (result && result.rows.length > 0) {
             saveToCache(cacheKey, result)
         }
 
         return result
     } catch (error) {
+        console.error('[drillService] Execute query failed completely')
         handleDrillError(error)
         return null
     }
 }
 
 /**
- * Fetch earthquakes with filters
- * @param {Object} filters - Query filters
- * @param {Array<number>} [filters.magnitudeRange=[0, 10]] - Magnitude range [min, max]
- * @param {Array<number>} [filters.depthRange] - Depth range in km [min, max]
- * @param {Date|string} [filters.startDate] - Start date
- * @param {Date|string} [filters.endDate] - End date
- * @param {number} [filters.limit=1000] - Maximum rows to return
- * @param {string} [filters.orderBy='time DESC'] - Sort order
- * @param {string} [filters.tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of earthquake objects
+ * Build UNION ALL query for multiple months
+ * @private
  */
-export async function fetchEarthquakes(filters = {}) {
-    try {
-        const {
-            magnitudeRange = [0, 10],
-            depthRange,
-            startDate,
-            endDate,
-            limit = 1000,
-            orderBy = 'time DESC',
-            tableName = 'earthquakes.json',
-        } = filters
-
-        // Build WHERE clauses
-        const conditions = []
-
-        // Magnitude filter
-        if (magnitudeRange && magnitudeRange.length === 2) {
-            conditions.push(
-                `magnitude >= ${magnitudeRange[0]} AND magnitude <= ${magnitudeRange[1]}`,
-            )
-        }
-
-        // Depth filter
-        if (depthRange && depthRange.length === 2) {
-            conditions.push(`depth >= ${depthRange[0]} AND depth <= ${depthRange[1]}`)
-        }
-
-        // Date filters
-        if (startDate) {
-            const startDateStr = formatDateForSQL(startDate)
-            conditions.push(`CAST(\`time\` AS TIMESTAMP) >= TIMESTAMP '${startDateStr}'`)
-        }
-
-        if (endDate) {
-            const endDateStr = formatDateForSQL(endDate)
-            conditions.push(`CAST(\`time\` AS TIMESTAMP) <= TIMESTAMP '${endDateStr}'`)
-        }
-
-        // Build SQL query
-        const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
-
-        const sql = `
-            SELECT 
-                id,
-                magnitude,
-                depth,
-                latitude,
-                longitude,
-                place,
-                \`time\`,
-                url,
-                significance,
-                type
-            FROM dfs.quakex.\`${tableName}\`
-            ${whereClause}
-            ORDER BY ${orderBy}
-            LIMIT ${limit}
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching earthquakes from Drill:', error)
-        return null
-    }
+function buildUnionQuery(months, selectClause, whereClause = '') {
+    return months
+        .map((month) => {
+            const sql = `SELECT ${selectClause} FROM dfs.quakex.\`earthquakes-${month}.json\``
+            return whereClause ? `${sql} WHERE ${whereClause}` : sql
+        })
+        .join('\n    UNION ALL\n    ')
 }
 
 /**
- * Get earthquake statistics
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Object|null>} Statistics object
+ * Simple string hash function
+ * @private
  */
-export async function getEarthquakeStatistics(tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                COUNT(*) as total_earthquakes,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MAX(magnitude) as max_magnitude,
-                MIN(magnitude) as min_magnitude,
-                ROUND(AVG(depth), 0) as avg_depth_km,
-                MAX(depth) as max_depth_km,
-                MIN(depth) as min_depth_km,
-                MAX(significance) as max_significance
-            FROM dfs.quakex.\`${tableName}\`
-        `
-
-        const result = await executeQuery(sql)
-
-        return result && result.rows.length > 0 ? result.rows[0] : null
-    } catch (error) {
-        console.error('Error fetching earthquake statistics:', error)
-        return null
+function hashString(str) {
+    let hash = 0
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i)
+        hash = (hash << 5) - hash + char
+        hash = hash & hash // Convert to 32bit integer
     }
-}
-
-/**
- * Get earthquakes grouped by magnitude category
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of category statistics
- */
-export async function getEarthquakesByMagnitudeCategory(tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                CASE 
-                    WHEN magnitude < 4.0 THEN 'Minor (0-3.9)'
-                    WHEN magnitude < 5.0 THEN 'Light (4.0-4.9)'
-                    WHEN magnitude < 6.0 THEN 'Moderate (5.0-5.9)'
-                    WHEN magnitude < 7.0 THEN 'Strong (6.0-6.9)'
-                    ELSE 'Major (7.0+)'
-                END as magnitude_category,
-                COUNT(*) as count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MIN(magnitude) as min_magnitude,
-                MAX(magnitude) as max_magnitude,
-                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
-            FROM dfs.quakex.\`${tableName}\`
-            GROUP BY 
-                CASE 
-                    WHEN magnitude < 4.0 THEN 'Minor (0-3.9)'
-                    WHEN magnitude < 5.0 THEN 'Light (4.0-4.9)'
-                    WHEN magnitude < 6.0 THEN 'Moderate (5.0-5.9)'
-                    WHEN magnitude < 7.0 THEN 'Strong (6.0-6.9)'
-                    ELSE 'Major (7.0+)'
-                END
-            ORDER BY count DESC
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching earthquakes by magnitude category:', error)
-        return null
-    }
-}
-
-/**
- * Get earthquakes grouped by depth category
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of category statistics
- */
-export async function getEarthquakesByDepthCategory(tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                CASE 
-                    WHEN depth < 70 THEN 'SHALLOW (<70km)'
-                    WHEN depth < 300 THEN 'INTERMEDIATE (70-300km)'
-                    ELSE 'DEEP (>300km)'
-                END as depth_category,
-                COUNT(*) as count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MIN(magnitude) as min_magnitude,
-                MAX(magnitude) as max_magnitude
-            FROM dfs.quakex.\`${tableName}\`
-            GROUP BY 
-                CASE 
-                    WHEN depth < 70 THEN 'SHALLOW (<70km)'
-                    WHEN depth < 300 THEN 'INTERMEDIATE (70-300km)'
-                    ELSE 'DEEP (>300km)'
-                END
-            ORDER BY count DESC
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching earthquakes by depth category:', error)
-        return null
-    }
-}
-
-/**
- * Get daily earthquake counts (temporal analysis)
- * @param {number} [days=30] - Number of days to analyze
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of daily statistics
- */
-export async function getDailyEarthquakeCounts(days = 30, tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                CAST(\`time\` AS DATE) as event_date,
-                COUNT(*) as daily_count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MAX(magnitude) as max_magnitude
-            FROM dfs.quakex.\`${tableName}\`
-            WHERE CAST(\`time\` AS TIMESTAMP) >= CURRENT_DATE - INTERVAL '${days}' DAY
-            GROUP BY CAST(\`time\` AS DATE)
-            ORDER BY event_date DESC
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching daily earthquake counts:', error)
-        return null
-    }
-}
-
-/**
- * Get top N strongest earthquakes
- * @param {number} [limit=10] - Number of earthquakes to return
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of strongest earthquakes
- */
-export async function getStrongestEarthquakes(limit = 10, tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                id,
-                place,
-                magnitude,
-                depth,
-                \`time\`,
-                latitude,
-                longitude,
-                url,
-                significance
-            FROM dfs.quakex.\`${tableName}\`
-            ORDER BY magnitude DESC
-            LIMIT ${limit}
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching strongest earthquakes:', error)
-        return null
-    }
-}
-
-/**
- * Get earthquakes by geographic zone (latitude-based)
- * @param {string} [tableName='earthquakes.json'] - JSON file name
- * @returns {Promise<Array|null>} Array of geographic statistics
- */
-export async function getEarthquakesByGeographicZone(tableName = 'earthquakes.json') {
-    try {
-        const sql = `
-            SELECT 
-                CASE 
-                    WHEN latitude >= 60 THEN 'Far North (60°+)'
-                    WHEN latitude >= 30 THEN 'Mid North (30°-60°)'
-                    WHEN latitude >= 0 THEN 'Tropics North (0°-30°)'
-                    WHEN latitude >= -30 THEN 'Tropics South (0° to -30°)'
-                    WHEN latitude >= -60 THEN 'Mid South (-30° to -60°)'
-                    ELSE 'Far South (-60° and below)'
-                END as latitude_zone,
-                COUNT(*) as count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude
-            FROM dfs.quakex.\`${tableName}\`
-            GROUP BY 
-                CASE 
-                    WHEN latitude >= 60 THEN 'Far North (60°+)'
-                    WHEN latitude >= 30 THEN 'Mid North (30°-60°)'
-                    WHEN latitude >= 0 THEN 'Tropics North (0°-30°)'
-                    WHEN latitude >= -30 THEN 'Tropics South (0° to -30°)'
-                    WHEN latitude >= -60 THEN 'Mid South (-30° to -60°)'
-                    ELSE 'Far South (-60° and below)'
-                END
-            ORDER BY count DESC
-        `
-
-        const result = await executeQuery(sql)
-
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('Error fetching earthquakes by geographic zone:', error)
-        return null
-    }
-}
-
-/**
- * Test Apache Drill connection
- * @returns {Promise<boolean>} True if connection successful
- */
-export async function testDrillConnection() {
-    try {
-        console.log('Testing Apache Drill connection...')
-
-        // Simple query to test connection
-        const sql = 'SELECT 1 as test_value'
-
-        const result = await executeQuery(sql, { useCache: false })
-
-        if (result && result.rows.length > 0) {
-            console.log('Apache Drill connection successful')
-            return true
-        }
-
-        console.warn('Apache Drill connection test returned no data')
-        return false
-    } catch (error) {
-        console.error('Apache Drill connection failed:', error.message)
-        return false
-    }
-}
-
-/**
- * List available tables in quakex workspace
- * Uses SHOW FILES query since INFORMATION_SCHEMA doesn't work with JSON files
- * @returns {Promise<Array|null>} Array of table names
- */
-export async function listAvailableTables() {
-    try {
-        const sql = `SHOW FILES IN dfs.quakex`
-
-        const result = await executeQuery(sql)
-
-        if (!result || !result.rows) {
-            return null
-        }
-
-        // Filter only files (not directories) and exclude .gitkeep
-        const tables = result.rows
-            .filter((row) => row.isFile === true && row.name !== '.gitkeep')
-            .map((row) => row.name)
-
-        return tables
-    } catch (error) {
-        console.error('Error listing available tables:', error)
-        return null
-    }
-}
-
-/**
- * Get column information for a table
- * Infers schema from first row since INFORMATION_SCHEMA.COLUMNS doesn't work with JSON
- * @param {string} tableName - Table name (e.g., 'earthquakes.json')
- * @returns {Promise<Array|null>} Array of column metadata
- */
-export async function getTableSchema(tableName) {
-    try {
-        const sql = `SELECT * FROM dfs.quakex.\`${tableName}\` LIMIT 1`
-
-        const result = await executeQuery(sql)
-
-        if (!result || result.rows.length === 0) {
-            return null
-        }
-
-        // Infer schema from first row
-        const firstRow = result.rows[0]
-        const columns = Object.keys(firstRow).map((columnName) => ({
-            COLUMN_NAME: columnName,
-            DATA_TYPE: typeof firstRow[columnName],
-            IS_NULLABLE: firstRow[columnName] === null ? 'YES' : 'NO',
-        }))
-
-        return columns
-    } catch (error) {
-        console.error('Error fetching table schema:', error)
-        return null
-    }
+    return hash.toString(36)
 }
 
 /**
  * Transform Drill API response to normalized format
- * @param {Object} rawData - Raw response from Drill API
- * @param {string} sql - Original SQL query
- * @returns {Object} Normalized result object
+ * @private
  */
 function transformDrillResponse(rawData, sql) {
     try {
@@ -498,7 +166,7 @@ function transformDrillResponse(rawData, sql) {
             },
         }
     } catch (error) {
-        console.error('Error transforming Drill response:', error)
+        console.error('[drillService] Error transforming response:', error)
         return {
             query: sql,
             rows: [],
@@ -511,57 +179,36 @@ function transformDrillResponse(rawData, sql) {
 
 /**
  * Handle Drill API errors
- * @param {Error} error - Error object
+ * @private
  */
 function handleDrillError(error) {
+    console.error('[drillService] DRILL ERROR DETAILS:', error)
+
     if (error.code === 'ECONNREFUSED') {
-        console.error('Cannot connect to Apache Drill. Is Drill running on port 8047?')
-        console.error('Start Drill with: docker-compose up -d')
+        console.error(
+            '[drillService] Cannot connect to Apache Drill. Is Drill running on port 8047?',
+        )
+        console.error('[drillService] Start Drill with: docker-compose up -d')
     } else if (error.response) {
-        console.error('Apache Drill API Error:', error.response.status)
-        console.error('Error message:', error.response.data?.errorMessage || error.response.data)
+        console.error('[drillService] Apache Drill API Error:', error.response.status)
+        console.error('[drillService] Response headers:', error.response.headers)
+        console.error(
+            '[drillService] Error message:',
+            error.response.data?.errorMessage || error.response.data,
+        )
+        console.error('[drillService] Full response data:', error.response.data)
     } else if (error.request) {
-        console.error('No response from Apache Drill. Check if Drill is running.')
+        console.error('[drillService] No response from Apache Drill. Check if Drill is running.')
+        console.error('[drillService] Request details:', error.request)
     } else {
-        console.error('Error executing Drill query:', error.message)
+        console.error('[drillService] Error executing Drill query:', error.message)
+        console.error('[drillService] Stack trace:', error.stack)
     }
-}
-
-/**
- * Format date for SQL query
- * @param {Date|string} date - Date to format
- * @returns {string} Formatted date string (YYYY-MM-DD HH:mm:ss)
- */
-function formatDateForSQL(date) {
-    const d = new Date(date)
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    const hours = String(d.getHours()).padStart(2, '0')
-    const minutes = String(d.getMinutes()).padStart(2, '0')
-    const seconds = String(d.getSeconds()).padStart(2, '0')
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-}
-
-/**
- * Generate simple hash from string (for cache keys)
- * @param {string} str - String to hash
- * @returns {string} Hash string
- */
-function hashString(str) {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i)
-        hash = (hash << 5) - hash + char
-        hash = hash & hash // Convert to 32bit integer
-    }
-    return hash.toString(36)
 }
 
 /**
  * Save query result to cache
- * @param {string} key - Cache key
- * @param {Object} data - Data to cache
+ * @private
  */
 function saveToCache(key, data) {
     try {
@@ -569,16 +216,15 @@ function saveToCache(key, data) {
             timestamp: Date.now(),
             data: data,
         })
-        console.log('Query result cached successfully')
+        console.log('[drillService] Query result cached successfully')
     } catch (error) {
-        console.error('Error saving to query cache:', error)
+        console.error('[drillService] Error saving to cache:', error)
     }
 }
 
 /**
  * Get query result from cache
- * @param {string} key - Cache key
- * @returns {Object|null} Cached data or null
+ * @private
  */
 function getFromCache(key) {
     try {
@@ -594,27 +240,574 @@ function getFromCache(key) {
 
         return cached.data
     } catch (error) {
-        console.error('Error reading from query cache:', error)
+        console.error('[drillService] Error reading from cache:', error)
         return null
     }
+}
+
+// GLOBAL STATISTICS
+
+/**
+ * Get global statistics for multiple months
+ * @param {Array<string>} months - Array of month keys ['2025-07', '2025-08', '2025-09']
+ * @returns {Promise<Array|null>} Statistics by month
+ */
+export async function getGlobalStatistics(months) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            COUNT(*) AS total_events,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude,
+            MIN(\`magnitude\`) AS min_magnitude,
+            ROUND(AVG(\`depth\`), 1) AS avg_depth,
+            MAX(\`depth\`) AS max_depth,
+            MIN(\`depth\`) AS min_depth,
+            '${month}' AS month
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `${unionQuery} ORDER BY month ASC`
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get aggregated global statistics (total across all months)
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Object|null>} Aggregated statistics
+ */
+export async function getGlobalStatisticsTotal(months) {
+    const unionQuery = buildUnionQuery(months, '\`magnitude\`, \`depth\`')
+
+    const sql = `
+        SELECT 
+            COUNT(*) AS total_events,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude,
+            MIN(\`magnitude\`) AS min_magnitude,
+            ROUND(AVG(\`depth\`), 1) AS avg_depth,
+            MAX(\`depth\`) AS max_depth,
+            MIN(\`depth\`) AS min_depth
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+    `
+
+    const result = await executeQuery(sql)
+    return result && result.rows.length > 0 ? result.rows[0] : null
+}
+
+/**
+ * Get top countries by earthquake activity
+ * @param {Array<string>} months - Array of month keys
+ * @param {number} limit - Number of countries to return
+ * @returns {Promise<Array|null>} Top countries with statistics
+ */
+export async function getTopCountries(months, limit = 20) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            CAST(\`country\`['name'] AS VARCHAR) AS country_name,
+            CAST(\`country\`['region'] AS VARCHAR) AS region,
+            CAST(\`country\`['subregion'] AS VARCHAR) AS subregion,
+            CAST(\`magnitude\` AS DOUBLE) AS magnitude_val,
+            CAST(\`depth\` AS DOUBLE) AS depth_val,
+            CASE WHEN \`tsunami\` = true THEN 1 ELSE 0 END AS tsunami_val,
+            CASE WHEN \`magnitude\` >= 6.0 THEN 1 ELSE 0 END AS major_val
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE \`country\`['name'] IS NOT NULL
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            country_name,
+            region,
+            subregion,
+            COUNT(*) AS total_events,
+            ROUND(AVG(magnitude_val), 2) AS avg_magnitude,
+            MAX(magnitude_val) AS max_magnitude,
+            MIN(magnitude_val) AS min_magnitude,
+            ROUND(AVG(depth_val), 1) AS avg_depth,
+            SUM(tsunami_val) AS tsunami_events,
+            SUM(major_val) AS major_events
+        FROM (
+            ${unionQuery}
+        ) AS normalized_events
+        GROUP BY country_name, region, subregion
+        ORDER BY total_events DESC
+        LIMIT ${limit}
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get list of all countries with event counts
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Countries with event counts
+ */
+export async function getCountryList(months) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT \`country\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE \`country\`['name'] IS NOT NULL
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            CAST(\`country\`['name'] AS VARCHAR) AS country_name,
+            CAST(\`country\`['region'] AS VARCHAR) AS region,
+            COUNT(*) AS event_count
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        GROUP BY 
+            CAST(\`country\`['name'] AS VARCHAR),
+            CAST(\`country\`['region'] AS VARCHAR)
+        ORDER BY event_count DESC, country_name ASC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get all earthquakes for a specific country
+ * @param {string} countryName - Country name (e.g., 'Costa Rica')
+ * @param {Array<string>} months - Array of month keys
+ * @param {number} limit - Maximum number of events to return
+ * @returns {Promise<Array|null>} Earthquake events
+ */
+export async function getEarthquakesByCountry(countryName, months, limit = 1000) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            \`id\`,
+            \`magnitude\`,
+            \`depth\`,
+            \`latitude\`,
+            \`longitude\`,
+            \`place\`,
+            \`time\`,
+            \`significance\`,
+            \`status\`,
+            \`felt\`,
+            \`alert\`,
+            \`tsunami\`,
+            \`url\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE CAST(\`country\`['name'] AS VARCHAR) = '${countryName}'
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT * FROM (
+            ${unionQuery}
+        ) AS country_events
+        ORDER BY \`time\` DESC
+        LIMIT ${limit}
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get statistics for a specific country
+ * @param {string} countryName - Country name
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Object|null>} Country statistics
+ */
+export async function getCountryStatistics(countryName, months) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT \`magnitude\`, \`depth\`, \`tsunami\`, \`felt\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE CAST(\`country\`['name'] AS VARCHAR) = '${countryName}'
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            COUNT(*) AS total_events,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude,
+            MIN(\`magnitude\`) AS min_magnitude,
+            ROUND(AVG(\`depth\`), 1) AS avg_depth,
+            MAX(\`depth\`) AS max_depth,
+            MIN(\`depth\`) AS min_depth,
+            SUM(CASE WHEN \`tsunami\` = true THEN 1 ELSE 0 END) AS tsunami_events,
+            SUM(CASE WHEN \`magnitude\` >= 6.0 THEN 1 ELSE 0 END) AS major_events,
+            SUM(CASE WHEN \`felt\` IS NOT NULL THEN 1 ELSE 0 END) AS felt_events
+        FROM (
+            ${unionQuery}
+        ) AS country_events
+    `
+
+    const result = await executeQuery(sql)
+    return result && result.rows.length > 0 ? result.rows[0] : null
+}
+
+/**
+ * Get monthly timeline for a specific country
+ * @param {string} countryName - Country name
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Monthly timeline data
+ */
+export async function getCountryTimeline(countryName, months) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            '${month}' AS month,
+            \`magnitude\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE CAST(\`country\`['name'] AS VARCHAR) = '${countryName}'
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            month,
+            COUNT(*) AS event_count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude
+        FROM (
+            ${unionQuery}
+        ) AS country_timeline
+        GROUP BY month
+        ORDER BY month ASC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get strongest earthquakes across multiple months
+ * @param {Array<string>} months - Array of month keys
+ * @param {number} limit - Number of earthquakes to return
+ * @returns {Promise<Array|null>} Strongest earthquakes
+ */
+export async function getStrongestEarthquakes(months, limit = 10) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            \`id\`,
+            \`magnitude\`,
+            \`depth\`,
+            \`place\`,
+            \`time\`,
+            \`country\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            \`id\`,
+            \`magnitude\`,
+            \`depth\`,
+            \`place\`,
+            \`time\`,
+            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'International Waters') AS country_name,
+            COALESCE(CAST(\`country\`['region'] AS VARCHAR), 'N/A') AS region
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        ORDER BY \`magnitude\` DESC
+        LIMIT ${limit}
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get all tsunami events
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Tsunami events
+ */
+export async function getTsunamiEvents(months) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            \`id\`, \`magnitude\`, \`depth\`, \`place\`, \`time\`, 
+            \`country\`, \`significance\`, \`url\`, \`tsunami\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+        WHERE \`tsunami\` = true
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            \`id\`,
+            \`magnitude\`,
+            \`depth\`,
+            \`place\`,
+            \`time\`,
+            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'International Waters') AS country_name,
+            CAST(\`country\`['region'] AS VARCHAR) AS region,
+            \`significance\`,
+            \`url\`
+        FROM (
+            ${unionQuery}
+        ) AS tsunami_events
+        ORDER BY \`magnitude\` DESC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+// MAGNITUDE DISTRIBUTION
+
+/**
+ * Get magnitude distribution (histogram data)
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Magnitude distribution
+ */
+export async function getMagnitudeDistribution(months) {
+    const unionQuery = buildUnionQuery(months, '\`magnitude\`')
+
+    const sql = `
+        SELECT 
+            CASE 
+                WHEN \`magnitude\` < 4.0 THEN '0-3.9'
+                WHEN \`magnitude\` < 5.0 THEN '4.0-4.9'
+                WHEN \`magnitude\` < 6.0 THEN '5.0-5.9'
+                WHEN \`magnitude\` < 7.0 THEN '6.0-6.9'
+                ELSE '7.0+'
+            END AS magnitude_range,
+            COUNT(*) AS count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude
+        FROM (
+            ${unionQuery}
+        ) AS all_magnitudes
+        GROUP BY 
+            CASE 
+                WHEN \`magnitude\` < 4.0 THEN '0-3.9'
+                WHEN \`magnitude\` < 5.0 THEN '4.0-4.9'
+                WHEN \`magnitude\` < 6.0 THEN '5.0-5.9'
+                WHEN \`magnitude\` < 7.0 THEN '6.0-6.9'
+                ELSE '7.0+'
+            END
+        ORDER BY magnitude_range ASC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get depth distribution
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Depth distribution
+ */
+export async function getDepthDistribution(months) {
+    const unionQuery = buildUnionQuery(months, '\`depth\`')
+
+    const sql = `
+        SELECT 
+            CASE 
+                WHEN \`depth\` < 70 THEN '0-70km (Shallow)'
+                WHEN \`depth\` < 300 THEN '70-300km (Intermediate)'
+                ELSE '300+km (Deep)'
+            END AS depth_range,
+            COUNT(*) AS count
+        FROM (
+            ${unionQuery}
+        ) AS all_depths
+        GROUP BY 
+            CASE 
+                WHEN \`depth\` < 70 THEN '0-70km (Shallow)'
+                WHEN \`depth\` < 300 THEN '70-300km (Intermediate)'
+                ELSE '300+km (Deep)'
+            END
+        ORDER BY count DESC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get daily timeline (events per day)
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Daily timeline data
+ */
+export async function getDailyTimeline(months) {
+    const unionQuery = buildUnionQuery(months, '\`time\`, \`magnitude\`')
+
+    const sql = `
+        SELECT 
+            CAST(\`time\` AS DATE) AS event_date,
+            COUNT(*) AS event_count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        GROUP BY CAST(\`time\` AS DATE)
+        ORDER BY event_date ASC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get hourly distribution (events by hour of day)
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Hourly distribution
+ */
+export async function getHourlyDistribution(months) {
+    const unionQuery = buildUnionQuery(months, "temporal['hour_of_day'], \`magnitude\`")
+
+    const sql = `
+        SELECT 
+            temporal['hour_of_day'] AS hour,
+            COUNT(*) AS event_count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        GROUP BY temporal['hour_of_day']
+        ORDER BY hour ASC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get scatter plot data (depth vs magnitude)
+ * @param {Array<string>} months - Array of month keys
+ * @param {number} limit - Maximum number of points
+ * @param {boolean} includeCountry - Include country name
+ * @returns {Promise<Array|null>} Scatter plot data
+ */
+export async function getScatterPlotData(months, limit = 1000, includeCountry = false) {
+    const selectClause = includeCountry
+        ? '\`magnitude\`, \`depth\`, \`significance\`, \`country\`'
+        : '\`magnitude\`, \`depth\`, \`significance\`'
+
+    const unionQuery = buildUnionQuery(months, selectClause)
+
+    const countryCast = includeCountry
+        ? `, CAST(\`country\`['name'] AS VARCHAR) AS country_name`
+        : ''
+
+    const sql = `
+        SELECT 
+            CAST(\`magnitude\` AS DOUBLE) AS magnitude,
+            CAST(\`depth\` AS DOUBLE) AS depth,
+            CASE 
+                WHEN \`depth\` < 70 THEN 'shallow'
+                WHEN \`depth\` >= 70 AND \`depth\` < 300 THEN 'intermediate'
+                ELSE 'deep'
+            END AS depth_category,
+            CAST(\`significance\` AS INTEGER) AS significance
+            ${countryCast}
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        WHERE \`depth\` IS NOT NULL AND \`magnitude\` IS NOT NULL
+        LIMIT ${limit}
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get magnitude type distribution
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Magnitude type distribution
+ */
+export async function getMagnitudeTypeDistribution(months) {
+    const unionQuery = buildUnionQuery(months, '\`magType\`, \`magnitude\`')
+
+    const sql = `
+        SELECT 
+            CAST(\`magType\` AS VARCHAR) AS magnitude_type,
+            COUNT(*) AS event_count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            MAX(\`magnitude\`) AS max_magnitude,
+            ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS percentage
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        GROUP BY CAST(\`magType\` AS VARCHAR)
+        ORDER BY event_count DESC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get elevation category distribution
+ * @param {Array<string>} months - Array of month keys
+ * @returns {Promise<Array|null>} Elevation distribution
+ */
+export async function getElevationDistribution(months) {
+    const unionQuery = buildUnionQuery(months, '\`elevation\`, \`magnitude\`')
+
+    const sql = `
+        SELECT 
+            CAST(\`elevation\`['category'] AS VARCHAR) AS elevation_category,
+            COUNT(*) AS event_count,
+            ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude,
+            ROUND(AVG(CAST(\`elevation\`['value'] AS INTEGER)), 0) AS avg_elevation_m
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        GROUP BY CAST(\`elevation\`['category'] AS VARCHAR)
+        ORDER BY event_count DESC
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
 }
 
 /**
  * Clear query cache
  */
-export function clearDrillCache() {
+export function clearCache() {
     queryCache.clear()
-    console.log('Drill query cache cleared')
+    console.log('[drillService] Cache cleared')
 }
 
 /**
  * Get cache statistics
- * @returns {Object} Cache statistics
  */
-export function getDrillCacheStats() {
+export function getCacheStats() {
     return {
         size: queryCache.size,
-        keys: Array.from(queryCache.keys()),
+        entries: Array.from(queryCache.keys()),
     }
 }
 
@@ -627,7 +820,7 @@ export function getDrillCacheStats() {
 export function exportQueryResultToJSON(data, filename = `drill_export_${Date.now()}.json`) {
     try {
         if (!data || !Array.isArray(data) || data.length === 0) {
-            console.warn('No data to export')
+            console.warn('[drillService] No data to export')
             return false
         }
 
@@ -647,17 +840,13 @@ export function exportQueryResultToJSON(data, filename = `drill_export_${Date.no
             URL.revokeObjectURL(url)
         }, 100)
 
-        console.log(`Query results exported to ${filename}`)
+        console.log(`[drillService] Query results exported to ${filename}`)
         return true
     } catch (error) {
-        console.error('Error exporting query results:', error)
+        console.error('[drillService] Error exporting query results:', error)
         return false
     }
 }
-
-// ============================================
-// TIME PERIOD-BASED QUERIES (NEW)
-// ============================================
 
 /**
  * Save dataset with time period support
@@ -679,264 +868,4 @@ export function saveDatasetWithPeriod(datasetName, data, options = {}) {
     }
 
     return exportQueryResultToJSON(data, filename)
-}
-
-/**
- * Get filtered earthquakes for time period
- * Supports both predefined periods and specific dates
- * @param {Object} filters - Filter parameters
- * @returns {Promise<Array|null>} Filtered earthquakes
- */
-export async function getFilteredEarthquakesByPeriod(filters) {
-    const {
-        timePeriod,
-        specificDate = null,
-        minMagnitude = 0,
-        maxMagnitude = 10,
-        minDepth = 0,
-        maxDepth = 1000,
-        limit = 1000,
-    } = filters
-
-    const filename = specificDate
-        ? getCacheFilenameForDate(specificDate)
-        : getCacheFilename(timePeriod)
-
-    const sql = `
-        SELECT 
-            id,
-            magnitude,
-            depth,
-            latitude,
-            longitude,
-            place,
-            \`time\`,
-            url,
-            significance
-        FROM dfs.quakex.\`${filename}\`
-        WHERE magnitude >= ${minMagnitude}
-          AND magnitude <= ${maxMagnitude}
-          AND depth >= ${minDepth}
-          AND depth <= ${maxDepth}
-        ORDER BY \`time\` DESC
-        LIMIT ${limit}
-    `
-
-    const result = await executeQuery(sql)
-    return result ? result.rows : null
-}
-
-/**
- * Get earthquake statistics for time period
- * @param {string} timePeriod - Time period value
- * @param {Date|string} [specificDate] - Optional specific date
- * @returns {Promise<Object|null>} Statistics object
- */
-export async function getStatisticsForPeriod(timePeriod, specificDate = null) {
-    try {
-        let filename
-
-        if (specificDate) {
-            filename = getCacheFilenameForDate(specificDate)
-        } else {
-            filename = getCacheFilename(timePeriod)
-        }
-
-        // Fallback to known working filename
-        if (!filename) {
-            filename = 'earthquakes_last_week.json'
-        }
-
-        const sql = `
-            SELECT 
-                COUNT(*) as total_earthquakes,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MAX(magnitude) as max_magnitude,
-                MIN(magnitude) as min_magnitude,
-                ROUND(AVG(depth), 0) as avg_depth_km,
-                MAX(depth) as max_depth_km,
-                MIN(depth) as min_depth_km
-            FROM dfs.quakex.\`${filename}\`
-        `
-
-        const result = await executeQuery(sql)
-        return result && result.rows.length > 0 ? result.rows[0] : null
-    } catch (error) {
-        console.error('Error getting statistics for period:', error.message)
-        return null
-    }
-}
-
-/**
- * Get temporal distribution for time period
- * @param {string} timePeriod - Time period value
- * @param {Date|string} [specificDate] - Optional specific date
- * @param {string} [groupBy='day'] - Group by: 'day', 'week', 'month'
- * @returns {Promise<Array|null>} Temporal distribution
- */
-export async function getTemporalDistributionForPeriod(
-    timePeriod,
-    specificDate = null,
-    groupBy = 'day',
-) {
-    const filename = specificDate
-        ? getCacheFilenameForDate(specificDate)
-        : getCacheFilename(timePeriod)
-
-    let groupExpression
-    switch (groupBy) {
-        case 'week':
-            groupExpression = 'EXTRACT(WEEK FROM CAST(`time` AS TIMESTAMP))'
-            break
-        case 'month':
-            groupExpression = 'EXTRACT(MONTH FROM CAST(`time` AS TIMESTAMP))'
-            break
-        default:
-            groupExpression = 'CAST(`time` AS DATE)'
-    }
-
-    const sql = `
-        SELECT 
-            ${groupExpression} as timeGroup,
-            COUNT(*) as count,
-            ROUND(AVG(magnitude), 2) as avgMagnitude,
-            MAX(magnitude) as maxMagnitude
-        FROM dfs.quakex.\`${filename}\`
-        GROUP BY ${groupExpression}
-        ORDER BY timeGroup
-    `
-
-    const result = await executeQuery(sql)
-    return result ? result.rows : null
-}
-
-/**
- * Get magnitude distribution (categorized) for a time period
- * @param {string} timePeriod - Time period key
- * @param {Date} [specificDate] - Specific date
- * @returns {Promise<Array|null>} Array of magnitude category statistics
- */
-export async function getMagnitudeDistributionForPeriod(timePeriod, specificDate = null) {
-    try {
-        const filename = specificDate
-            ? getCacheFilenameForDate('earthquakes', specificDate)
-            : getCacheFilename('earthquakes', timePeriod)
-
-        const sql = `
-            SELECT 
-                CASE 
-                    WHEN magnitude < 4.0 THEN 'Minor (0-3.9)'
-                    WHEN magnitude < 5.0 THEN 'Light (4.0-4.9)'
-                    WHEN magnitude < 6.0 THEN 'Moderate (5.0-5.9)'
-                    WHEN magnitude < 7.0 THEN 'Strong (6.0-6.9)'
-                    ELSE 'Major (7.0+)'
-                END as category,
-                COUNT(*) as count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MIN(magnitude) as min_magnitude,
-                MAX(magnitude) as max_magnitude,
-                ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 2) as percentage
-            FROM dfs.quakex.\`${filename}\`
-            GROUP BY 
-                CASE 
-                    WHEN magnitude < 4.0 THEN 'Minor (0-3.9)'
-                    WHEN magnitude < 5.0 THEN 'Light (4.0-4.9)'
-                    WHEN magnitude < 6.0 THEN 'Moderate (5.0-5.9)'
-                    WHEN magnitude < 7.0 THEN 'Strong (6.0-6.9)'
-                    ELSE 'Major (7.0+)'
-                END
-            ORDER BY count DESC
-        `
-
-        const result = await executeQuery(sql)
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('[drillService.getMagnitudeDistributionForPeriod] Error:', error.message, {
-            timePeriod,
-            specificDate,
-        })
-        return null
-    }
-}
-
-/**
- * Get depth distribution (categorized) for a time period
- * @param {string} timePeriod - Time period key
- * @param {Date} [specificDate] - Specific date
- * @returns {Promise<Array|null>} Array of depth category statistics
- */
-export async function getDepthDistributionForPeriod(timePeriod, specificDate = null) {
-    try {
-        const filename = specificDate
-            ? getCacheFilenameForDate('earthquakes', specificDate)
-            : getCacheFilename('earthquakes', timePeriod)
-
-        const sql = `
-            SELECT 
-                CASE 
-                    WHEN depth < 70 THEN 'SHALLOW (<70km)'
-                    WHEN depth < 300 THEN 'INTERMEDIATE (70-300km)'
-                    ELSE 'DEEP (>300km)'
-                END as category,
-                COUNT(*) as count,
-                ROUND(AVG(magnitude), 2) as avg_magnitude,
-                MIN(magnitude) as min_magnitude,
-                MAX(magnitude) as max_magnitude
-            FROM dfs.quakex.\`${filename}\`
-            GROUP BY 
-                CASE 
-                    WHEN depth < 70 THEN 'SHALLOW (<70km)'
-                    WHEN depth < 300 THEN 'INTERMEDIATE (70-300km)'
-                    ELSE 'DEEP (>300km)'
-                END
-            ORDER BY count DESC
-        `
-
-        const result = await executeQuery(sql)
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('[drillService.getDepthDistributionForPeriod] Error:', error.message, {
-            timePeriod,
-            specificDate,
-        })
-        return null
-    }
-}
-
-/**
- * Get strongest earthquakes for a time period
- * @param {string} timePeriod - Time period key
- * @param {Date} [specificDate] - Specific date
- * @param {number} [limit=10] - Number of earthquakes to return
- * @returns {Promise<Array|null>} Array of strongest earthquakes
- */
-export async function getStrongestEarthquakesForPeriod(
-    timePeriod,
-    specificDate = null,
-    limit = 10,
-) {
-    try {
-        const filename = specificDate
-            ? getCacheFilenameForDate('earthquakes', specificDate)
-            : getCacheFilename('earthquakes', timePeriod)
-
-        const sql = `
-            SELECT 
-                id, place, magnitude, depth, \`time\`,
-                latitude, longitude, url, significance
-            FROM dfs.quakex.\`${filename}\`
-            ORDER BY magnitude DESC
-            LIMIT ${limit}
-        `
-
-        const result = await executeQuery(sql)
-        return result ? result.rows : null
-    } catch (error) {
-        console.error('[drillService.getStrongestEarthquakesForPeriod] Error:', error.message, {
-            timePeriod,
-            specificDate,
-            limit,
-        })
-        return null
-    }
 }

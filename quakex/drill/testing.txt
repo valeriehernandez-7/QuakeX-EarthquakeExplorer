@@ -1012,3 +1012,507 @@ Trinidad and Tobago	Americas	1
 Uzbekistan	Asia	1
 Vietnam	Asia	1
 Yemen	Asia	1
+
+---
+
+SELECT 
+    temporal['hour_of_day'] AS hour,
+    COUNT(*) AS event_count,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude
+FROM dfs.`/data/earthquakes-2025-07.json`
+GROUP BY temporal['hour_of_day']
+ORDER BY hour ASC;
+
+hour	event_count	avg_magnitude
+0	66	4.97
+1	71	4.88
+2	71	4.85
+3	62	4.81
+4	65	4.77
+5	77	4.91
+6	54	4.91
+7	73	4.88
+8	49	4.74
+9	52	4.85
+10	34	4.83
+11	52	4.74
+12	34	4.88
+13	39	4.78
+14	53	4.77
+15	42	4.83
+16	48	4.9
+17	49	4.92
+18	35	4.74
+19	34	4.83
+20	37	4.91
+21	34	4.98
+22	38	4.94
+23	70	5.11
+
+---
+
+SELECT 
+    CASE 
+        WHEN depth < 70 THEN '0-70km (Shallow)'
+        WHEN depth < 300 THEN '70-300km (Intermediate)'
+        ELSE '300+km (Deep)'
+    END AS depth_range,
+    COUNT(*) AS count
+FROM dfs.`/data/earthquakes-2025-07.json`
+GROUP BY 
+    CASE 
+        WHEN depth < 70 THEN '0-70km (Shallow)'
+        WHEN depth < 300 THEN '70-300km (Intermediate)'
+        ELSE '300+km (Deep)'
+    END;
+
+depth_range	count
+0-70km (Shallow)	1079
+300+km (Deep)	33
+70-300km (Intermediate)	127
+
+---
+
+-- Get statistics for Costa Rica across 3 months
+SELECT 
+    COUNT(*) AS total_events,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude,
+    MAX(magnitude) AS max_magnitude,
+    MIN(magnitude) AS min_magnitude,
+    ROUND(AVG(depth), 1) AS avg_depth,
+    MAX(depth) AS max_depth,
+    MIN(depth) AS min_depth,
+    SUM(CASE WHEN tsunami = true THEN 1 ELSE 0 END) AS tsunami_events,
+    SUM(CASE WHEN magnitude >= 6.0 THEN 1 ELSE 0 END) AS major_events,
+    SUM(CASE WHEN `felt` IS NOT NULL THEN 1 ELSE 0 END) AS felt_events
+FROM (
+    SELECT magnitude, depth, tsunami, `felt`
+    FROM dfs.`/data/earthquakes-2025-07.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+    
+    UNION ALL
+    
+    SELECT magnitude, depth, tsunami, `felt`
+    FROM dfs.`/data/earthquakes-2025-08.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+    
+    UNION ALL
+    
+    SELECT magnitude, depth, tsunami, `felt`
+    FROM dfs.`/data/earthquakes-2025-09.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+) AS country_events;
+
+total_events	avg_magnitude	max_magnitude	min_magnitude	avg_depth	max_depth	min_depth	tsunami_events	major_events	felt_events
+6	4.65	4.8	4.5	36.2	117	10	0	0	3
+
+---
+
+-- Monthly timeline for Costa Rica
+SELECT 
+    month,
+    COUNT(*) AS event_count,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude,
+    MAX(magnitude) AS max_magnitude
+FROM (
+    SELECT 
+        '2025-07' AS month,
+        magnitude
+    FROM dfs.`/data/earthquakes-2025-07.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+    
+    UNION ALL
+    
+    SELECT 
+        '2025-08' AS month,
+        magnitude
+    FROM dfs.`/data/earthquakes-2025-08.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+    
+    UNION ALL
+    
+    SELECT 
+        '2025-09' AS month,
+        magnitude
+    FROM dfs.`/data/earthquakes-2025-09.json`
+    WHERE CAST(`country`['name'] AS VARCHAR) = 'Costa Rica'
+) AS country_timeline
+GROUP BY month
+ORDER BY month ASC;
+
+month	event_count	avg_magnitude	max_magnitude
+2025-07	1	4.7	4.7
+2025-08	3	4.7	4.8
+2025-09	2	4.55	4.6
+
+---
+
+-- Get all tsunami events
+SELECT 
+    `id`,
+    `magnitude`,
+    `depth`,
+    `place`,
+    `time`,
+    COALESCE(CAST(`country`['name'] AS VARCHAR), 'International Waters') AS country_name,
+    CAST(`country`['region'] AS VARCHAR) AS region,
+    `significance`,
+    `url`
+FROM (
+    SELECT `id`, `magnitude`, `depth`, `place`, `time`, `country`, `significance`, `url`, `tsunami`
+    FROM dfs.`/data/earthquakes-2025-07.json`
+    WHERE `tsunami` = true
+    
+    UNION ALL
+    
+    SELECT `id`, `magnitude`, `depth`, `place`, `time`, `country`, `significance`, `url`, `tsunami`
+    FROM dfs.`/data/earthquakes-2025-08.json`
+    WHERE `tsunami` = true
+    
+    UNION ALL
+    
+    SELECT `id`, `magnitude`, `depth`, `place`, `time`, `country`, `significance`, `url`, `tsunami`
+    FROM dfs.`/data/earthquakes-2025-09.json`
+    WHERE `tsunami` = true
+) AS tsunami_events
+ORDER BY magnitude DESC;
+
+id	magnitude	depth	place	time	country_name	region	significance	url
+us6000qw60	8.8	35	2025 Kamchatka Peninsula, Russia Earthquake	2025-07-29T23:24:52.483Z	International Waters	null	2105	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw60
+us7000qx2g	7.8	30	128 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-18T18:58:15.240Z	Russia	Europe	1021	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qx2g
+us6000r2xq	7.5	10	2025 Southern Drake Passage Earthquake	2025-08-22T02:16:18.246Z	Falkland Islands	Americas	876	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r2xq
+us7000qdyl	7.4	34	2025 Eastern Kamchatka, Russia Earthquake	2025-07-20T06:49:04.327Z	International Waters	null	2018	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdyl
+us7000qvw5	7.4	59	102 km E of Petropavlovsk-Kamchatsky, Russia	2025-09-13T02:37:56.847Z	Russia	Europe	861	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qvw5
+us7000qd1y	7.3	38	2025 Sand Point, Alaska Earthquake	2025-07-16T20:37:41.667Z	International Waters	null	961	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd1y
+us6000qvsf	7.0	31	Macquarie Island region	2025-07-28T22:10:35.109Z	International Waters	null	754	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvsf
+us6000qxt4	6.8	30	123 km E of Severo-Kuril’sk, Russia	2025-08-03T05:37:55.148Z	Russia	Europe	717	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qxt4
+us7000qcik	6.7	71	Unknown location	2025-07-14T05:49:58.119Z	Timor-Leste	Asia	715	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qcik
+us7000qdye	6.6	23	134 km E of Petropavlovsk-Kamchatsky, Russia	2025-07-20T06:28:17.860Z	Russia	Europe	671	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qdye
+us6000quy1	6.6	314	187 km SSE of Mata-Utu, Wallis and Futuna	2025-07-24T23:37:56.601Z	Wallis and Futuna	Oceania	670	https://earthquake.usgs.gov/earthquakes/eventpage/us6000quy1
+us6000qw1a	6.6	553	south of the Fiji Islands	2025-07-29T17:53:40.918Z	Fiji	Oceania	670	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qw1a
+us7000quvp	6.4	10	Vanuatu region	2025-09-08T21:47:48.117Z	Fiji	Oceania	630	https://earthquake.usgs.gov/earthquakes/eventpage/us7000quvp
+us6000r01m	6.3	14	195 km WNW of Abepura, Indonesia	2025-08-12T08:24:23.409Z	Indonesia	Asia	622	https://earthquake.usgs.gov/earthquakes/eventpage/us6000r01m
+us6000rcqw	6.3	14	26 km ENE of Mene Grande, Venezuela	2025-09-25T03:51:39.539Z	Venezuela	Americas	766	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcqw
+us7000qe51	6.2	40	91 km SSE of Sand Point, Alaska	2025-07-20T22:28:00.041Z	International Waters	null	605	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qe51
+us6000qvbw	6.2	17	Macquarie Island region	2025-07-26T16:15:04.546Z	International Waters	null	591	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvbw
+us7000qclp	6.2	10	Unknown location	2025-07-14T17:16:49.051Z	Panama	Americas	592	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qclp
+us6000rcnw	6.2	9	8 km ENE of Mene Grande, Venezuela	2025-09-24T22:21:55.745Z	Venezuela	Americas	859	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rcnw
+us7000qrj0	5.9	130	237 km W of Adak, Alaska	2025-08-28T11:07:48.125Z	International Waters	null	536	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qrj0
+us6000rd1w	5.9	10	239 km W of Bandon, Oregon	2025-09-26T06:45:28.067Z	International Waters	null	543	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rd1w
+us7000qtm0	5.9	18	92 km SSW of Nikolski, Alaska	2025-09-03T20:57:47.645Z	International Waters	null	536	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtm0
+us7000quwy	5.7	10	174 km WSW of Port Orford, Oregon	2025-09-09T04:08:01.584Z	International Waters	null	520	https://earthquake.usgs.gov/earthquakes/eventpage/us7000quwy
+us7000qd4n	5.6	35	96 km SSE of Sand Point, Alaska	2025-07-17T04:30:37.038Z	International Waters	null	482	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd4n
+ak025b7povrc	5.6	12	133 km SE of Old Harbor, Alaska	2025-09-01T11:02:09.766Z	International Waters	null	482	https://earthquake.usgs.gov/earthquakes/eventpage/ak025b7povrc
+us7000qxp1	5.5	30	122 km SW of Adak, Alaska	2025-09-21T09:30:27.862Z	International Waters	null	467	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qxp1
+us7000qug7	5.4	38	81 km SSW of Nikolski, Alaska	2025-09-06T20:40:42.434Z	International Waters	null	449	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qug7
+us6000qv9g	5.3	90	Rat Islands, Aleutian Islands, Alaska	2025-07-26T05:03:53.539Z	International Waters	null	432	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qv9g
+us6000qvj2	5.3	83	23 km N of Dutch Harbor, Alaska	2025-07-27T22:47:05.173Z	International Waters	null	447	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvj2
+us7000qd49	5.2	35	85 km SSE of Sand Point, Alaska	2025-07-17T02:09:43.868Z	International Waters	null	416	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd49
+us7000qtwh	5.2	35	92 km SSW of Nikolski, Alaska	2025-09-04T19:54:26.248Z	International Waters	null	416	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtwh
+us7000qtvy	5.2	35	94 km SSW of Nikolski, Alaska	2025-09-04T19:01:14.016Z	International Waters	null	416	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qtvy
+us7000qd41	5.1	37	86 km SSE of Sand Point, Alaska	2025-07-17T01:12:21.887Z	International Waters	null	400	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd41
+us6000qvdz	5.1	135	Rat Islands, Aleutian Islands, Alaska	2025-07-26T23:09:39.073Z	International Waters	null	400	https://earthquake.usgs.gov/earthquakes/eventpage/us6000qvdz
+us7000qru7	5.1	81	260 km W of Adak, Alaska	2025-08-29T09:14:25.405Z	International Waters	null	400	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qru7
+us6000rdd9	5.1	10	231 km W of Bandon, Oregon	2025-09-27T22:12:49.601Z	International Waters	null	404	https://earthquake.usgs.gov/earthquakes/eventpage/us6000rdd9
+us7000qd00	5.0	70	57 km E of Atka, Alaska	2025-07-16T14:21:52.330Z	International Waters	null	386	https://earthquake.usgs.gov/earthquakes/eventpage/us7000qd00
+ak025by3iekl	4.6	12	117 km SE of Old Harbor, Alaska	2025-09-17T06:35:40.812Z	International Waters	null	326	https://earthquake.usgs.gov/earthquakes/eventpage/ak025by3iekl
+ak0258jwrkyq	4.5	100	41 km WNW of Happy Valley, Alaska	2025-07-05T18:15:07.054Z	International Waters	null	368	https://earthquake.usgs.gov/earthquakes/eventpage/ak0258jwrkyq
+
+---
+
+-- Magnitude distribution in ranges
+SELECT 
+    CASE 
+        WHEN magnitude < 4.0 THEN '0-3.9'
+        WHEN magnitude < 5.0 THEN '4.0-4.9'
+        WHEN magnitude < 6.0 THEN '5.0-5.9'
+        WHEN magnitude < 7.0 THEN '6.0-6.9'
+        ELSE '7.0+'
+    END AS magnitude_range,
+    COUNT(*) AS count,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude
+FROM (
+    SELECT magnitude FROM dfs.`/data/earthquakes-2025-07.json`
+    UNION ALL
+    SELECT magnitude FROM dfs.`/data/earthquakes-2025-08.json`
+    UNION ALL
+    SELECT magnitude FROM dfs.`/data/earthquakes-2025-09.json`
+) AS all_magnitudes
+GROUP BY 
+    CASE 
+        WHEN magnitude < 4.0 THEN '0-3.9'
+        WHEN magnitude < 5.0 THEN '4.0-4.9'
+        WHEN magnitude < 6.0 THEN '5.0-5.9'
+        WHEN magnitude < 7.0 THEN '6.0-6.9'
+        ELSE '7.0+'
+    END
+ORDER BY magnitude_range ASC;
+
+magnitude_range	count	avg_magnitude
+4.0-4.9	2147	4.65
+5.0-5.9	737	5.23
+6.0-6.9	43	6.24
+7.0+	7	7.6
+
+---
+
+-- Daily earthquake count across all 3 months
+SELECT 
+    CAST(`time` AS DATE) AS event_date,
+    COUNT(*) AS event_count,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude,
+    MAX(magnitude) AS max_magnitude
+FROM (
+    SELECT `time`, magnitude FROM dfs.`/data/earthquakes-2025-07.json`
+    UNION ALL
+    SELECT `time`, magnitude FROM dfs.`/data/earthquakes-2025-08.json`
+    UNION ALL
+    SELECT `time`, magnitude FROM dfs.`/data/earthquakes-2025-09.json`
+) AS all_events
+GROUP BY CAST(`time` AS DATE)
+ORDER BY event_date ASC;
+
+event_date	event_count	avg_magnitude	max_magnitude
+2025-07-01	19	4.63	5.1
+2025-07-02	39	4.83	5.6
+2025-07-03	24	4.85	5.5
+2025-07-04	24	4.75	5.6
+2025-07-05	16	4.75	5.5
+2025-07-06	23	4.88	5.5
+2025-07-07	19	4.81	6.2
+2025-07-08	22	4.89	5.7
+2025-07-09	17	4.74	5.3
+2025-07-10	20	4.73	5.2
+2025-07-11	18	4.73	5.1
+2025-07-12	18	4.7	5.3
+2025-07-13	20	4.75	5.3
+2025-07-14	25	4.88	6.7
+2025-07-15	21	4.89	5.8
+2025-07-16	17	4.91	7.3
+2025-07-17	23	4.92	5.6
+2025-07-18	25	4.78	5.3
+2025-07-19	17	4.93	5.6
+2025-07-20	87	4.94	7.4
+2025-07-21	48	4.77	5.8
+2025-07-22	41	4.83	6.0
+2025-07-23	22	4.85	6.3
+2025-07-24	26	5.02	6.6
+2025-07-25	21	5.0	6.2
+2025-07-26	17	4.89	6.2
+2025-07-27	13	4.88	5.6
+2025-07-28	28	4.97	7.0
+2025-07-29	68	5.13	8.8
+2025-07-30	422	4.87	6.9
+2025-07-31	39	4.76	6.2
+2025-08-01	84	4.85	6.1
+2025-08-02	63	4.73	6.0
+2025-08-03	65	4.85	6.8
+2025-08-04	33	4.79	6.2
+2025-08-05	39	4.74	5.7
+2025-08-06	40	4.74	5.8
+2025-08-07	32	4.76	5.9
+2025-08-08	31	4.72	5.0
+2025-08-09	30	4.76	6.0
+2025-08-10	46	4.74	6.1
+2025-08-11	37	4.72	5.8
+2025-08-12	38	4.8	6.3
+2025-08-13	24	4.74	5.3
+2025-08-14	20	4.82	6.3
+2025-08-15	18	4.73	5.7
+2025-08-16	27	4.85	5.8
+2025-08-17	20	4.82	5.5
+2025-08-18	26	4.77	5.6
+2025-08-19	23	4.75	5.4
+2025-08-20	19	4.68	5.1
+2025-08-21	30	4.74	5.8
+2025-08-22	29	4.89	7.5
+2025-08-23	26	4.88	6.0
+2025-08-24	26	4.72	5.4
+2025-08-25	14	4.86	6.1
+2025-08-26	20	4.84	5.6
+2025-08-27	13	5.02	6.0
+2025-08-28	22	4.78	5.9
+2025-08-29	21	4.77	5.5
+2025-08-30	15	4.83	5.5
+2025-08-31	8	4.66	5.2
+2025-09-01	16	4.75	5.6
+2025-09-02	25	4.74	5.3
+2025-09-03	26	4.81	5.9
+2025-09-04	30	4.81	5.9
+2025-09-05	24	4.72	5.4
+2025-09-06	15	4.75	5.4
+2025-09-07	21	4.7	5.1
+2025-09-08	19	4.91	6.4
+2025-09-09	26	4.8	5.7
+2025-09-10	13	4.72	5.2
+2025-09-11	23	4.75	5.3
+2025-09-12	27	4.79	5.6
+2025-09-13	27	4.83	7.4
+2025-09-14	16	4.74	5.5
+2025-09-15	19	4.82	6.0
+2025-09-16	11	4.89	6.0
+2025-09-17	13	4.76	5.4
+2025-09-18	74	4.91	7.8
+2025-09-19	78	4.8	6.0
+2025-09-20	33	4.76	5.3
+2025-09-21	25	4.78	5.7
+2025-09-22	41	4.77	5.6
+2025-09-23	24	4.8	5.6
+2025-09-24	18	4.8	6.2
+2025-09-25	34	4.91	6.3
+2025-09-26	23	4.76	5.9
+2025-09-27	24	4.73	5.5
+2025-09-28	13	4.77	5.5
+2025-09-29	14	4.75	5.5
+2025-09-30	4	4.7	4.9
+
+
+---
+
+-- Get all events with alert level (green, yellow, orange, red)
+SELECT 
+    `id`,
+    `magnitude`,
+    `depth`,
+    `place`,
+    `time`,
+    CAST(`alert` AS VARCHAR) AS alert_level,
+    CAST(`felt` AS INTEGER) AS felt_reports,
+    COALESCE(CAST(`country`['name'] AS VARCHAR), 'International Waters') AS country_name,
+    `significance`,
+    `url`
+FROM (
+    SELECT * FROM dfs.`/data/earthquakes-2025-07.json` WHERE `alert` IS NOT NULL
+    UNION ALL
+    SELECT * FROM dfs.`/data/earthquakes-2025-08.json` WHERE `alert` IS NOT NULL
+    UNION ALL
+    SELECT * FROM dfs.`/data/earthquakes-2025-09.json` WHERE `alert` IS NOT NULL
+) AS alert_events
+ORDER BY 
+    CASE `alert`
+        WHEN 'red' THEN 1
+        WHEN 'orange' THEN 2
+        WHEN 'yellow' THEN 3
+        WHEN 'green' THEN 4
+    END ASC,
+    magnitude DESC;
+
+
+warning   UserRemoteException : 	UNSUPPORTED_OPERATION ERROR: Union-All over schema-less tables must specify the columns explicitly
+    
+org.apache.drill.common.exceptions.UserRemoteException: UNSUPPORTED_OPERATION ERROR: Union-All over schema-less tables must specify the columns explicitly
+See Apache Drill JIRA: DRILL-2414
+
+
+---
+
+-- Get earthquakes with public reports
+SELECT 
+    `id`,
+    `magnitude`,
+    `depth`,
+    `place`,
+    `time`,
+    CAST(`felt` AS INTEGER) AS felt_reports,
+    CAST(`cdi` AS DOUBLE) AS community_intensity,
+    COALESCE(CAST(`country`['name'] AS VARCHAR), 'Unknown') AS country_name,
+    `significance`,
+    `url`
+FROM (
+    SELECT * FROM dfs.`/data/earthquakes-2025-07.json` WHERE `felt` IS NOT NULL
+    UNION ALL
+    SELECT * FROM dfs.`/data/earthquakes-2025-08.json` WHERE `felt` IS NOT NULL
+    UNION ALL
+    SELECT * FROM dfs.`/data/earthquakes-2025-09.json` WHERE `felt` IS NOT NULL
+) AS felt_events
+ORDER BY CAST(`felt` AS INTEGER) DESC
+LIMIT 50;
+
+ warning   UserRemoteException : 	UNSUPPORTED_OPERATION ERROR: Union-All over schema-less tables must specify the columns explicitly
+    
+org.apache.drill.common.exceptions.UserRemoteException: UNSUPPORTED_OPERATION ERROR: Union-All over schema-less tables must specify the columns explicitly
+See Apache Drill JIRA: DRILL-2414
+
+
+---
+
+-- Magnitude type distribution
+SELECT 
+    CAST(`magType` AS VARCHAR) AS magnitude_type,
+    COUNT(*) AS event_count,
+    ROUND(AVG(`magnitude`), 2) AS avg_magnitude,
+    MAX(`magnitude`) AS max_magnitude,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS percentage
+FROM (
+    SELECT `magType`, `magnitude` FROM dfs.`/data/earthquakes-2025-07.json`
+    UNION ALL
+    SELECT `magType`, `magnitude` FROM dfs.`/data/earthquakes-2025-08.json`
+    UNION ALL
+    SELECT `magType`, `magnitude` FROM dfs.`/data/earthquakes-2025-09.json`
+) AS all_events
+GROUP BY CAST(`magType` AS VARCHAR)
+ORDER BY event_count DESC;
+
+magnitude_type	event_count	avg_magnitude	max_magnitude	percentage
+mb	2470	4.73	6.3	84.2
+mww	430	5.33	8.8	14.7
+mwr	23	4.66	5.2	0.8
+mwb	5	5.9	6.1	0.2
+ml	3	4.97	5.7	0.1
+mw	2	4.65	4.8	0.1
+ms_vx	1	4.9	4.9	0.0
+
+---
+
+-- Elevation category distribution
+SELECT 
+    CAST(`elevation`['category'] AS VARCHAR) AS elevation_category,
+    COUNT(*) AS event_count,
+    ROUND(AVG(`magnitude`), 2) AS avg_magnitude,
+    ROUND(AVG(CAST(`elevation`['value'] AS INTEGER)), 0) AS avg_elevation_m
+FROM (
+    SELECT `elevation`, `magnitude` FROM dfs.`/data/earthquakes-2025-07.json`
+    UNION ALL
+    SELECT `elevation`, `magnitude` FROM dfs.`/data/earthquakes-2025-08.json`
+    UNION ALL
+    SELECT `elevation`, `magnitude` FROM dfs.`/data/earthquakes-2025-09.json`
+) AS all_events
+GROUP BY CAST(`elevation`['category'] AS VARCHAR)
+ORDER BY event_count DESC;
+
+elevation_category	event_count	avg_magnitude	avg_elevation_m
+lowland	2663	4.83	3.0
+high_mountains	114	4.76	3300.0
+mountains	93	4.87	888.0
+hills	63	4.74	347.0
+below_sea_level	1	5.4	-28.0
+
+---
+
+-- Day of week distribution (UTC)
+SELECT 
+    temporal['day_of_week'] AS day_of_week,
+    CASE temporal['day_of_week']
+        WHEN 0 THEN 'Sunday'
+        WHEN 1 THEN 'Monday'
+        WHEN 2 THEN 'Tuesday'
+        WHEN 3 THEN 'Wednesday'
+        WHEN 4 THEN 'Thursday'
+        WHEN 5 THEN 'Friday'
+        WHEN 6 THEN 'Saturday'
+    END AS day_name,
+    COUNT(*) AS event_count,
+    ROUND(AVG(magnitude), 2) AS avg_magnitude
+FROM dfs.`/data/earthquakes-2025-07.json`
+GROUP BY temporal['day_of_week']
+ORDER BY temporal['day_of_week'] ASC;
+
+
+day_of_week	day_name	event_count	avg_magnitude
+0	Sunday	143	4.9
+1	Monday	120	4.84
+2	Tuesday	171	4.94
+3	Wednesday	517	4.86
+4	Thursday	132	4.85
+5	Friday	88	4.82
+6	Saturday	68	4.82
