@@ -207,6 +207,7 @@
                                     </template>
                                     <template #content>
                                         <DataTable
+                                            ref="eventsDataTable"
                                             :value="countryData"
                                             :paginator="true"
                                             :rows="10"
@@ -253,16 +254,12 @@
                                                 style="min-width: 120px"
                                             >
                                                 <template #body="{ data }">
-                                                    <span
-                                                        class="magnitude-badge"
-                                                        :style="{
-                                                            background: getMagnitudeColor(
-                                                                data.magnitude,
-                                                            ),
-                                                        }"
-                                                    >
-                                                        M {{ data.magnitude.toFixed(1) }}
-                                                    </span>
+                                                    <Tag
+                                                        :value="`M ${data.magnitude}`"
+                                                        :severity="
+                                                            getMagnitudeSeverity(data.magnitude)
+                                                        "
+                                                    />
                                                 </template>
                                             </Column>
 
@@ -273,7 +270,7 @@
                                                 style="min-width: 100px"
                                             >
                                                 <template #body="{ data }">
-                                                    {{ data.depth.toFixed(1) }} km
+                                                    {{ data.depth }} km
                                                 </template>
                                             </Column>
 
@@ -337,7 +334,9 @@
                                             <Button
                                                 icon="pi pi-image"
                                                 label="Export PNG"
-                                                @click="exportChartPNG('timelineChart')"
+                                                @click="
+                                                    exportChartPNG(timelineChart, 'timeline_chart')
+                                                "
                                                 size="small"
                                                 outlined
                                             />
@@ -459,6 +458,21 @@
                                         <TrendingUp :size="20" fillColor="#3b82f6" />
                                         <span>Magnitude Distribution</span>
                                     </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="
+                                                exportChartPNG(
+                                                    magnitudeChart,
+                                                    'magnitude_distribution',
+                                                )
+                                            "
+                                            size="small"
+                                            outlined
+                                            :disabled="loadingGlobalData"
+                                        />
+                                    </div>
                                 </template>
                                 <template #content>
                                     <div v-if="loadingGlobalData" class="chart-loading">
@@ -469,6 +483,7 @@
                                     </div>
                                     <div v-else class="chart-container">
                                         <Chart
+                                            ref="magnitudeChart"
                                             type="bar"
                                             :data="magnitudeDistributionData"
                                             :options="magnitudeChartOptions"
@@ -503,6 +518,7 @@
                                     </div>
                                     <DataTable
                                         v-else
+                                        ref="countriesDataTable"
                                         :value="topCountriesData"
                                         :paginator="true"
                                         :rows="10"
@@ -512,6 +528,21 @@
                                         @row-click="onCountryRowClick"
                                         :rowHover="true"
                                     >
+                                        <template #header>
+                                            <div class="table-header">
+                                                <span class="table-description"
+                                                    >Click on any country to view detailed analysis
+                                                    in the Explorer tab</span
+                                                >
+                                                <Button
+                                                    icon="pi pi-download"
+                                                    label="Export CSV"
+                                                    @click="exportTopCountriesCSV"
+                                                    size="small"
+                                                    outlined
+                                                />
+                                            </div>
+                                        </template>
                                         <Column field="rank" header="#" style="width: 60px">
                                             <template #body="slotProps">
                                                 <Badge
@@ -522,7 +553,12 @@
                                                 />
                                             </template>
                                         </Column>
-                                        <Column field="country_name" header="Country" sortable>
+                                        <Column
+                                            field="country_name"
+                                            header="Country"
+                                            sortable
+                                            style="width: 100px"
+                                        >
                                             <template #body="slotProps">
                                                 <div class="country-cell">
                                                     <strong>{{
@@ -544,6 +580,23 @@
                                                 <span class="event-count">{{
                                                     slotProps.data.total_events
                                                 }}</span>
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="major_events"
+                                            header="Major Events"
+                                            sortable
+                                            style="width: 100px"
+                                        >
+                                            <template #body="slotProps">
+                                                <span
+                                                    :class="
+                                                        slotProps.data.major_events > 0
+                                                            ? 'major-count'
+                                                            : 'minor-count'
+                                                    "
+                                                    >{{ slotProps.data.major_events }}</span
+                                                >
                                             </template>
                                         </Column>
                                         <Column
@@ -581,20 +634,20 @@
                                             </template>
                                         </Column>
                                         <Column
-                                            field="major_events"
-                                            header="Major (≥6.0)"
+                                            field="min_magnitude"
+                                            header="Min Mag"
                                             sortable
                                             style="width: 100px"
                                         >
                                             <template #body="slotProps">
-                                                <span
-                                                    :class="
-                                                        slotProps.data.major_events > 0
-                                                            ? 'major-count'
-                                                            : 'minor-count'
+                                                <Tag
+                                                    :value="`M ${slotProps.data.min_magnitude}`"
+                                                    :severity="
+                                                        getMagnitudeSeverity(
+                                                            slotProps.data.min_magnitude,
+                                                        )
                                                     "
-                                                    >{{ slotProps.data.major_events }}</span
-                                                >
+                                                />
                                             </template>
                                         </Column>
                                     </DataTable>
@@ -608,6 +661,16 @@
                                         <CalendarRange :size="20" fillColor="#3b82f6" />
                                         <span>Global Activity Timeline</span>
                                     </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="exportChartPNG(monthlyChart, 'global_timeline')"
+                                            size="small"
+                                            outlined
+                                            :disabled="loadingGlobalData"
+                                        />
+                                    </div>
                                 </template>
                                 <template #content>
                                     <div v-if="loadingGlobalData" class="chart-loading">
@@ -618,6 +681,7 @@
                                     </div>
                                     <div v-else class="chart-container">
                                         <Chart
+                                            ref="monthlyChart"
                                             type="line"
                                             :data="globalTimelineData"
                                             :options="globalTimelineOptions"
@@ -784,7 +848,15 @@ const monthlyComparison = ref([])
 
 // UI
 const actionsMenu = ref(null)
+
+// DataTable refs
+const eventsDataTable = ref(null)
+const countriesDataTable = ref(null)
+
+// Chart refs
 const timelineChart = ref(null)
+const magnitudeChart = ref(null)
+const monthlyChart = ref(null)
 
 /**
  * Computed: Period text for header
@@ -1201,8 +1273,8 @@ function exportTableCSV() {
     ]
     const rows = countryData.value.map((event) => [
         formatDate(event.time),
-        event.magnitude.toFixed(1),
-        event.depth.toFixed(1),
+        event.magnitude,
+        event.depth,
         `"${event.place}"`,
         event.significance,
         event.url || '',
@@ -1223,13 +1295,61 @@ function exportTableCSV() {
 }
 
 /**
+ * Export Top Countries table to CSV
+ */
+function exportTopCountriesCSV() {
+    if (!topCountriesData.value || topCountriesData.value.length === 0) {
+        console.warn('No data to export')
+        return
+    }
+
+    // Create CSV content
+    const headers = [
+        'Rank',
+        'Country',
+        'Region',
+        'Sub Region',
+        'Total Events',
+        'Major Events (>5.9)',
+        'Avg Magnitude',
+        'Max Magnitude',
+        'Min Magnitude',
+    ]
+    const rows = topCountriesData.value.map((country) => [
+        country.rank,
+        `"${country.country_name}"`,
+        `"${country.region || 'N/A'}"`,
+        `"${country.subregion || 'N/A'}"`,
+        country.total_events,
+        country.major_events,
+        country.avg_magnitude,
+        country.max_magnitude,
+        country.min_magnitude,
+    ])
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    const timestamp = new Date().getTime()
+    link.setAttribute('href', url)
+    link.setAttribute('download', `top_countries_${timestamp}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+}
+
+/**
  * Get badge severity based on rank
  */
 function getRankBadgeSeverity(rank) {
     if (rank === 1) return 'danger'
     if (rank === 2) return 'warn'
     if (rank === 3) return 'info'
-    if (rank <= 10) return 'secondary'
+    if (rank > 3) return 'secondary'
     return null
 }
 
@@ -1259,16 +1379,22 @@ function onCountryRowClick(event) {
 /**
  * Export chart to PNG
  */
-function exportChartPNG(chartRef) {
-    const chart = chartRef === 'timelineChart' ? timelineChart.value : null
-    if (!chart) return
+function exportChartPNG(chartRef, filename) {
+    if (!chartRef || !chartRef.value) {
+        console.warn('Chart reference not found')
+        return
+    }
 
-    const canvas = chart.$el.querySelector('canvas')
-    if (!canvas) return
+    const canvas = chartRef.value.$el.querySelector('canvas')
+    if (!canvas) {
+        console.warn('Canvas not found in chart')
+        return
+    }
 
     const url = canvas.toDataURL('image/png')
     const link = document.createElement('a')
-    link.download = `${exportFilename.value}_timeline.png`
+    const timestamp = new Date().getTime()
+    link.download = `${filename}_${timestamp}.png`
     link.href = url
     link.click()
 }
@@ -1514,12 +1640,27 @@ onMounted(() => {
     margin-bottom: 1.5rem;
 }
 
+/* Card Title with Actions - Updated for better layout */
+.data-card :deep(.p-card-title),
+.chart-card :deep(.p-card-title) {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
 .card-title {
     display: flex;
     align-items: center;
     gap: 0.75rem;
     font-size: 1.125rem;
     font-weight: 600;
+}
+
+.chart-actions {
+    display: flex;
+    gap: 0.5rem;
 }
 
 /* Table */
@@ -1564,12 +1705,6 @@ onMounted(() => {
 .chart-container {
     height: 350px;
     margin-bottom: 1rem;
-}
-
-.chart-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 1rem;
 }
 
 /* USGS Link */
