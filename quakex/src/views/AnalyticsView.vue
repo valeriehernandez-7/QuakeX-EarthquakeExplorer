@@ -208,6 +208,7 @@
                                     <template #content>
                                         <DataTable
                                             ref="eventsDataTable"
+                                            id="eventsDataTable"
                                             :value="countryData"
                                             :paginator="true"
                                             :rows="10"
@@ -216,7 +217,7 @@
                                             :sortOrder="-1"
                                             stripedRows
                                             showGridlines
-                                            :exportFilename="exportFilename"
+                                            :exportExplorerCSVFilename="exportExplorerCSVFilename"
                                             class="events-table"
                                         >
                                             <template #header>
@@ -229,7 +230,7 @@
                                                     <Button
                                                         icon="pi pi-download"
                                                         label="Export CSV"
-                                                        @click="exportTableCSV"
+                                                        @click="exportCountryEventsCSV"
                                                         size="small"
                                                         outlined
                                                     />
@@ -334,9 +335,7 @@
                                             <Button
                                                 icon="pi pi-image"
                                                 label="Export PNG"
-                                                @click="
-                                                    exportChartPNG(timelineChart, 'timeline_chart')
-                                                "
+                                                @click="exportChartPNG('timelineChart')"
                                                 size="small"
                                                 outlined
                                             />
@@ -346,6 +345,7 @@
                                         <div class="chart-container">
                                             <Chart
                                                 ref="timelineChart"
+                                                id="timelineChart"
                                                 type="line"
                                                 :data="timelineChartData"
                                                 :options="timelineChartOptions"
@@ -462,12 +462,7 @@
                                         <Button
                                             icon="pi pi-image"
                                             label="Export PNG"
-                                            @click="
-                                                exportChartPNG(
-                                                    magnitudeChart,
-                                                    'magnitude_distribution',
-                                                )
-                                            "
+                                            @click="exportChartPNG('magnitudeChart')"
                                             size="small"
                                             outlined
                                             :disabled="loadingGlobalData"
@@ -484,6 +479,7 @@
                                     <div v-else class="chart-container">
                                         <Chart
                                             ref="magnitudeChart"
+                                            id="magnitudeChart"
                                             type="bar"
                                             :data="magnitudeDistributionData"
                                             :options="magnitudeChartOptions"
@@ -519,6 +515,7 @@
                                     <DataTable
                                         v-else
                                         ref="countriesDataTable"
+                                        id="countriesDataTable"
                                         :value="topCountriesData"
                                         :paginator="true"
                                         :rows="10"
@@ -665,7 +662,7 @@
                                         <Button
                                             icon="pi pi-image"
                                             label="Export PNG"
-                                            @click="exportChartPNG(monthlyChart, 'global_timeline')"
+                                            @click="exportChartPNG('monthlyChart')"
                                             size="small"
                                             outlined
                                             :disabled="loadingGlobalData"
@@ -682,6 +679,7 @@
                                     <div v-else class="chart-container">
                                         <Chart
                                             ref="monthlyChart"
+                                            id="monthlyChart"
                                             type="line"
                                             :data="globalTimelineData"
                                             :options="globalTimelineOptions"
@@ -868,7 +866,7 @@ const periodText = computed(() => {
 /**
  * Computed: Export filename for CSV
  */
-const exportFilename = computed(() => {
+const exportExplorerCSVFilename = computed(() => {
     if (!selectedCountry.value) return 'earthquakes_export'
     const countryName = selectedCountry.value.replace(/\s+/g, '_')
     return `earthquakes_${countryName}_${months.value[0]}_to_${months.value[months.value.length - 1]}`
@@ -961,6 +959,7 @@ const magnitudeDistributionData = computed(() => {
                 backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#dc2626'],
                 borderColor: ['#2563eb', '#059669', '#d97706', '#dc2626', '#b91c1c'],
                 borderWidth: 1,
+                minBarLength: 2,
             },
         ],
     }
@@ -1011,7 +1010,7 @@ const globalTimelineData = computed(() => {
 
     const labels = globalTimeline.value.map((item) => {
         const date = new Date(item.event_date)
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
     })
     const data = globalTimeline.value.map((item) => item.event_count)
 
@@ -1252,9 +1251,9 @@ function toggleActionsMenu(event) {
 }
 
 /**
- * Export table to CSV
+ * Export country events table from explorer tab to CSV
  */
-function exportTableCSV() {
+function exportCountryEventsCSV() {
     if (!countryData.value || countryData.value.length === 0) {
         console.warn('No data to export')
         return
@@ -1287,7 +1286,7 @@ function exportTableCSV() {
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
     link.setAttribute('href', url)
-    link.setAttribute('download', `${exportFilename.value}.csv`)
+    link.setAttribute('download', `QuakeX_${exportExplorerCSVFilename.value}.csv`)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -1333,9 +1332,9 @@ function exportTopCountriesCSV() {
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     const url = URL.createObjectURL(blob)
-    const timestamp = new Date().getTime()
+    const timestamp = new Date().toISOString().slice(0, 10)
     link.setAttribute('href', url)
-    link.setAttribute('download', `top_countries_${timestamp}.csv`)
+    link.setAttribute('download', `QuakeX_top_active_countries_${timestamp}.csv`)
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -1379,24 +1378,37 @@ function onCountryRowClick(event) {
 /**
  * Export chart to PNG
  */
-function exportChartPNG(chartRef, filename) {
-    if (!chartRef || !chartRef.value) {
-        console.warn('Chart reference not found')
-        return
-    }
+function exportChartPNG(chartId) {
+    setTimeout(() => {
+        let canvas = null
+        const chartComponent = document.getElementById(chartId)
+        if (chartComponent) {
+            canvas = chartComponent.querySelector('canvas')
+        }
 
-    const canvas = chartRef.value.$el.querySelector('canvas')
-    if (!canvas) {
-        console.warn('Canvas not found in chart')
-        return
-    }
+        if (!canvas) {
+            console.warn('Canvas not found for chart:', chartId)
+            return
+        }
 
-    const url = canvas.toDataURL('image/png')
-    const link = document.createElement('a')
-    const timestamp = new Date().getTime()
-    link.download = `${filename}_${timestamp}.png`
-    link.href = url
-    link.click()
+        if (typeof canvas.toDataURL !== 'function') {
+            console.warn('canvas.toDataURL is not a function. Canvas element:', canvas)
+            return
+        }
+
+        try {
+            const url = canvas.toDataURL('image/png')
+            const link = document.createElement('a')
+            const timestamp = new Date().toISOString().slice(0, 10)
+            link.download = `QuakeX_${chartId}_${timestamp}.png`
+            link.href = url
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        } catch (err) {
+            console.error('Error exporting chart:', err)
+        }
+    }, 100)
 }
 
 /**
@@ -1421,7 +1433,7 @@ function formatDate(timestamp) {
  */
 function formatDateShort(dateString) {
     const date = new Date(dateString)
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' })
 }
 
 /**
@@ -1431,7 +1443,7 @@ function formatMonthLabel(monthString) {
     if (!monthString) return ''
     const [year, month] = monthString.split('-')
     const date = new Date(parseInt(year), parseInt(month) - 1, 1)
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })
 }
 
 /**
