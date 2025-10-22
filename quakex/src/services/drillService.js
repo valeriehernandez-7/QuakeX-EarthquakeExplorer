@@ -580,7 +580,7 @@ export async function getStrongestEarthquakes(months, limit = 10) {
             \`depth\`,
             \`place\`,
             \`time\`,
-            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'International Waters') AS country_name,
+            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'Unknown') AS country_name,
             COALESCE(CAST(\`country\`['region'] AS VARCHAR), 'N/A') AS region
         FROM (
             ${unionQuery}
@@ -618,7 +618,7 @@ export async function getTsunamiEvents(months) {
             \`depth\`,
             \`place\`,
             \`time\`,
-            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'International Waters') AS country_name,
+            COALESCE(CAST(\`country\`['name'] AS VARCHAR), 'Unknown') AS country_name,
             CAST(\`country\`['region'] AS VARCHAR) AS region,
             \`significance\`,
             \`url\`

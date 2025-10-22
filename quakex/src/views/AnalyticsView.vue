@@ -469,7 +469,7 @@ const timelineChartData = computed(() => {
     }
 
     const labels = countryTimeline.value.map((item) => formatMonthLabel(item.month))
-    const data = countryTimeline.value.map((item) => Math.round(item.event_count))
+    const data = countryTimeline.value.map((item) => item.event_count)
 
     return {
         labels,
@@ -517,6 +517,9 @@ const timelineChartOptions = computed(() => ({
                 text: 'Number of Events',
             },
             beginAtZero: true,
+            ticks: {
+                stepSize: 1,
+            },
         },
     },
 }))
