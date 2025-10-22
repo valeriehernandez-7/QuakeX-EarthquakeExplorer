@@ -117,8 +117,13 @@
                                     <Card class="kpi-card">
                                         <template #content>
                                             <div class="kpi-content">
-                                                <DatabaseOutline :size="24" fillColor="#3b82f6" />
-                                                <div class="kpi-data">
+                                                <div class="kpi-icon">
+                                                    <DatabaseOutline
+                                                        :size="50"
+                                                        fillColor="#3b82f6"
+                                                    />
+                                                </div>
+                                                <div class="kpi-details">
                                                     <span class="kpi-value">{{
                                                         countryStats.total_events || 0
                                                     }}</span>
@@ -131,8 +136,13 @@
                                     <Card class="kpi-card">
                                         <template #content>
                                             <div class="kpi-content">
-                                                <ChartLineVariant :size="24" fillColor="#10b981" />
-                                                <div class="kpi-data">
+                                                <div class="kpi-icon">
+                                                    <ChartLineVariant
+                                                        :size="50"
+                                                        fillColor="#3b82f6"
+                                                    />
+                                                </div>
+                                                <div class="kpi-details">
                                                     <span class="kpi-value"
                                                         >M
                                                         {{
@@ -148,11 +158,13 @@
                                     <Card class="kpi-card">
                                         <template #content>
                                             <div class="kpi-content">
-                                                <AlertCircleOutline
-                                                    :size="24"
-                                                    fillColor="#ef4444"
-                                                />
-                                                <div class="kpi-data">
+                                                <div class="kpi-icon">
+                                                    <AlertCircleOutline
+                                                        :size="50"
+                                                        fillColor="#3b82f6"
+                                                    />
+                                                </div>
+                                                <div class="kpi-details">
                                                     <span class="kpi-value"
                                                         >M
                                                         {{
@@ -168,14 +180,16 @@
                                     <Card class="kpi-card">
                                         <template #content>
                                             <div class="kpi-content">
-                                                <ArrowCollapseDown :size="24" fillColor="#f59e0b" />
-                                                <div class="kpi-data">
+                                                <div class="kpi-icon">
+                                                    <ArrowCollapseDown
+                                                        :size="50"
+                                                        fillColor="#3b82f6"
+                                                    />
+                                                </div>
+                                                <div class="kpi-details">
                                                     <span class="kpi-value"
-                                                        >{{
-                                                            countryStats.avg_depth || '0'
-                                                        }}
-                                                        km</span
-                                                    >
+                                                        >{{ countryStats.avg_depth || '0' }} km
+                                                    </span>
                                                     <span class="kpi-label">Avg Depth</span>
                                                 </div>
                                             </div>
@@ -187,7 +201,7 @@
                                 <Card class="data-card">
                                     <template #title>
                                         <div class="card-title">
-                                            <TableLarge :size="24" fillColor="#3b82f6" />
+                                            <TableLarge :size="50" fillColor="#3b82f6" />
                                             <span>Recorded Events</span>
                                         </div>
                                     </template>
@@ -316,7 +330,7 @@
                                 <Card class="chart-card">
                                     <template #title>
                                         <div class="card-title">
-                                            <CalendarRange :size="24" fillColor="#3b82f6" />
+                                            <CalendarRange :size="50" fillColor="#3b82f6" />
                                             <span>Activity Timeline</span>
                                         </div>
                                         <div class="chart-actions">
@@ -336,7 +350,7 @@
                                                 type="line"
                                                 :data="timelineChartData"
                                                 :options="timelineChartOptions"
-                                                class="h-[25rem]"
+                                                class="h-[20rem]"
                                             />
                                         </div>
                                         <div class="chart-footer-note">
@@ -363,12 +377,331 @@
                         </div>
                     </TabPanel>
 
-                    <!-- TAB 2: TRENDS (Placeholder) -->
+                    <!-- TAB 2: TRENDS -->
                     <TabPanel value="1">
-                        <div class="tab-content placeholder-content">
-                            <TrendingUp :size="64" fillColor="#94a3b8" />
-                            <h3>Global Trends</h3>
-                            <p>Coming in next implementation phase</p>
+                        <div class="tab-content">
+                            <!-- Global KPI Cards -->
+                            <div class="kpi-grid">
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <DatabaseOutline :size="50" fillColor="#3b82f6" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value">{{
+                                                    globalStats?.total_events || 0
+                                                }}</span>
+                                                <span class="kpi-label">Total Events</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <ChartLineVariant :size="50" fillColor="#10b981" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value"
+                                                    >M
+                                                    {{ globalStats?.avg_magnitude || '0.0' }}</span
+                                                >
+                                                <span class="kpi-label">Average Magnitude</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <AlertCircleOutline
+                                                    :size="50"
+                                                    fillColor="#ef4444"
+                                                />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value"
+                                                    >M
+                                                    {{ globalStats?.max_magnitude || '0.0' }}</span
+                                                >
+                                                <span class="kpi-label">Maximum Magnitude</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <EarthBox :size="50" fillColor="#8b5cf6" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value">{{
+                                                    availableCountries.length
+                                                }}</span>
+                                                <span class="kpi-label">Countries Affected</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+                            </div>
+
+                            <!-- Magnitude Distribution Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <TrendingUp :size="20" fillColor="#3b82f6" />
+                                        <span>Magnitude Distribution</span>
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div v-if="loadingGlobalData" class="chart-loading">
+                                        <ProgressSpinner
+                                            style="width: 50px; height: 50px"
+                                            strokeWidth="4"
+                                        />
+                                    </div>
+                                    <div v-else class="chart-container">
+                                        <Chart
+                                            type="bar"
+                                            :data="magnitudeDistributionData"
+                                            :options="magnitudeChartOptions"
+                                            class="h-[20rem]"
+                                        />
+                                        <div class="chart-footer-note">
+                                            <InformationOutline :size="16" fillColor="#3b82f6" />
+                                            <span
+                                                >Most events fall in the minor to light magnitude
+                                                ranges, which is consistent with global seismic
+                                                patterns</span
+                                            >
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Top Countries Table -->
+                            <Card class="data-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <TableLarge :size="20" fillColor="#3b82f6" />
+                                        <span>Top 20 Most Active Countries</span>
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div v-if="loadingGlobalData" class="table-loading">
+                                        <ProgressSpinner
+                                            style="width: 50px; height: 50px"
+                                            strokeWidth="4"
+                                        />
+                                    </div>
+                                    <DataTable
+                                        v-else
+                                        :value="topCountriesData"
+                                        :paginator="true"
+                                        :rows="10"
+                                        :rowsPerPageOptions="[10, 20]"
+                                        tableStyle="min-width: 50rem"
+                                        class="countries-table"
+                                        @row-click="onCountryRowClick"
+                                        :rowHover="true"
+                                    >
+                                        <Column field="rank" header="#" style="width: 60px">
+                                            <template #body="slotProps">
+                                                <Badge
+                                                    :value="slotProps.data.rank"
+                                                    :severity="
+                                                        getRankBadgeSeverity(slotProps.data.rank)
+                                                    "
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column field="country_name" header="Country" sortable>
+                                            <template #body="slotProps">
+                                                <div class="country-cell">
+                                                    <strong>{{
+                                                        slotProps.data.country_name
+                                                    }}</strong>
+                                                    <small class="country-region">{{
+                                                        slotProps.data.subregion
+                                                    }}</small>
+                                                </div>
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="total_events"
+                                            header="Total Events"
+                                            sortable
+                                            style="width: 120px"
+                                        >
+                                            <template #body="slotProps">
+                                                <span class="event-count">{{
+                                                    slotProps.data.total_events
+                                                }}</span>
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="avg_magnitude"
+                                            header="Avg Mag"
+                                            sortable
+                                            style="width: 100px"
+                                        >
+                                            <template #body="slotProps">
+                                                <Tag
+                                                    :value="`M ${slotProps.data.avg_magnitude}`"
+                                                    :severity="
+                                                        getMagnitudeSeverity(
+                                                            slotProps.data.avg_magnitude,
+                                                        )
+                                                    "
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="max_magnitude"
+                                            header="Max Mag"
+                                            sortable
+                                            style="width: 100px"
+                                        >
+                                            <template #body="slotProps">
+                                                <Tag
+                                                    :value="`M ${slotProps.data.max_magnitude}`"
+                                                    :severity="
+                                                        getMagnitudeSeverity(
+                                                            slotProps.data.max_magnitude,
+                                                        )
+                                                    "
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="major_events"
+                                            header="Major (≥6.0)"
+                                            sortable
+                                            style="width: 100px"
+                                        >
+                                            <template #body="slotProps">
+                                                <span
+                                                    :class="
+                                                        slotProps.data.major_events > 0
+                                                            ? 'major-count'
+                                                            : 'minor-count'
+                                                    "
+                                                    >{{ slotProps.data.major_events }}</span
+                                                >
+                                            </template>
+                                        </Column>
+                                    </DataTable>
+                                </template>
+                            </Card>
+
+                            <!-- Global Timeline Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <CalendarRange :size="20" fillColor="#3b82f6" />
+                                        <span>Global Activity Timeline</span>
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div v-if="loadingGlobalData" class="chart-loading">
+                                        <ProgressSpinner
+                                            style="width: 50px; height: 50px"
+                                            strokeWidth="4"
+                                        />
+                                    </div>
+                                    <div v-else class="chart-container">
+                                        <Chart
+                                            type="line"
+                                            :data="globalTimelineData"
+                                            :options="globalTimelineOptions"
+                                            class="h-[20rem]"
+                                        />
+                                        <div class="chart-footer-note">
+                                            <InformationOutline :size="16" fillColor="#3b82f6" />
+                                            <span
+                                                >Daily fluctuations are natural. Significant spikes
+                                                may indicate aftershock sequences or swarm
+                                                activity</span
+                                            >
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Monthly Comparison Table -->
+                            <Card class="data-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <ArrowCollapseDown :size="20" fillColor="#3b82f6" />
+                                        <span>Monthly Comparison</span>
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div v-if="loadingGlobalData" class="table-loading">
+                                        <ProgressSpinner
+                                            style="width: 50px; height: 50px"
+                                            strokeWidth="4"
+                                        />
+                                    </div>
+                                    <DataTable
+                                        v-else
+                                        :value="monthlyComparisonData"
+                                        tableStyle="min-width: 50rem"
+                                        class="monthly-table"
+                                    >
+                                        <Column field="month" header="Month" sortable>
+                                            <template #body="slotProps">
+                                                <strong>{{ slotProps.data.month }}</strong>
+                                            </template>
+                                        </Column>
+                                        <Column
+                                            field="total_events"
+                                            header="Total Events"
+                                            sortable
+                                        />
+                                        <Column
+                                            field="avg_magnitude"
+                                            header="Avg Magnitude"
+                                            sortable
+                                        >
+                                            <template #body="slotProps">
+                                                <Tag
+                                                    :value="`M ${slotProps.data.avg_magnitude}`"
+                                                    :severity="
+                                                        getMagnitudeSeverity(
+                                                            slotProps.data.avg_magnitude,
+                                                        )
+                                                    "
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column field="max_magnitude" header="Max Event" sortable>
+                                            <template #body="slotProps">
+                                                <Tag
+                                                    :value="`M ${slotProps.data.max_magnitude}`"
+                                                    :severity="
+                                                        getMagnitudeSeverity(
+                                                            slotProps.data.max_magnitude,
+                                                        )
+                                                    "
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column field="avg_depth" header="Avg Depth (km)" sortable>
+                                            <template #body="slotProps">
+                                                <span>{{ slotProps.data.avg_depth }} km</span>
+                                            </template>
+                                        </Column>
+                                    </DataTable>
+                                </template>
+                            </Card>
                         </div>
                     </TabPanel>
 
@@ -405,6 +738,10 @@ import {
     getCountryStatistics,
     getCountryTimeline,
     getGlobalStatisticsTotal,
+    getGlobalStatistics,
+    getTopCountries,
+    getMagnitudeDistribution,
+    getDailyTimeline,
 } from '@/services/drillService'
 
 // Icons
@@ -436,6 +773,14 @@ const countryData = ref([])
 const countryStats = ref({})
 const countryTimeline = ref([])
 const totalEvents = ref(0)
+
+// Trends Tab Data
+const loadingGlobalData = ref(false)
+const globalStats = ref({})
+const topCountriesData = ref([])
+const magnitudeDistribution = ref([])
+const globalTimeline = ref([])
+const monthlyComparison = ref([])
 
 // UI
 const actionsMenu = ref(null)
@@ -525,6 +870,147 @@ const timelineChartOptions = computed(() => ({
 }))
 
 /**
+ * Computed: Magnitude distribution chart data
+ */
+const magnitudeDistributionData = computed(() => {
+    if (!magnitudeDistribution.value || magnitudeDistribution.value.length === 0) {
+        return { labels: [], datasets: [] }
+    }
+
+    const labels = magnitudeDistribution.value.map((item) => item.magnitude_range)
+    const data = magnitudeDistribution.value.map((item) => item.count)
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: 'Number of Events',
+                data,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#dc2626'],
+                borderColor: ['#2563eb', '#059669', '#d97706', '#dc2626', '#b91c1c'],
+                borderWidth: 1,
+            },
+        ],
+    }
+})
+
+/**
+ * Computed: Magnitude chart options
+ */
+const magnitudeChartOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            callbacks: {
+                label: function (context) {
+                    return `Events: ${context.parsed.y}`
+                },
+            },
+        },
+    },
+    scales: {
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'Number of Events',
+            },
+        },
+        x: {
+            title: {
+                display: true,
+                text: 'Magnitude Range',
+            },
+        },
+    },
+}))
+
+/**
+ * Computed: Global timeline chart data
+ */
+const globalTimelineData = computed(() => {
+    if (!globalTimeline.value || globalTimeline.value.length === 0) {
+        return { labels: [], datasets: [] }
+    }
+
+    const labels = globalTimeline.value.map((item) => {
+        const date = new Date(item.event_date)
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    })
+    const data = globalTimeline.value.map((item) => item.event_count)
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: 'Daily Events',
+                data,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.3,
+                fill: true,
+            },
+        ],
+    }
+})
+
+/**
+ * Computed: Global timeline options
+ */
+const globalTimelineOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top',
+        },
+        tooltip: {
+            mode: 'index',
+            intersect: false,
+        },
+    },
+    scales: {
+        x: {
+            display: true,
+            title: {
+                display: true,
+                text: 'Date',
+            },
+            ticks: {
+                maxTicksLimit: 15,
+            },
+        },
+        y: {
+            display: true,
+            title: {
+                display: true,
+                text: 'Number of Events',
+            },
+            beginAtZero: true,
+        },
+    },
+}))
+
+/**
+ * Computed: Monthly comparison data with formatted month names
+ */
+const monthlyComparisonData = computed(() => {
+    if (!monthlyComparison.value || monthlyComparison.value.length === 0) {
+        return []
+    }
+
+    return monthlyComparison.value.map((item) => ({
+        ...item,
+        month: formatMonthLabel(item.month),
+    }))
+})
+
+/**
  * Actions menu items
  */
 const actionsMenuItems = ref([
@@ -586,10 +1072,11 @@ async function initializeAnalytics() {
  */
 async function loadInitialData() {
     try {
-        // Get total events count
-        const globalStats = await getGlobalStatisticsTotal(months.value)
-        if (globalStats) {
-            totalEvents.value = globalStats.total_events || 0
+        // Get total events count and global stats
+        const stats = await getGlobalStatisticsTotal(months.value)
+        if (stats) {
+            totalEvents.value = stats.total_events || 0
+            globalStats.value = stats
         }
 
         // Get country list
@@ -597,8 +1084,54 @@ async function loadInitialData() {
         if (countries) {
             availableCountries.value = countries.map((c) => c.country_name).sort()
         }
+
+        // Load global data for Trends tab
+        await loadGlobalData()
     } catch (err) {
         console.error('Failed to load initial data:', err)
+    }
+}
+
+/**
+ * Load global data for Trends tab
+ */
+async function loadGlobalData() {
+    try {
+        loadingGlobalData.value = true
+
+        // Load all data in parallel
+        const [topCountries, magDistribution, timeline, monthlyStats] = await Promise.all([
+            getTopCountries(months.value, 20),
+            getMagnitudeDistribution(months.value),
+            getDailyTimeline(months.value),
+            getGlobalStatistics(months.value),
+        ])
+
+        // Add rank to top countries
+        if (topCountries) {
+            topCountriesData.value = topCountries.map((country, index) => ({
+                ...country,
+                rank: index + 1,
+            }))
+        }
+
+        if (magDistribution) {
+            magnitudeDistribution.value = magDistribution
+        }
+
+        if (timeline) {
+            globalTimeline.value = timeline
+        }
+
+        if (monthlyStats) {
+            monthlyComparison.value = monthlyStats
+        }
+
+        console.log('[AnalyticsView] Global data loaded successfully')
+    } catch (err) {
+        console.error('Failed to load global data:', err)
+    } finally {
+        loadingGlobalData.value = false
     }
 }
 
@@ -687,6 +1220,40 @@ function exportTableCSV() {
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
+}
+
+/**
+ * Get badge severity based on rank
+ */
+function getRankBadgeSeverity(rank) {
+    if (rank === 1) return 'danger'
+    if (rank === 2) return 'warn'
+    if (rank === 3) return 'info'
+    if (rank <= 10) return 'secondary'
+    return null
+}
+
+/**
+ * Get magnitude tag severity
+ */
+function getMagnitudeSeverity(magnitude) {
+    if (magnitude >= 7.0) return 'danger'
+    if (magnitude >= 6.0) return 'warn'
+    if (magnitude >= 5.0) return 'info'
+    return 'secondary'
+}
+
+/**
+ * Handle country row click - switch to Explorer tab with selected country
+ */
+function onCountryRowClick(event) {
+    const countryName = event.data.country_name
+    if (countryName) {
+        selectedCountry.value = countryName
+        activeTab.value = '0' // Switch to Explorer tab
+        // The onCountrySelect will be triggered automatically by the watch or we can call it
+        onCountrySelect({ value: countryName })
+    }
 }
 
 /**
@@ -908,6 +1475,21 @@ onMounted(() => {
     gap: 1rem;
 }
 
+.kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.kpi-details {
+    display: flex;
+    flex-direction: column;
+}
+
 .kpi-data {
     display: flex;
     flex-direction: column;
@@ -971,7 +1553,6 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-top: 1rem;
     padding: 0.75rem;
     background: var(--surface-50);
     border-radius: 8px;
@@ -981,7 +1562,7 @@ onMounted(() => {
 
 /* Chart */
 .chart-container {
-    height: 400px;
+    height: 350px;
     margin-bottom: 1rem;
 }
 
@@ -1057,6 +1638,52 @@ onMounted(() => {
     justify-content: center;
     padding: 3rem;
     gap: 1rem;
+}
+
+/* Trends Tab Specific Styles */
+.chart-loading,
+.table-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.countries-table {
+    cursor: pointer;
+}
+
+.countries-table :deep(.p-datatable-tbody > tr:hover) {
+    background: var(--surface-hover);
+}
+
+.country-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.country-region {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+}
+
+.event-count {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.major-count {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.minor-count {
+    color: var(--text-color-secondary);
+}
+
+.monthly-table {
+    font-size: 0.95rem;
 }
 
 /* Responsive */
