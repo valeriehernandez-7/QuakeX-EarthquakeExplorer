@@ -283,6 +283,23 @@
                                                     {{ data.significance }}
                                                 </template>
                                             </Column>
+
+                                            <Column
+                                                field="url"
+                                                header="Details"
+                                                style="min-width: 100px"
+                                            >
+                                                <template #body="{ data }">
+                                                    <a
+                                                        :href="data.url"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        class="usgs-link"
+                                                    >
+                                                        <i class="pi pi-external-link"></i>
+                                                    </a>
+                                                </template>
+                                            </Column>
                                         </DataTable>
                                         <div class="table-footer-note">
                                             <InformationOutline :size="16" fillColor="#64748b" />
@@ -325,9 +342,9 @@
                                         <div class="chart-footer-note">
                                             <InformationOutline :size="16" fillColor="#64748b" />
                                             <span
-                                                >Daily event count showing temporal patterns of
-                                                seismic activity. Clusters may indicate aftershock
-                                                sequences.</span
+                                                >Monthly event count showing temporal patterns of
+                                                seismic activity. Variations may indicate increased
+                                                regional activity or aftershock sequences.</span
                                             >
                                         </div>
                                     </template>
@@ -451,8 +468,8 @@ const timelineChartData = computed(() => {
         }
     }
 
-    const labels = countryTimeline.value.map((item) => formatDateShort(item.event_date))
-    const data = countryTimeline.value.map((item) => item.event_count)
+    const labels = countryTimeline.value.map((item) => formatMonthLabel(item.month))
+    const data = countryTimeline.value.map((item) => Math.round(item.event_count))
 
     return {
         labels,
@@ -569,7 +586,7 @@ async function loadInitialData() {
         // Get total events count
         const globalStats = await getGlobalStatisticsTotal(months.value)
         if (globalStats) {
-            totalEvents.value = globalStats['total_events'] || 0
+            totalEvents.value = globalStats.total_events || 0
         }
 
         // Get country list
@@ -608,13 +625,10 @@ async function onCountrySelect(event) {
             getCountryStatistics(country, months.value),
             getCountryTimeline(country, months.value),
         ])
+
         countryData.value = events || []
         countryStats.value = stats || {}
         countryTimeline.value = timeline || []
-
-        console.log('\nEvents *** : ', countryData.value)
-        console.log('\nStats *** : ', countryStats.value)
-        console.log('\nTimeline *** : ', countryTimeline.value)
     } catch (err) {
         console.error('Failed to load country data:', err)
     } finally {
@@ -639,13 +653,23 @@ function exportTableCSV() {
     }
 
     // Create CSV content
-    const headers = ['Date', 'Magnitude', 'Depth (km)', 'Location', 'Significance']
+    const headers = [
+        'Date (DD-MMM)',
+        'Year (YYYY)',
+        'Time (UTC)',
+        'Magnitude',
+        'Depth (km)',
+        'Location',
+        'Significance',
+        'USGS URL',
+    ]
     const rows = countryData.value.map((event) => [
         formatDate(event.time),
         event.magnitude.toFixed(1),
         event.depth.toFixed(1),
         `"${event.place}"`,
         event.significance,
+        event.url || '',
     ])
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
@@ -686,7 +710,7 @@ function formatDate(timestamp) {
     if (!timestamp) return ''
     return new Date(timestamp).toLocaleString('en-US', {
         year: 'numeric',
-        month: 'long',
+        month: 'short',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
@@ -702,6 +726,16 @@ function formatDate(timestamp) {
 function formatDateShort(dateString) {
     const date = new Date(dateString)
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+/**
+ * Format month label (YYYY-MM to "Aug 2025")
+ */
+function formatMonthLabel(monthString) {
+    if (!monthString) return ''
+    const [year, month] = monthString.split('-')
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1)
+    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 }
 
 /**
@@ -952,6 +986,24 @@ onMounted(() => {
     display: flex;
     justify-content: flex-end;
     margin-top: 1rem;
+}
+
+/* USGS Link */
+.usgs-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    transition: color 0.2s;
+}
+
+.usgs-link:hover {
+    color: var(--primary-color-text);
+}
+
+.usgs-link i {
+    font-size: 1rem;
 }
 
 /* Empty State */

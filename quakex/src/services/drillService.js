@@ -1,7 +1,7 @@
 /**
  * Apache Drill Service - Analytics Version
  * Optimized for AnalyticsView with multi-month query support
- * 
+ *
  * Features:
  * - 16+ analytics queries for multi-month data
  * - Automatic data availability validation
