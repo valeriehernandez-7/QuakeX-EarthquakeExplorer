@@ -1,17 +1,24 @@
 /**
  * Apache Drill Service - Analytics Version
  * Optimized for AnalyticsView with multi-month query support
+ * 
+ * Features:
+ * - 16+ analytics queries for multi-month data
+ * - Automatic data availability validation
+ * - Query result caching (5 min)
+ * - UNION ALL queries across multiple months
  *
  * Connection:
  * - Web UI: http://localhost:8047
  * - REST API: http://localhost:8047/query.json (via proxy /api/drill)
- * - Workspace: dfs
+ * - Workspace: dfs.quakex
  * - Data Location: /data/earthquakes-YYYY-MM.json
  */
 
 import axios from 'axios'
 import { API_ENDPOINTS, APP_SETTINGS } from '@/utils/constants'
 import { getCacheFilename, getCacheFilenameForDate } from '@/utils/helpers'
+import { monthlyManager } from './monthlyDataManagerService'
 
 // Create axios instance with Drill configuration
 // Uses proxy from vite.config: /api/drill -> http://localhost:8047
@@ -242,6 +249,49 @@ function getFromCache(key) {
     } catch (error) {
         console.error('[drillService] Error reading from cache:', error)
         return null
+    }
+}
+
+// DATA AVAILABILITY VALIDATION
+
+/**
+ * Ensure monthly data files exist before executing queries
+ * Automatically generates missing months if needed
+ * @param {Array<string>} months - Array of month keys ['2025-10', '2025-09', '2025-08']
+ * @returns {Promise<boolean>} True if all data is available
+ */
+export async function ensureDataAvailable(months) {
+    try {
+        console.log('[drillService] Checking data availability for months:', months)
+
+        // Get available months from file system
+        const availableMonths = await monthlyManager.getAvailableMonths()
+        const missingMonths = months.filter((month) => !availableMonths.includes(month))
+
+        if (missingMonths.length === 0) {
+            console.log('[drillService] All months available')
+            return true
+        }
+
+        console.log('[drillService] Missing months detected:', missingMonths)
+        console.log('[drillService] Generating missing data...')
+
+        // Generate missing months
+        const result = await monthlyManager.generateMissingMonths(missingMonths)
+
+        // Check if all generations succeeded
+        const allSuccess = result.every((r) => r.success)
+
+        if (allSuccess) {
+            console.log('[drillService] All missing data generated successfully')
+        } else {
+            console.error('[drillService] Some data generation failed:', result)
+        }
+
+        return allSuccess
+    } catch (error) {
+        console.error('[drillService] Error ensuring data availability:', error)
+        return false
     }
 }
 

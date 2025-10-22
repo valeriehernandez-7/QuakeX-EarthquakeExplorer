@@ -5,7 +5,8 @@
         <!-- Loading Overlay -->
         <div v-if="store.loading" class="loading-overlay">
             <ProgressSpinner />
-            <p>Loading earthquake data...</p>
+            <p class="loading-text">QuakeX</p>
+            <small class="loading-subtext">Loading global earthquakes explorer</small>
         </div>
 
         <!-- Map Controls -->
@@ -320,6 +321,18 @@ watch(
     justify-content: center;
     align-items: center;
     z-index: 1000;
+}
+
+.loading-text {
+    margin-top: 1rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.loading-subtext {
+    margin-top: 0.5rem;
+    color: var(--text-color-secondary);
 }
 
 .map-controls {

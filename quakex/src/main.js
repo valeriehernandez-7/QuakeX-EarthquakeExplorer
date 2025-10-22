@@ -11,6 +11,7 @@ import ToastService from 'primevue/toastservice' // https://primevue.org/toast/#
 // PrimeVue Components https://primevue.org/{component}/
 import ProgressSpinner from 'primevue/progressspinner'
 import Menubar from 'primevue/menubar'
+import Menu from 'primevue/menu'
 import Toolbar from 'primevue/toolbar'
 import Drawer from 'primevue/drawer'
 import Skeleton from 'primevue/skeleton'
@@ -35,9 +36,16 @@ import Chart from 'primevue/chart'
 import IconField from 'primevue/iconfield'
 import InputText from 'primevue/inputtext'
 import InputIcon from 'primevue/inputicon'
+import AutoComplete from 'primevue/autocomplete'
+import Tabs from 'primevue/tabs'
+import TabList from 'primevue/tablist'
+import Tab from 'primevue/tab'
+import TabPanels from 'primevue/tabpanels'
+import TabPanel from 'primevue/tabpanel'
 
 import App from './App.vue'
 import router from './router' // https://router.vuejs.org/
+import AppNavbar from '@/components/layout/AppNavbar.vue'
 
 const app = createApp(App)
 
@@ -61,6 +69,7 @@ app.use(PrimeVue, {
 // Register PrimeVue components
 app.component('ProgressSpinner', ProgressSpinner)
 app.component('Menubar', Menubar)
+app.component('Menu', Menu)
 app.component('Toolbar', Toolbar)
 app.component('Drawer', Drawer)
 app.component('Skeleton', Skeleton)
@@ -85,16 +94,12 @@ app.component('Chart', Chart)
 app.component('IconField', IconField)
 app.component('InputText', InputText)
 app.component('InputIcon', InputIcon)
+app.component('AutoComplete', AutoComplete)
+app.component('Tabs', Tabs)
+app.component('TabList', TabList)
+app.component('Tab', Tab)
+app.component('TabPanels', TabPanels)
+app.component('TabPanel', TabPanel)
+app.component('AppNavbar', AppNavbar)
 
 app.mount('#app')
-
-// TODO: delete after testing
-import { monthlyManager } from '@/services/monthlyDataManagerService.js'
-if (import.meta.env.DEV) {
-    window.monthlyManager = monthlyManager
-    console.log('monthlyManager exposed globally for testing')
-    console.log('Available methods:')
-    console.log('- monthlyManager.ensureRecentData()')
-    console.log('- monthlyManager.generateMonth("2025-07")')
-    console.log('- monthlyManager.getAvailableMonths()')
-}

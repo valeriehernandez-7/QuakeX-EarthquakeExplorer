@@ -24,7 +24,6 @@ import { ref, onMounted } from 'vue'
 import { useAppStore } from '@/stores/appStore'
 
 // Components
-import AppNavbar from '@/components/layout/AppNavbar.vue'
 import FilterSidebar from '@/components/filters/FilterSidebar.vue'
 import EarthquakeMap from '@/components/map/EarthquakeMap.vue'
 import EarthquakeDetailCard from '@/components/map/EarthquakeDetailCard.vue'
