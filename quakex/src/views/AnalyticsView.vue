@@ -767,12 +767,338 @@
                         </div>
                     </TabPanel>
 
-                    <!-- TAB 3: CRITICAL (Placeholder) -->
+                    <!-- TAB 3: CRITICAL EVENTS -->
                     <TabPanel value="2">
-                        <div class="tab-content placeholder-content">
-                            <AlertOctagon :size="64" fillColor="#94a3b8" />
-                            <h3>Critical Events</h3>
-                            <p>Coming in next implementation phase</p>
+                        <div class="tab-content">
+                            <!-- Filter Configuration Card -->
+                            <Card class="selector-card">
+                                <template #content>
+                                    <div class="critical-filters">
+                                        <div class="filter-group">
+                                            <label class="filter-label">
+                                                <AlertOctagon :size="20" fillColor="#ef4444" />
+                                                <span>Magnitude Threshold: M {{ criticalThreshold.toFixed(1) }}</span>
+                                            </label>
+                                            <Slider 
+                                                v-model="criticalThreshold" 
+                                                :min="4.5" 
+                                                :max="7.0" 
+                                                :step="0.1"
+                                                class="threshold-slider"
+                                            />
+                                            <div class="slider-labels">
+                                                <span>M 4.5</span>
+                                                <span>M 7.0</span>
+                                            </div>
+                                            <small class="filter-hint">{{ criticalEvents.length }} critical events found</small>
+                                        </div>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Critical KPI Cards -->
+                            <div class="kpi-grid">
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <AlertCircleOutline :size="50" fillColor="#ef4444" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value">{{
+                                                    criticalStats.total_events || 0
+                                                }}</span>
+                                                <span class="kpi-label">Critical Events</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <ChartLineVariant :size="50" fillColor="#3b82f6" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value"
+                                                    >M {{ criticalStats.avg_magnitude || '0.0' }}</span
+                                                >
+                                                <span class="kpi-label">Average</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <AlertOctagon :size="50" fillColor="#dc2626" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value"
+                                                    >M {{ criticalStats.max_magnitude || '0.0' }}</span
+                                                >
+                                                <span class="kpi-label">Maximum</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+
+                                <Card class="kpi-card">
+                                    <template #content>
+                                        <div class="kpi-content">
+                                            <div class="kpi-icon">
+                                                <WavesArrowUp :size="50" fillColor="#0ea5e9" />
+                                            </div>
+                                            <div class="kpi-details">
+                                                <span class="kpi-value">{{
+                                                    criticalStats.tsunami_events || 0
+                                                }}</span>
+                                                <span class="kpi-label">Tsunami Events</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </Card>
+                            </div>
+
+                            <!-- Critical Events Timeline Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <TrendingUp :size="20" fillColor="#ef4444" />
+                                        <span>Critical Events Timeline</span>
+                                    </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="exportChartPNG('criticalTimelineChart')"
+                                            size="small"
+                                            outlined
+                                        />
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div class="chart-container">
+                                        <Chart
+                                            v-if="criticalTimelineData.datasets && criticalTimelineData.datasets.length > 0"
+                                            id="criticalTimelineChart"
+                                            type="scatter"
+                                            :data="criticalTimelineData"
+                                            :options="criticalTimelineOptions"
+                                        />
+                                        <div v-else class="empty-state">
+                                            <AlertOctagon :size="48" fillColor="#94a3b8" />
+                                            <p>No critical events found for this threshold</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-footer-note">
+                                        <InformationOutline :size="16" />
+                                        <span>Each point represents a critical event. Color indicates magnitude intensity.</span>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Critical Events Table -->
+                            <Card class="data-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <TableLarge :size="20" fillColor="#ef4444" />
+                                        <span>Critical Events Log</span>
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <DataTable
+                                        :value="criticalEvents"
+                                        :paginator="true"
+                                        :rows="10"
+                                        :rowsPerPageOptions="[10, 25, 50]"
+                                        sortField="time"
+                                        :sortOrder="-1"
+                                        stripedRows
+                                        showGridlines
+                                        class="events-table"
+                                    >
+                                        <template #header>
+                                            <div class="table-header">
+                                                <span class="table-description"
+                                                    >Earthquakes with magnitude ≥ {{ criticalThreshold.toFixed(1) }}</span
+                                                >
+                                                <Button
+                                                    icon="pi pi-download"
+                                                    label="Export CSV"
+                                                    @click="exportCriticalEventsCSV"
+                                                    size="small"
+                                                    outlined
+                                                />
+                                            </div>
+                                        </template>
+                                        <Column field="time" header="Date" sortable style="min-width: 180px">
+                                            <template #body="{ data }">
+                                                {{ formatDate(data.time) }}
+                                            </template>
+                                        </Column>
+                                        <Column field="magnitude" header="Magnitude" sortable style="min-width: 120px">
+                                            <template #body="{ data }">
+                                                <Tag
+                                                    :value="'M ' + data.magnitude"
+                                                    :severity="getMagnitudeSeverity(data.magnitude)"
+                                                />
+                                            </template>
+                                        </Column>
+                                        <Column field="depth" header="Depth" sortable style="min-width: 100px">
+                                            <template #body="{ data }">
+                                                {{ data.depth?.toFixed(1) || 'N/A' }} km
+                                            </template>
+                                        </Column>
+                                        <Column field="place" header="Location" style="min-width: 250px">
+                                            <template #body="{ data }">
+                                                {{ data.place || 'Unknown' }}
+                                            </template>
+                                        </Column>
+                                        <Column field="tsunami" header="Tsunami" sortable style="width: 100px">
+                                            <template #body="{ data }">
+                                                <Tag 
+                                                    v-if="data.tsunami === 1" 
+                                                    value="Yes" 
+                                                    severity="danger"
+                                                    icon="pi pi-exclamation-triangle"
+                                                />
+                                                <span v-else style="color: var(--text-color-secondary)">No</span>
+                                            </template>
+                                        </Column>
+                                        <Column field="url" header="Details" style="min-width: 100px">
+                                            <template #body="{ data }">
+                                                <a
+                                                    :href="data.url"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    class="usgs-link"
+                                                >
+                                                    <i class="pi pi-external-link"></i>
+                                                </a>
+                                            </template>
+                                        </Column>
+                                    </DataTable>
+                                    <div class="table-footer-note">
+                                        <InformationOutline :size="16" />
+                                        <span>Events are sorted by date (most recent first). Click column headers to sort by different criteria.</span>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Depth vs Magnitude Scatter Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <ChartScatterPlot :size="20" fillColor="#3b82f6" />
+                                        <span>Depth vs Magnitude Analysis</span>
+                                    </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="exportChartPNG('depthMagnitudeChart')"
+                                            size="small"
+                                            outlined
+                                        />
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div class="chart-container chart-fixed-height">
+                                        <Chart
+                                            v-if="depthMagnitudeData.datasets && depthMagnitudeData.datasets.length > 0"
+                                            id="depthMagnitudeChart"
+                                            type="scatter"
+                                            :data="depthMagnitudeData"
+                                            :options="depthMagnitudeOptions"
+                                        />
+                                        <div v-else class="empty-state">
+                                            <p>No data available for analysis</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-footer-note">
+                                        <InformationOutline :size="16" />
+                                        <span>Explores the relationship between earthquake depth and magnitude. Most seismic activity occurs at shallow depths.</span>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Depth Distribution Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <ArrowCollapseDown :size="20" fillColor="#3b82f6" />
+                                        <span>Depth Distribution</span>
+                                    </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="exportChartPNG('depthDistributionChart')"
+                                            size="small"
+                                            outlined
+                                        />
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div class="chart-container chart-fixed-height">
+                                        <Chart
+                                            v-if="depthDistributionData.labels && depthDistributionData.labels.length > 0"
+                                            id="depthDistributionChart"
+                                            type="bar"
+                                            :data="depthDistributionData"
+                                            :options="depthDistributionOptions"
+                                        />
+                                        <div v-else class="empty-state">
+                                            <p>No data available</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-footer-note">
+                                        <InformationOutline :size="16" />
+                                        <span>Distribution by depth category. Shallow earthquakes (0-70km) are more common and potentially more damaging.</span>
+                                    </div>
+                                </template>
+                            </Card>
+
+                            <!-- Hourly Distribution Chart -->
+                            <Card class="chart-card">
+                                <template #title>
+                                    <div class="card-title">
+                                        <ClockTimeEight :size="20" fillColor="#3b82f6" />
+                                        <span>Hourly Distribution</span>
+                                    </div>
+                                    <div class="chart-actions">
+                                        <Button
+                                            icon="pi pi-image"
+                                            label="Export PNG"
+                                            @click="exportChartPNG('hourlyDistributionChart')"
+                                            size="small"
+                                            outlined
+                                        />
+                                    </div>
+                                </template>
+                                <template #content>
+                                    <div class="chart-container chart-fixed-height">
+                                        <Chart
+                                            v-if="hourlyDistributionData.labels && hourlyDistributionData.labels.length > 0"
+                                            id="hourlyDistributionChart"
+                                            type="bar"
+                                            :data="hourlyDistributionData"
+                                            :options="hourlyDistributionOptions"
+                                        />
+                                        <div v-else class="empty-state">
+                                            <p>No data available</p>
+                                        </div>
+                                    </div>
+                                    <div class="chart-footer-note">
+                                        <InformationOutline :size="16" />
+                                        <span>Events by hour of day (UTC). Note: Earthquakes occur randomly; no correlation with time of day.</span>
+                                    </div>
+                                </template>
+                            </Card>
                         </div>
                     </TabPanel>
 
@@ -804,6 +1130,9 @@ import {
     getTopCountries,
     getMagnitudeDistribution,
     getDailyTimeline,
+    getScatterPlotData,
+    getDepthDistribution,
+    getHourlyDistribution,
 } from '@/services/drillService'
 
 // Icons
@@ -819,6 +1148,9 @@ import ArrowCollapseDown from 'vue-material-design-icons/ArrowCollapseDown.vue'
 import TableLarge from 'vue-material-design-icons/TableLarge.vue'
 import CalendarRange from 'vue-material-design-icons/CalendarRange.vue'
 import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
+import ChartScatterPlot from 'vue-material-design-icons/ChartScatterPlot.vue'
+import WavesArrowUp from 'vue-material-design-icons/WavesArrowUp.vue'
+import ClockTimeEight from 'vue-material-design-icons/ClockTimeEight.vue'
 
 // State
 const loading = ref(true)
@@ -843,6 +1175,12 @@ const topCountriesData = ref([])
 const magnitudeDistribution = ref([])
 const globalTimeline = ref([])
 const monthlyComparison = ref([])
+
+// Critical Events Tab Data
+const criticalThreshold = ref(5.0)
+const allEarthquakes = ref([]) // All events loaded from global data
+const depthDistributionData_raw = ref([])
+const hourlyDistributionData_raw = ref([])
 
 // UI
 const actionsMenu = ref(null)
@@ -1082,6 +1420,320 @@ const monthlyComparisonData = computed(() => {
 })
 
 /**
+ * Computed: Critical events filtered by threshold
+ */
+const criticalEvents = computed(() => {
+    if (!allEarthquakes.value || allEarthquakes.value.length === 0) {
+        return []
+    }
+    return allEarthquakes.value.filter((event) => event.magnitude >= criticalThreshold.value)
+})
+
+/**
+ * Computed: Critical events statistics
+ */
+const criticalStats = computed(() => {
+    if (criticalEvents.value.length === 0) {
+        return {
+            total_events: 0,
+            avg_magnitude: '0.0',
+            max_magnitude: '0.0',
+            tsunami_events: 0,
+        }
+    }
+
+    const total = criticalEvents.value.length
+    const avgMag =
+        criticalEvents.value.reduce((sum, event) => sum + (event.magnitude || 0), 0) / total
+    const maxMag = Math.max(...criticalEvents.value.map((e) => e.magnitude || 0))
+    const tsunamiCount = criticalEvents.value.filter((e) => e.tsunami === 1).length
+
+    return {
+        total_events: total,
+        avg_magnitude: avgMag.toFixed(1),
+        max_magnitude: maxMag.toFixed(1),
+        tsunami_events: tsunamiCount,
+    }
+})
+
+/**
+ * Computed: Critical events timeline scatter chart data
+ */
+const criticalTimelineData = computed(() => {
+    if (criticalEvents.value.length === 0) {
+        return { datasets: [] }
+    }
+
+    // Group by magnitude ranges for different colors
+    const ranges = [
+        { min: 7.0, max: 10, label: '≥ 7.0', color: '#991b1b' },
+        { min: 6.0, max: 6.9, label: '6.0 - 6.9', color: '#ef4444' },
+        { min: 5.0, max: 5.9, label: '5.0 - 5.9', color: '#f59e0b' },
+    ]
+
+    const datasets = ranges.map((range) => {
+        const events = criticalEvents.value.filter(
+            (e) => e.magnitude >= range.min && e.magnitude <= range.max,
+        )
+
+        const data = events.map((event) => ({
+            x: new Date(event.time).getTime(),
+            y: event.magnitude,
+        }))
+
+        return {
+            label: range.label,
+            data,
+            backgroundColor: range.color,
+            borderColor: range.color,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+        }
+    })
+
+    return { datasets: datasets.filter((d) => d.data.length > 0) }
+})
+
+/**
+ * Computed: Critical events timeline options
+ */
+const criticalTimelineOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top',
+        },
+        tooltip: {
+            callbacks: {
+                label: function (context) {
+                    const date = new Date(context.parsed.x).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                    })
+                    return `M ${context.parsed.y.toFixed(1)} on ${date}`
+                },
+            },
+        },
+    },
+    scales: {
+        x: {
+            type: 'time',
+            time: {
+                unit: 'day',
+                displayFormats: {
+                    day: 'MMM dd',
+                },
+            },
+            title: {
+                display: true,
+                text: 'Date',
+            },
+        },
+        y: {
+            title: {
+                display: true,
+                text: 'Magnitude',
+            },
+            beginAtZero: false,
+        },
+    },
+}))
+
+/**
+ * Computed: Depth vs Magnitude scatter data
+ */
+const depthMagnitudeData = computed(() => {
+    if (criticalEvents.value.length === 0) {
+        return { datasets: [] }
+    }
+
+    const data = criticalEvents.value.map((event) => ({
+        x: event.depth || 0,
+        y: event.magnitude,
+    }))
+
+    return {
+        datasets: [
+            {
+                label: 'Critical Events',
+                data,
+                backgroundColor: (context) => {
+                    const mag = context.raw.y
+                    return getMagnitudeColor(mag)
+                },
+                borderColor: 'rgba(0, 0, 0, 0.2)',
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            },
+        ],
+    }
+})
+
+/**
+ * Computed: Depth vs Magnitude options
+ */
+const depthMagnitudeOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            callbacks: {
+                label: function (context) {
+                    return `M ${context.parsed.y.toFixed(1)} at ${context.parsed.x.toFixed(1)} km depth`
+                },
+            },
+        },
+    },
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: 'Depth (km)',
+            },
+            beginAtZero: true,
+        },
+        y: {
+            title: {
+                display: true,
+                text: 'Magnitude',
+            },
+            beginAtZero: false,
+        },
+    },
+}))
+
+/**
+ * Computed: Depth Distribution chart data
+ */
+const depthDistributionData = computed(() => {
+    if (!depthDistributionData_raw.value || depthDistributionData_raw.value.length === 0) {
+        return { labels: [], datasets: [] }
+    }
+
+    const labels = depthDistributionData_raw.value.map((item) => item.depth_category)
+    const data = depthDistributionData_raw.value.map((item) => item.count)
+    const percentages = depthDistributionData_raw.value.map((item) => item.percentage)
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: 'Number of Events',
+                data,
+                backgroundColor: ['#3b82f6', '#10b981', '#f59e0b'],
+                borderColor: ['#2563eb', '#059669', '#d97706'],
+                borderWidth: 1,
+            },
+        ],
+    }
+})
+
+/**
+ * Computed: Depth Distribution options
+ */
+const depthDistributionOptions = computed(() => ({
+    indexAxis: 'y',
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            callbacks: {
+                label: function (context) {
+                    const index = context.dataIndex
+                    const percentage = depthDistributionData_raw.value[index]?.percentage || 0
+                    return `Events: ${context.parsed.x} (${percentage}%)`
+                },
+            },
+        },
+    },
+    scales: {
+        x: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'Number of Events',
+            },
+        },
+        y: {
+            title: {
+                display: false,
+            },
+        },
+    },
+}))
+
+/**
+ * Computed: Hourly Distribution chart data
+ */
+const hourlyDistributionData = computed(() => {
+    if (!hourlyDistributionData_raw.value || hourlyDistributionData_raw.value.length === 0) {
+        return { labels: [], datasets: [] }
+    }
+
+    const labels = hourlyDistributionData_raw.value.map((item) => 
+        String(item.hour).padStart(2, '0') + ':00'
+    )
+    const data = hourlyDistributionData_raw.value.map((item) => item.count)
+
+    return {
+        labels,
+        datasets: [
+            {
+                label: 'Number of Events',
+                data,
+                backgroundColor: '#3b82f6',
+                borderColor: '#2563eb',
+                borderWidth: 1,
+            },
+        ],
+    }
+})
+
+/**
+ * Computed: Hourly Distribution options
+ */
+const hourlyDistributionOptions = computed(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            display: false,
+        },
+        tooltip: {
+            callbacks: {
+                label: function (context) {
+                    return `Events: ${context.parsed.y}`
+                },
+            },
+        },
+    },
+    scales: {
+        x: {
+            title: {
+                display: true,
+                text: 'Hour (UTC)',
+            },
+        },
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'Number of Events',
+            },
+        },
+    },
+}))
+
+/**
  * Actions menu items
  */
 const actionsMenuItems = ref([
@@ -1158,6 +1810,9 @@ async function loadInitialData() {
 
         // Load global data for Trends tab
         await loadGlobalData()
+
+        // Load all earthquakes for Critical Events tab
+        await loadCriticalEventsData()
     } catch (err) {
         console.error('Failed to load initial data:', err)
     }
@@ -1203,6 +1858,35 @@ async function loadGlobalData() {
         console.error('Failed to load global data:', err)
     } finally {
         loadingGlobalData.value = false
+    }
+}
+
+/**
+ * Load all earthquakes for critical events analysis
+ */
+async function loadCriticalEventsData() {
+    try {
+        // Load all earthquakes and additional distribution data in parallel
+        const [earthquakes, depthDist, hourlyDist] = await Promise.all([
+            getScatterPlotData(months.value, 5000, true),
+            getDepthDistribution(months.value),
+            getHourlyDistribution(months.value),
+        ])
+
+        if (earthquakes) {
+            allEarthquakes.value = earthquakes
+            console.log(`[AnalyticsView] Loaded ${earthquakes.length} earthquakes for critical analysis`)
+        }
+
+        if (depthDist) {
+            depthDistributionData_raw.value = depthDist
+        }
+
+        if (hourlyDist) {
+            hourlyDistributionData_raw.value = hourlyDist
+        }
+    } catch (err) {
+        console.error('Failed to load critical events data:', err)
     }
 }
 
@@ -1335,6 +2019,53 @@ function exportTopCountriesCSV() {
     const timestamp = new Date().toISOString().slice(0, 10)
     link.setAttribute('href', url)
     link.setAttribute('download', `QuakeX_top_active_countries_${timestamp}.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+}
+
+/**
+ * Export Critical Events table to CSV
+ */
+function exportCriticalEventsCSV() {
+    if (!criticalEvents.value || criticalEvents.value.length === 0) {
+        console.warn('No critical events to export')
+        return
+    }
+
+    // Create CSV content
+    const headers = [
+        'Date (UTC)',
+        'Magnitude',
+        'Depth (km)',
+        'Location',
+        'Latitude',
+        'Longitude',
+        'USGS URL',
+    ]
+    const rows = criticalEvents.value.map((event) => [
+        formatDate(event.time),
+        event.magnitude,
+        event.depth?.toFixed(1) || 'N/A',
+        `"${event.place || 'Unknown'}"`,
+        event.latitude?.toFixed(4) || '',
+        event.longitude?.toFixed(4) || '',
+        event.url || '',
+    ])
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n')
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    const timestamp = new Date().toISOString().slice(0, 10)
+    link.setAttribute('href', url)
+    link.setAttribute(
+        'download',
+        `QuakeX_critical_events_M${criticalThreshold.value}_${timestamp}.csv`,
+    )
     link.style.visibility = 'hidden'
     document.body.appendChild(link)
     link.click()
@@ -1831,6 +2562,49 @@ onMounted(() => {
 
 .monthly-table {
     font-size: 0.95rem;
+}
+
+/* Critical Events Tab Specific Styles */
+.critical-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 1rem;
+}
+
+.threshold-slider {
+    width: 100%;
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
+    margin-top: -0.5rem;
+}
+
+.filter-hint {
+    color: var(--text-color-secondary);
+    font-size: 0.875rem;
+}
+
+.chart-fixed-height {
+    height: 400px;
 }
 
 /* Responsive */
