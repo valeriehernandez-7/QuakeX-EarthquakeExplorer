@@ -734,17 +734,27 @@ export async function getDailyTimeline(months) {
  * @returns {Promise<Array|null>} Hourly distribution
  */
 export async function getHourlyDistribution(months) {
-    const unionQuery = buildUnionQuery(months, "temporal['hour_of_day'], \`magnitude\`")
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            \`temporal\`['hour_of_day'] AS hour,
+            \`magnitude\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
 
     const sql = `
         SELECT 
-            temporal['hour_of_day'] AS hour,
-            COUNT(*) AS event_count,
+            hour,
+            COUNT(*) AS count,
             ROUND(AVG(\`magnitude\`), 2) AS avg_magnitude
         FROM (
             ${unionQuery}
         ) AS all_events
-        GROUP BY temporal['hour_of_day']
+        WHERE hour IS NOT NULL
+        GROUP BY hour
         ORDER BY hour ASC
     `
 
@@ -785,6 +795,58 @@ export async function getScatterPlotData(months, limit = 1000, includeCountry = 
             ${unionQuery}
         ) AS all_events
         WHERE \`depth\` IS NOT NULL AND \`magnitude\` IS NOT NULL
+        LIMIT ${limit}
+    `
+
+    const result = await executeQuery(sql)
+    return result ? result.rows : null
+}
+
+/**
+ * Get critical events with all details for Critical Events tab
+ * @param {Array<string>} months - Array of month keys
+ * @param {number} limit - Maximum number of events
+ * @returns {Promise<Array|null>} Critical events with full details
+ */
+export async function getCriticalEvents(months, limit = 5000) {
+    const unionQuery = months
+        .map(
+            (month) => `
+        SELECT 
+            \`id\`,
+            \`magnitude\`,
+            \`depth\`,
+            \`latitude\`,
+            \`longitude\`,
+            \`place\`,
+            \`time\`,
+            \`url\`,
+            \`significance\`,
+            \`tsunami\`,
+            \`country\`
+        FROM dfs.quakex.\`earthquakes-${month}.json\`
+    `,
+        )
+        .join('\n    UNION ALL\n    ')
+
+    const sql = `
+        SELECT 
+            \`id\`,
+            CAST(\`magnitude\` AS DOUBLE) AS magnitude,
+            CAST(\`depth\` AS DOUBLE) AS depth,
+            CAST(\`latitude\` AS DOUBLE) AS latitude,
+            CAST(\`longitude\` AS DOUBLE) AS longitude,
+            \`place\`,
+            \`time\`,
+            \`url\`,
+            CAST(\`significance\` AS INTEGER) AS significance,
+            CASE WHEN \`tsunami\` = true THEN 1 ELSE 0 END AS tsunami,
+            CAST(\`country\`['name'] AS VARCHAR) AS country_name
+        FROM (
+            ${unionQuery}
+        ) AS all_events
+        WHERE \`magnitude\` IS NOT NULL AND \`depth\` IS NOT NULL
+        ORDER BY \`magnitude\` DESC
         LIMIT ${limit}
     `
 

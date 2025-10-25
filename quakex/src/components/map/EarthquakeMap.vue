@@ -6,7 +6,7 @@
         <div v-if="store.loading" class="loading-overlay">
             <ProgressSpinner />
             <p class="loading-text">QuakeX</p>
-            <small class="loading-subtext">Loading global earthquakes explorer</small>
+            <small class="loading-subtext">Preparing Global Earthquakes Explorer</small>
         </div>
 
         <!-- Map Controls -->
@@ -321,6 +321,7 @@ watch(
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    min-height: 60vh;
 }
 
 .loading-text {

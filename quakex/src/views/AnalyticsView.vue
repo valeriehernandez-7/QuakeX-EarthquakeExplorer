@@ -6,7 +6,7 @@
         <div v-if="loading" class="loading-state">
             <ProgressSpinner />
             <p class="loading-text">QuakeX</p>
-            <small class="loading-subtext">Preparing data for analysis</small>
+            <small class="loading-subtext">Preparing Seismic Activity Analysis</small>
         </div>
 
         <!-- Error State -->
@@ -60,12 +60,6 @@
                         </div>
                     </Tab>
                     <Tab value="2">
-                        <div class="tab-header">
-                            <AlertOctagon :size="18" />
-                            <span>Critical</span>
-                        </div>
-                    </Tab>
-                    <Tab value="3">
                         <div class="tab-header">
                             <SelectionSearch :size="18" />
                             <span>Advanced</span>
@@ -483,7 +477,7 @@
                                             type="bar"
                                             :data="magnitudeDistributionData"
                                             :options="magnitudeChartOptions"
-                                            class="h-[20rem]"
+                                            class="h-[23rem]"
                                         />
                                         <div class="chart-footer-note">
                                             <InformationOutline :size="16" fillColor="#3b82f6" />
@@ -683,7 +677,7 @@
                                             type="line"
                                             :data="globalTimelineData"
                                             :options="globalTimelineOptions"
-                                            class="h-[20rem]"
+                                            class="h-[23rem]"
                                         />
                                         <div class="chart-footer-note">
                                             <InformationOutline :size="16" fillColor="#3b82f6" />
@@ -767,7 +761,7 @@
                         </div>
                     </TabPanel>
 
-                    <!-- TAB 3: CRITICAL EVENTS -->
+                    <!-- TAB 3: CRITICAL EVENTS ANALYTICS -->
                     <TabPanel value="2">
                         <div class="tab-content">
                             <!-- Filter Configuration Card -->
@@ -777,12 +771,15 @@
                                         <div class="filter-group">
                                             <label class="filter-label">
                                                 <AlertOctagon :size="20" fillColor="#ef4444" />
-                                                <span>Magnitude Threshold: M {{ criticalThreshold.toFixed(1) }}</span>
+                                                <span
+                                                    >Magnitude Threshold: M
+                                                    {{ criticalThreshold.toFixed(1) }}</span
+                                                >
                                             </label>
-                                            <Slider 
-                                                v-model="criticalThreshold" 
-                                                :min="4.5" 
-                                                :max="7.0" 
+                                            <Slider
+                                                v-model="criticalThreshold"
+                                                :min="4.5"
+                                                :max="7.0"
                                                 :step="0.1"
                                                 class="threshold-slider"
                                             />
@@ -790,7 +787,10 @@
                                                 <span>M 4.5</span>
                                                 <span>M 7.0</span>
                                             </div>
-                                            <small class="filter-hint">{{ criticalEvents.length }} critical events found</small>
+                                            <small class="filter-hint"
+                                                >{{ criticalEvents.length }} critical events
+                                                found</small
+                                            >
                                         </div>
                                     </div>
                                 </template>
@@ -802,7 +802,10 @@
                                     <template #content>
                                         <div class="kpi-content">
                                             <div class="kpi-icon">
-                                                <AlertCircleOutline :size="50" fillColor="#ef4444" />
+                                                <AlertCircleOutline
+                                                    :size="50"
+                                                    fillColor="#ef4444"
+                                                />
                                             </div>
                                             <div class="kpi-details">
                                                 <span class="kpi-value">{{
@@ -822,7 +825,8 @@
                                             </div>
                                             <div class="kpi-details">
                                                 <span class="kpi-value"
-                                                    >M {{ criticalStats.avg_magnitude || '0.0' }}</span
+                                                    >M
+                                                    {{ criticalStats.avg_magnitude || '0.0' }}</span
                                                 >
                                                 <span class="kpi-label">Average</span>
                                             </div>
@@ -838,7 +842,8 @@
                                             </div>
                                             <div class="kpi-details">
                                                 <span class="kpi-value"
-                                                    >M {{ criticalStats.max_magnitude || '0.0' }}</span
+                                                    >M
+                                                    {{ criticalStats.max_magnitude || '0.0' }}</span
                                                 >
                                                 <span class="kpi-label">Maximum</span>
                                             </div>
@@ -856,7 +861,7 @@
                                                 <span class="kpi-value">{{
                                                     criticalStats.tsunami_events || 0
                                                 }}</span>
-                                                <span class="kpi-label">Tsunami Events</span>
+                                                <span class="kpi-label">Tsunami Alerts</span>
                                             </div>
                                         </div>
                                     </template>
@@ -883,11 +888,15 @@
                                 <template #content>
                                     <div class="chart-container">
                                         <Chart
-                                            v-if="criticalTimelineData.datasets && criticalTimelineData.datasets.length > 0"
+                                            v-if="
+                                                criticalTimelineData.datasets &&
+                                                criticalTimelineData.datasets.length > 0
+                                            "
                                             id="criticalTimelineChart"
                                             type="scatter"
                                             :data="criticalTimelineData"
                                             :options="criticalTimelineOptions"
+                                            class="h-[25rem]"
                                         />
                                         <div v-else class="empty-state">
                                             <AlertOctagon :size="48" fillColor="#94a3b8" />
@@ -896,7 +905,10 @@
                                     </div>
                                     <div class="chart-footer-note">
                                         <InformationOutline :size="16" />
-                                        <span>Each point represents a critical event. Color indicates magnitude intensity.</span>
+                                        <span
+                                            >Each point represents a critical event. Color indicates
+                                            magnitude intensity.</span
+                                        >
                                     </div>
                                 </template>
                             </Card>
@@ -924,7 +936,8 @@
                                         <template #header>
                                             <div class="table-header">
                                                 <span class="table-description"
-                                                    >Earthquakes with magnitude ≥ {{ criticalThreshold.toFixed(1) }}</span
+                                                    >Earthquakes with magnitude ≥
+                                                    {{ criticalThreshold.toFixed(1) }}</span
                                                 >
                                                 <Button
                                                     icon="pi pi-download"
@@ -935,12 +948,22 @@
                                                 />
                                             </div>
                                         </template>
-                                        <Column field="time" header="Date" sortable style="min-width: 180px">
+                                        <Column
+                                            field="time"
+                                            header="Date"
+                                            sortable
+                                            style="min-width: 180px"
+                                        >
                                             <template #body="{ data }">
                                                 {{ formatDate(data.time) }}
                                             </template>
                                         </Column>
-                                        <Column field="magnitude" header="Magnitude" sortable style="min-width: 120px">
+                                        <Column
+                                            field="magnitude"
+                                            header="Magnitude"
+                                            sortable
+                                            style="min-width: 120px"
+                                        >
                                             <template #body="{ data }">
                                                 <Tag
                                                     :value="'M ' + data.magnitude"
@@ -948,28 +971,51 @@
                                                 />
                                             </template>
                                         </Column>
-                                        <Column field="depth" header="Depth" sortable style="min-width: 100px">
+                                        <Column
+                                            field="depth"
+                                            header="Depth"
+                                            sortable
+                                            style="min-width: 100px"
+                                        >
                                             <template #body="{ data }">
                                                 {{ data.depth?.toFixed(1) || 'N/A' }} km
                                             </template>
                                         </Column>
-                                        <Column field="place" header="Location" style="min-width: 250px">
+                                        <Column
+                                            field="place"
+                                            header="Location"
+                                            style="min-width: 250px"
+                                        >
                                             <template #body="{ data }">
                                                 {{ data.place || 'Unknown' }}
                                             </template>
                                         </Column>
-                                        <Column field="tsunami" header="Tsunami" sortable style="width: 100px">
+                                        <Column
+                                            field="tsunami"
+                                            header="Tsunami"
+                                            sortable
+                                            style="width: 100px"
+                                        >
                                             <template #body="{ data }">
-                                                <Tag 
-                                                    v-if="data.tsunami === 1" 
-                                                    value="Yes" 
+                                                <Tag
+                                                    v-if="data.tsunami === 1"
+                                                    value="Yes"
                                                     severity="danger"
                                                     icon="pi pi-exclamation-triangle"
                                                 />
-                                                <span v-else style="color: var(--text-color-secondary)">No</span>
+                                                <Tag
+                                                    v-if="data.tsunami === 0"
+                                                    value="No"
+                                                    severity="success"
+                                                    icon="pi pi-check-circle"
+                                                />
                                             </template>
                                         </Column>
-                                        <Column field="url" header="Details" style="min-width: 100px">
+                                        <Column
+                                            field="url"
+                                            header="Details"
+                                            style="min-width: 100px"
+                                        >
                                             <template #body="{ data }">
                                                 <a
                                                     :href="data.url"
@@ -984,7 +1030,10 @@
                                     </DataTable>
                                     <div class="table-footer-note">
                                         <InformationOutline :size="16" />
-                                        <span>Events are sorted by date (most recent first). Click column headers to sort by different criteria.</span>
+                                        <span
+                                            >Events are sorted by date (most recent first). Click
+                                            column headers to sort by different criteria.</span
+                                        >
                                     </div>
                                 </template>
                             </Card>
@@ -1009,11 +1058,15 @@
                                 <template #content>
                                     <div class="chart-container chart-fixed-height">
                                         <Chart
-                                            v-if="depthMagnitudeData.datasets && depthMagnitudeData.datasets.length > 0"
+                                            v-if="
+                                                depthMagnitudeData.datasets &&
+                                                depthMagnitudeData.datasets.length > 0
+                                            "
                                             id="depthMagnitudeChart"
                                             type="scatter"
                                             :data="depthMagnitudeData"
                                             :options="depthMagnitudeOptions"
+                                            class="h-[25rem]"
                                         />
                                         <div v-else class="empty-state">
                                             <p>No data available for analysis</p>
@@ -1021,7 +1074,11 @@
                                     </div>
                                     <div class="chart-footer-note">
                                         <InformationOutline :size="16" />
-                                        <span>Explores the relationship between earthquake depth and magnitude. Most seismic activity occurs at shallow depths.</span>
+                                        <span
+                                            >Explores the relationship between earthquake depth and
+                                            magnitude. Most seismic activity occurs at shallow
+                                            depths.</span
+                                        >
                                     </div>
                                 </template>
                             </Card>
@@ -1046,11 +1103,15 @@
                                 <template #content>
                                     <div class="chart-container chart-fixed-height">
                                         <Chart
-                                            v-if="depthDistributionData.labels && depthDistributionData.labels.length > 0"
+                                            v-if="
+                                                depthDistributionData.labels &&
+                                                depthDistributionData.labels.length > 0
+                                            "
                                             id="depthDistributionChart"
                                             type="bar"
                                             :data="depthDistributionData"
                                             :options="depthDistributionOptions"
+                                            class="h-[25rem]"
                                         />
                                         <div v-else class="empty-state">
                                             <p>No data available</p>
@@ -1058,7 +1119,11 @@
                                     </div>
                                     <div class="chart-footer-note">
                                         <InformationOutline :size="16" />
-                                        <span>Distribution by depth category. Shallow earthquakes (0-70km) are more common and potentially more damaging.</span>
+                                        <span
+                                            >Distribution by depth category. Shallow earthquakes
+                                            (0-70km) are more common and potentially more
+                                            damaging.</span
+                                        >
                                     </div>
                                 </template>
                             </Card>
@@ -1083,11 +1148,15 @@
                                 <template #content>
                                     <div class="chart-container chart-fixed-height">
                                         <Chart
-                                            v-if="hourlyDistributionData.labels && hourlyDistributionData.labels.length > 0"
+                                            v-if="
+                                                hourlyDistributionData.labels &&
+                                                hourlyDistributionData.labels.length > 0
+                                            "
                                             id="hourlyDistributionChart"
                                             type="bar"
                                             :data="hourlyDistributionData"
                                             :options="hourlyDistributionOptions"
+                                            class="h-[25rem]"
                                         />
                                         <div v-else class="empty-state">
                                             <p>No data available</p>
@@ -1095,19 +1164,13 @@
                                     </div>
                                     <div class="chart-footer-note">
                                         <InformationOutline :size="16" />
-                                        <span>Events by hour of day (UTC). Note: Earthquakes occur randomly; no correlation with time of day.</span>
+                                        <span
+                                            >Events by hour of day (UTC). Note: Earthquakes occur
+                                            randomly; no correlation with time of day.</span
+                                        >
                                     </div>
                                 </template>
                             </Card>
-                        </div>
-                    </TabPanel>
-
-                    <!-- TAB 4: ADVANCED (Placeholder) -->
-                    <TabPanel value="3">
-                        <div class="tab-content placeholder-content">
-                            <SelectionSearch :size="64" fillColor="#94a3b8" />
-                            <h3>Advanced Analytics</h3>
-                            <p>Coming in next implementation phase</p>
                         </div>
                     </TabPanel>
                 </TabPanels>
@@ -1130,7 +1193,7 @@ import {
     getTopCountries,
     getMagnitudeDistribution,
     getDailyTimeline,
-    getScatterPlotData,
+    getCriticalEvents,
     getDepthDistribution,
     getHourlyDistribution,
 } from '@/services/drillService'
@@ -1466,9 +1529,10 @@ const criticalTimelineData = computed(() => {
 
     // Group by magnitude ranges for different colors
     const ranges = [
-        { min: 7.0, max: 10, label: '≥ 7.0', color: '#991b1b' },
-        { min: 6.0, max: 6.9, label: '6.0 - 6.9', color: '#ef4444' },
-        { min: 5.0, max: 5.9, label: '5.0 - 5.9', color: '#f59e0b' },
+        { min: 7.0, max: 10, label: 'M ≥ 7.0', color: '#991b1b' },
+        { min: 6.0, max: 6.9, label: 'M 6.0 - 6.9', color: '#ef4444' },
+        { min: 5.0, max: 5.9, label: 'M 5.0 - 5.9', color: '#f59e0b' },
+        { min: 4.5, max: 4.9, label: 'M 4.5 - 4.9', color: '#3b82f6' },
     ]
 
     const datasets = ranges.map((range) => {
@@ -1476,10 +1540,15 @@ const criticalTimelineData = computed(() => {
             (e) => e.magnitude >= range.min && e.magnitude <= range.max,
         )
 
-        const data = events.map((event) => ({
-            x: new Date(event.time).getTime(),
-            y: event.magnitude,
-        }))
+        const data = events.map((event) => {
+            // Parse ISO date string to Date object then to timestamp
+            const date = new Date(event.time)
+            return {
+                x: date.getTime(), // Timestamp in milliseconds
+                y: event.magnitude,
+                label: `${event.place} - ${date.toLocaleDateString()}`,
+            }
+        })
 
         return {
             label: range.label,
@@ -1508,28 +1577,32 @@ const criticalTimelineOptions = computed(() => ({
         tooltip: {
             callbacks: {
                 label: function (context) {
-                    const date = new Date(context.parsed.x).toLocaleDateString('en-US', {
+                    const date = new Date(context.parsed.x)
+                    const dateStr = date.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
+                        timeZone: 'UTC',
+                        timeZoneName: 'short',
                     })
-                    return `M ${context.parsed.y.toFixed(1)} on ${date}`
+                    return `M ${context.parsed.y.toFixed(1)} on ${dateStr}`
                 },
             },
         },
     },
     scales: {
         x: {
-            type: 'time',
-            time: {
-                unit: 'day',
-                displayFormats: {
-                    day: 'MMM dd',
-                },
-            },
+            type: 'linear',
             title: {
                 display: true,
                 text: 'Date',
+            },
+            ticks: {
+                callback: function (value) {
+                    const date = new Date(value)
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                },
+                maxTicksLimit: 10,
             },
         },
         y: {
@@ -1679,8 +1752,8 @@ const hourlyDistributionData = computed(() => {
         return { labels: [], datasets: [] }
     }
 
-    const labels = hourlyDistributionData_raw.value.map((item) => 
-        String(item.hour).padStart(2, '0') + ':00'
+    const labels = hourlyDistributionData_raw.value.map(
+        (item) => String(item.hour).padStart(2, '0') + ':00',
     )
     const data = hourlyDistributionData_raw.value.map((item) => item.count)
 
@@ -1868,14 +1941,16 @@ async function loadCriticalEventsData() {
     try {
         // Load all earthquakes and additional distribution data in parallel
         const [earthquakes, depthDist, hourlyDist] = await Promise.all([
-            getScatterPlotData(months.value, 5000, true),
+            getCriticalEvents(months.value, 5000),
             getDepthDistribution(months.value),
             getHourlyDistribution(months.value),
         ])
 
         if (earthquakes) {
             allEarthquakes.value = earthquakes
-            console.log(`[AnalyticsView] Loaded ${earthquakes.length} earthquakes for critical analysis`)
+            console.log(
+                `[AnalyticsView] Loaded ${earthquakes.length} earthquakes for critical analysis`,
+            )
         }
 
         if (depthDist) {
@@ -2036,12 +2111,15 @@ function exportCriticalEventsCSV() {
 
     // Create CSV content
     const headers = [
-        'Date (UTC)',
+        'Date (DD-MMM)',
+        'Year (YYYY)',
+        'Time (UTC)',
         'Magnitude',
         'Depth (km)',
         'Location',
         'Latitude',
         'Longitude',
+        'Tsunami Alert',
         'USGS URL',
     ]
     const rows = criticalEvents.value.map((event) => [
@@ -2051,6 +2129,7 @@ function exportCriticalEventsCSV() {
         `"${event.place || 'Unknown'}"`,
         event.latitude?.toFixed(4) || '',
         event.longitude?.toFixed(4) || '',
+        event.tsunami || 0,
         event.url || '',
     ])
 
@@ -2203,12 +2282,18 @@ onMounted(() => {
 /* Loading & Error States */
 .loading-state,
 .error-state {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
     display: flex;
     flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    z-index: 1000;
     min-height: 60vh;
-    padding: 2rem;
 }
 
 .loading-text {
@@ -2438,6 +2523,7 @@ onMounted(() => {
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem;
+    margin-top: 5px;
     background: var(--surface-50);
     border-radius: 8px;
     font-size: 0.875rem;
@@ -2446,8 +2532,9 @@ onMounted(() => {
 
 /* Chart */
 .chart-container {
-    height: 350px;
+    height: 400px;
     margin-bottom: 1rem;
+    column-gap: 1rem;
 }
 
 /* USGS Link */
