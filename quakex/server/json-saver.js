@@ -155,6 +155,60 @@ app.get('/api/files', async (req, res) => {
 });
 
 /**
+ * Get JSON file content
+ * GET /api/files/:filename
+ */
+app.get('/api/files/:filename', async (req, res) => {
+    try {
+        const { filename } = req.params;
+
+        // Validate filename
+        if (!isValidFilename(filename)) {
+            return res.status(400).json({
+                error: 'Invalid filename format',
+                details: 'Filename can only contain letters, numbers, hyphens, underscores, and dots'
+            });
+        }
+
+        const filepath = path.join(DATA_DIR, filename);
+
+        // Check if file exists
+        try {
+            await fs.access(filepath);
+        } catch {
+            return res.status(404).json({
+                error: 'File not found',
+                filename,
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        // Read and return file content
+        const content = await fs.readFile(filepath, 'utf8');
+        const data = JSON.parse(content);
+        const stats = await fs.stat(filepath);
+
+        res.json({
+            success: true,
+            filename,
+            size: stats.size,
+            sizeFormatted: formatFileSize(stats.size),
+            itemCount: Array.isArray(data) ? data.length : 1,
+            data,
+            timestamp: new Date().toISOString()
+        });
+
+    } catch (error) {
+        console.error('Error reading JSON file:', error.message);
+        res.status(500).json({
+            error: 'Failed to read file',
+            details: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+/**
  * Validate filename for security
  */
 function isValidFilename(filename) {
@@ -193,7 +247,8 @@ app.use((req, res) => {
         availableEndpoints: {
             'GET /api/health': 'Service health check',
             'POST /api/save-json': 'Save JSON data to file',
-            'GET /api/files': 'List available JSON files'
+            'GET /api/files': 'List available JSON files',
+            'GET /api/files/:filename': 'Get JSON file content'
         },
         timestamp: new Date().toISOString()
     });
@@ -208,5 +263,6 @@ app.listen(PORT, () => {
     console.log(`  GET  http://localhost:${PORT}/api/health`);
     console.log(`  POST http://localhost:${PORT}/api/save-json`);
     console.log(`  GET  http://localhost:${PORT}/api/files`);
+    console.log(`  GET  http://localhost:${PORT}/api/files/:filename`);
     console.log('\nPress Ctrl+C to stop the server');
 });

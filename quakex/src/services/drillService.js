@@ -685,8 +685,9 @@ export async function getDepthDistribution(months) {
                 WHEN \`depth\` < 70 THEN '0-70km (Shallow)'
                 WHEN \`depth\` < 300 THEN '70-300km (Intermediate)'
                 ELSE '300+km (Deep)'
-            END AS depth_range,
-            COUNT(*) AS count
+            END AS depth_category,
+            COUNT(*) AS count,
+            ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (), 1) AS percentage
         FROM (
             ${unionQuery}
         ) AS all_depths
