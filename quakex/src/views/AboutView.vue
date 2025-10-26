@@ -3,411 +3,267 @@
         <AppNavbar />
 
         <div class="about-container">
-            <!-- Header Section -->
-            <div class="about-header">
-                <div class="logo-section">
-                    <Transition :size="64" fillColor="#3b82f6" />
-                    <div class="header-text">
-                        <h1>QuakeX</h1>
-                        <p class="tagline">Earthquake Data Explorer & Analytics Platform</p>
+            <!-- Hero Section -->
+            <div class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-icon">
+                        <Transition :size="48" fillColor="#1e293b" />
                     </div>
+                    <h1 class="hero-title">QuakeX</h1>
+                    <p class="hero-subtitle">Earthquake Data Explorer & Analytics Platform</p>
+                    <p class="hero-description">
+                        Making complex seismic data accessible through modern web technologies and
+                        intelligent analytics.
+                    </p>
                 </div>
             </div>
 
-            <!-- Main Content Grid -->
-            <div class="content-grid">
-                <!-- About the Project -->
-                <Card class="about-card">
-                    <template #title>
-                        <div class="card-title">
-                            <InformationOutline :size="24" fillColor="#3b82f6" />
-                            <span>About the Project</span>
+            <div class="content-wrapper">
+                <!-- Mission Section -->
+                <section class="content-section">
+                    <h2 class="section-title">Our Mission</h2>
+                    <div class="section-content">
+                        <p class="lead-text">
+                            QuakeX democratizes access to professional-grade seismic analytics,
+                            transforming complex earthquake data into clear, actionable insights.
+                        </p>
+                        <p>
+                            By leveraging real-time data from authoritative sources like USGS and
+                            powerful analytical capabilities, we enable researchers, educators, and
+                            the public to understand earthquake patterns, magnitudes, and
+                            geographical distributions with unprecedented ease.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Features Grid -->
+                <section class="content-section">
+                    <h2 class="section-title">Key Capabilities</h2>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-number">01</div>
+                            <h3 class="feature-title">Real-Time Data</h3>
+                            <p class="feature-description">
+                                Access the latest seismic events from USGS worldwide
+                            </p>
                         </div>
-                    </template>
-                    <template #content>
-                        <div class="card-content">
+                        <div class="feature-card">
+                            <div class="feature-number">02</div>
+                            <h3 class="feature-title">Interactive Mapping</h3>
+                            <p class="feature-description">
+                                Visualize earthquakes on an intuitive 2D globe with filtering
+                            </p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-number">03</div>
+                            <h3 class="feature-title">Advanced Analytics</h3>
+                            <p class="feature-description">
+                                Drill-powered SQL analytics for deep seismic insights
+                            </p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-number">04</div>
+                            <h3 class="feature-title">Weather Context</h3>
+                            <p class="feature-description">
+                                Historical weather data correlation for each event
+                            </p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-number">05</div>
+                            <h3 class="feature-title">Geographic Data</h3>
+                            <p class="feature-description">
+                                Country identification and elevation integration
+                            </p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-number">06</div>
+                            <h3 class="feature-title">Export & Reports</h3>
+                            <p class="feature-description">
+                                Detailed reports with charts and raw datasets
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Impact Section -->
+                <section class="content-section impact-section">
+                    <div class="impact-content">
+                        <h2 class="section-title">Why It Matters</h2>
+                        <p class="lead-text">
+                            Understanding earthquake patterns is essential for disaster
+                            preparedness, infrastructure planning, and scientific research.
+                        </p>
+                        <p>
+                            Seismic data helps communities assess risk, develop emergency response
+                            strategies, and implement building codes that save lives. QuakeX makes
+                            this critical information accessible to everyone-from students and
+                            educators to emergency management professionals and policymakers. The
+                            Richter scale measures earthquake magnitude on a logarithmic scale. Each
+                            whole number increase represents a tenfold increase in measured
+                            amplitude and approximately 31.6 times more energy release. Modern
+                            seismology uses the moment magnitude scale (Mw) for more accurate
+                            measurements, which QuakeX displays for all recorded events.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Developer Section -->
+                <section class="content-section developer-section">
+                    <h2 class="section-title">About the Developer</h2>
+                    <div class="developer-card">
+                        <div class="developer-header">
+                            <h3 class="developer-name">Valerie M. Hernández Fernández</h3>
+                            <div class="developer-meta">
+                                <span class="location">
+                                    <MapMarker :size="16" fillColor="#64748b" />
+                                    <a
+                                        href="https://www.google.com/maps/place/Costa+Rica/@8.2588997,-84.9399704,7z/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        >Costa Rica</a
+                                    >
+                                </span>
+                                <a
+                                    href="https://github.com/valeriehernandez-7"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="github-link"
+                                >
+                                    <GithubIcon :size="16" fillColor="#64748b" />
+                                    @valeriehernandez-7
+                                </a>
+                            </div>
+                        </div>
+                        <div class="developer-story">
                             <p>
-                                QuakeX is an advanced seismic data exploration and analytics
-                                platform designed to provide comprehensive insights into global
-                                earthquake activity. By leveraging real-time data from authoritative
-                                sources and powerful analytical capabilities, QuakeX transforms raw
-                                seismic data into actionable intelligence.
+                                As a Costa Rican engineering student, I've witnessed firsthand the
+                                impact of seismic activity in a country along the Pacific Ring of
+                                Fire. Earthquakes are a regular part of life here, inspiring me to
+                                create a tool that makes this data more accessible and
+                                understandable.
                             </p>
                             <p>
-                                This platform serves as a critical tool for understanding earthquake
-                                patterns, magnitudes, depths, and geographical distributions,
-                                enabling researchers, educators, and the public to access reliable
-                                seismic information with ease.
+                                QuakeX represents a convergence of my passion for technology, data
+                                analytics, and community resilience-developed entirely for academic
+                                purposes, demonstrating the power of modern web technologies and
+                                open data initiatives.
                             </p>
                         </div>
-                    </template>
-                </Card>
-
-                <!-- Key Features -->
-                <Card class="about-card">
-                    <template #title>
-                        <div class="card-title">
-                            <StarOutline :size="24" fillColor="#3b82f6" />
-                            <span>Key Features</span>
-                        </div>
-                    </template>
-                    <template #content>
-                        <div class="features-list">
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Real-Time Earthquake Data</strong>
-                                    <span
-                                        >Access to the latest seismic events from USGS
-                                        worldwide</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Interactive Mapping</strong>
-                                    <span
-                                        >Visualize earthquakes on an intuitive 2D globe with
-                                        real-time filtering</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Advanced Analytics</strong>
-                                    <span
-                                        >Drill-powered SQL analytics for deep insights into seismic
-                                        patterns</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Weather Context</strong>
-                                    <span
-                                        >Historical weather data correlation for each seismic
-                                        event</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Geographic Enrichment</strong>
-                                    <span
-                                        >Automatic country identification and elevation data
-                                        integration</span
-                                    >
-                                </div>
-                            </div>
-                            <div class="feature-item">
-                                <CheckCircle :size="20" fillColor="#10b981" />
-                                <div class="feature-text">
-                                    <strong>Comprehensive Reporting</strong>
-                                    <span
-                                        >Export detailed reports with charts, data tables, and raw
-                                        datasets</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </Card>
-
-                <!-- Importance -->
-                <Card class="about-card">
-                    <template #title>
-                        <div class="card-title">
-                            <AlertCircle :size="24" fillColor="#3b82f6" />
-                            <span>Why Seismic Data Matters</span>
-                        </div>
-                    </template>
-                    <template #content>
-                        <div class="card-content">
-                            <p>
-                                Understanding earthquake patterns and characteristics is crucial for
-                                disaster preparedness, infrastructure planning, and scientific
-                                research. Seismic data helps communities assess risk, develop
-                                emergency response strategies, and implement building codes that can
-                                save lives.
-                            </p>
-                            <p>
-                                QuakeX democratizes access to professional-grade seismic analytics,
-                                making complex geological data accessible to everyone from students
-                                and educators to emergency management professionals and
-                                policymakers.
-                            </p>
-                        </div>
-                    </template>
-                </Card>
-
-                <!-- Developer Info -->
-                <Card class="about-card">
-                    <template #title>
-                        <div class="card-title">
-                            <AccountOutline :size="24" fillColor="#3b82f6" />
-                            <span>About the Developer</span>
-                        </div>
-                    </template>
-                    <template #content>
-                        <div class="developer-section">
-                            <div class="developer-info">
-                                <h3>Valerie M. Hernández Fernández</h3>
-                                <div class="developer-details">
-                                    <div class="detail-item">
-                                        <MapMarker :size="18" fillColor="#3b82f6" />
-                                        <span>Costa Rica</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <GithubIcon :size="18" fillColor="#3b82f6" />
-                                        <a
-                                            href="https://github.com/valeriehernandez-7"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            class="github-link"
-                                        >
-                                            @valeriehernandez-7
-                                        </a>
-                                    </div>
-                                </div>
-                                <p class="developer-story">
-                                    As a Costa Rican engineering student, I have witnessed firsthand the
-                                    impact of seismic activity in a country known for its
-                                    significant geological dynamism. Costa Rica's location along the
-                                    Pacific Ring of Fire means earthquakes are a regular part of
-                                    life, inspiring me to create a tool that makes earthquake data
-                                    more accessible and understandable.
-                                </p>
-                                <p class="developer-story">
-                                    QuakeX represents a convergence of my passion for technology,
-                                    data analytics, and community resilience. This project is
-                                    developed entirely for academic purposes, demonstrating the
-                                    power of modern web technologies and open data initiatives.
-                                </p>
-                            </div>
-                        </div>
-                    </template>
-                </Card>
-
-                <!-- Richter Scale -->
-                <Card class="about-card richter-card">
-                    <template #title>
-                        <div class="card-title">
-                            <ChartLine :size="24" fillColor="#3b82f6" />
-                            <span>Understanding the Richter Scale</span>
-                        </div>
-                    </template>
-                    <template #content>
-                        <div class="richter-content">
-                            <img
-                                src="https://upload.wikimedia.org/wikipedia/commons/f/f6/How-the-Richter-Magnitude-Scale-is-determined.jpg"
-                                alt="Richter Scale Diagram"
-                                class="richter-image"
-                            />
-                            <p class="richter-description">
-                                The Richter scale measures the magnitude of earthquakes on a
-                                logarithmic scale. Each whole number increase represents a tenfold
-                                increase in measured amplitude and approximately 31.6 times more
-                                energy release. Modern seismology uses the moment magnitude scale
-                                (Mw) for more accurate measurements, which QuakeX displays for all
-                                recorded events.
-                            </p>
-                        </div>
-                    </template>
-                </Card>
-
+                    </div>
+                </section>
                 <!-- Technology Stack -->
-                <Card class="about-card">
-                    <template #title>
-                        <div class="card-title">
-                            <CodeBraces :size="24" fillColor="#3b82f6" />
-                            <span>Open Source APIs & Technologies</span>
+                <section class="content-section tech-section">
+                    <h2 class="section-title">Built With</h2>
+                    <div class="tech-grid">
+                        <div class="tech-item">
+                            <a href="https://vuejs.org/" target="_blank" rel="noopener noreferrer">
+                                <Vuejs :size="32" fillColor="#42b883" />
+                                <h3>Vue.js 3</h3>
+                                <p>Progressive JavaScript framework</p>
+                            </a>
                         </div>
-                    </template>
-                    <template #content>
-                        <div class="tech-list">
-                            <div class="tech-item">
-                                <div class="tech-icon">
-                                    <Database :size="32" fillColor="#3b82f6" />
-                                </div>
-                                <div class="tech-details">
-                                    <strong>USGS Earthquake Catalog API</strong>
-                                    <a
-                                        href="https://earthquake.usgs.gov/fdsnws/event/1/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        earthquake.usgs.gov/fdsnws/event/1/
-                                    </a>
-                                    <p>
-                                        Real-time and historical earthquake data from the United
-                                        States Geological Survey
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="tech-item">
-                                <div class="tech-icon">
-                                    <WeatherPartlyCloudy :size="32" fillColor="#3b82f6" />
-                                </div>
-                                <div class="tech-details">
-                                    <strong>Open-Meteo Historical Weather API</strong>
-                                    <a
-                                        href="https://open-meteo.com/en/docs/historical-weather-api"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        open-meteo.com/historical-weather-api
-                                    </a>
-                                    <p>
-                                        Historical weather data for contextual analysis of seismic
-                                        events
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="tech-item">
-                                <div class="tech-icon">
-                                    <ImageFilterHdr :size="32" fillColor="#3b82f6" />
-                                </div>
-                                <div class="tech-details">
-                                    <strong>Open-Meteo Elevation API</strong>
-                                    <a
-                                        href="https://open-meteo.com/en/docs/elevation-api"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        open-meteo.com/elevation-api
-                                    </a>
-                                    <p>
-                                        Precise elevation data for geographic context of earthquake
-                                        locations
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="tech-item">
-                                <div class="tech-icon">
-                                    <Earth :size="32" fillColor="#3b82f6" />
-                                </div>
-                                <div class="tech-details">
-                                    <strong>REST Countries API</strong>
-                                    <a
-                                        href="https://restcountries.com/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        restcountries.com
-                                    </a>
-                                    <p>
-                                        Comprehensive country information for geographic data
-                                        enrichment
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div class="tech-item">
-                                <div class="tech-icon">
-                                    <ServerNetwork :size="32" fillColor="#3b82f6" />
-                                </div>
-                                <div class="tech-details">
-                                    <strong>Apache Drill</strong>
-                                    <a
-                                        href="https://drill.apache.org/docs/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        drill.apache.org/docs/
-                                    </a>
-                                    <p>
-                                        Schema-free SQL query engine for JSON data analytics and
-                                        complex aggregations
-                                    </p>
-                                </div>
-                            </div>
+                        <div class="tech-item">
+                            <a
+                                href="https://leafletjs.com/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <LeafletIcon :size="32" fillColor="#199900" />
+                                <h3>Leaflet</h3>
+                                <p>Interactive mapping library</p>
+                            </a>
                         </div>
-                    </template>
-                </Card>
+                        <div class="tech-item">
+                            <a
+                                href="https://drill.apache.org/docs/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <DatabaseIcon :size="32" fillColor="#1e293b" />
+                                <h3>Apache Drill</h3>
+                                <p>SQL analytics engine</p>
+                            </a>
+                        </div>
+                        <div class="tech-item">
+                            <a
+                                href="https://earthquake.usgs.gov/fdsnws/event/1/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <Earth :size="32" fillColor="#1e293b" />
+                                <h3>USGS API</h3>
+                                <p>Real-time earthquake data</p>
+                            </a>
+                        </div>
+                        <div class="tech-item">
+                            <a
+                                href="https://open-meteo.com/en/docs/historical-weather-api"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <WeatherPartlyCloudy :size="32" fillColor="#1e293b" />
+                                <h3>Weather API</h3>
+                                <p>Historical weather data</p>
+                            </a>
+                        </div>
+                        <div class="tech-item">
+                            <a
+                                href="https://open-meteo.com/en/docs/elevation-api"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <MapMarkerRadius :size="32" fillColor="#1e293b" />
+                                <h3>Elevation API</h3>
+                                <p>Precise elevation data</p>
+                            </a>
+                        </div>
+                    </div>
+                </section>
 
-                <!-- Repository -->
-                <Card class="about-card repo-card">
-                    <template #title>
-                        <div class="card-title">
-                            <GithubIcon :size="24" fillColor="#3b82f6" />
-                            <span>Open Source Repository</span>
-                        </div>
-                    </template>
-                    <template #content>
-                        <div class="repo-section">
-                            <p>
-                                QuakeX is open source and available on GitHub. Explore the code,
-                                contribute improvements, or fork the project for your own needs.
-                            </p>
-                            <Button
-                                label="View on GitHub"
-                                icon="pi pi-github"
-                                class="github-button"
-                                @click="openRepository"
-                                raised
-                            />
-                        </div>
-                    </template>
-                </Card>
+                <!-- CTA Section -->
+                <section class="cta-section">
+                    <div class="cta-content">
+                        <h2 class="cta-title">Explore the Code</h2>
+                        <p class="cta-text">
+                            QuakeX is open source and available on GitHub. Explore the codebase,
+                            contribute, or use it as a learning resource.
+                        </p>
+                        <Button
+                            label="View on GitHub"
+                            icon="pi pi-github"
+                            class="github-button"
+                            @click="
+                                () =>
+                                    window.open(
+                                        'https://github.com/valeriehernandez-7/QuakeX',
+                                        '_blank',
+                                    )
+                            "
+                        />
+                    </div>
+                </section>
 
                 <!-- Academic Notice -->
-                <Card class="about-card academic-card">
-                    <template #content>
-                        <div class="academic-notice">
-                            <SchoolOutline :size="32" fillColor="#6366f1" />
-                            <div class="notice-text">
-                                <strong>Academic Project</strong>
-                                <p>
-                                    This project is developed exclusively for academic and
-                                    educational purposes. While the data sources are authoritative
-                                    and reliable, QuakeX is not intended for emergency response or
-                                    critical decision-making. Always consult official sources for
-                                    earthquake warnings and safety information.
-                                </p>
-                            </div>
+                <section class="academic-notice">
+                    <div class="notice-content">
+                        <School :size="24" fillColor="#1e293b" />
+                        <div class="notice-text">
+                            <strong>Academic Project</strong>
+                            <p>
+                                This platform is developed solely for educational and academic
+                                purposes. All data sources are properly credited and used in
+                                accordance with their respective licenses and terms of service.
+                            </p>
                         </div>
-                    </template>
-                </Card>
-
-                <!-- Footer -->
-                <div class="about-footer">
-                    <p>
-                        &copy; 2025 QuakeX - Earthquake Data Explorer.
-                    </p>
-                    <p class="footer-links">
-                        <a
-                            href="https://github.com/valeriehernandez-7/QuakeX-EarthquakExplorer"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Repository
-                        </a>
-                        •
-                        <a
-                            href="https://earthquake.usgs.gov/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            USGS
-                        </a>
-                        •
-                        <a
-                            href="https://drill.apache.org/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            Apache Drill
-                        </a>
-                    </p>
-                </div>
+                    </div>
+                </section>
             </div>
+
+            <!-- Footer -->
+            <footer class="about-footer">
+                <p>Built with curiosity and purpose • Costa Rica</p>
+                <p class="footer-year">© 2025 QuakeX</p>
+            </footer>
         </div>
     </div>
 </template>
@@ -415,187 +271,225 @@
 <script setup>
 // Icons
 import Transition from 'vue-material-design-icons/Transition.vue'
-import InformationOutline from 'vue-material-design-icons/InformationOutline.vue'
-import StarOutline from 'vue-material-design-icons/StarOutline.vue'
-import CheckCircle from 'vue-material-design-icons/CheckCircle.vue'
-import AlertCircle from 'vue-material-design-icons/AlertCircle.vue'
-import AccountOutline from 'vue-material-design-icons/AccountOutline.vue'
 import MapMarker from 'vue-material-design-icons/MapMarker.vue'
 import GithubIcon from 'vue-material-design-icons/Github.vue'
-import ChartLine from 'vue-material-design-icons/ChartLine.vue'
-import CodeBraces from 'vue-material-design-icons/CodeBraces.vue'
-import Database from 'vue-material-design-icons/Database.vue'
-import WeatherPartlyCloudy from 'vue-material-design-icons/WeatherPartlyCloudy.vue'
-import ImageFilterHdr from 'vue-material-design-icons/ImageFilterHdr.vue'
+import School from 'vue-material-design-icons/School.vue'
+import Vuejs from 'vue-material-design-icons/Vuejs.vue'
 import Earth from 'vue-material-design-icons/Earth.vue'
-import ServerNetwork from 'vue-material-design-icons/ServerNetwork.vue'
-import SchoolOutline from 'vue-material-design-icons/SchoolOutline.vue'
-
-/**
- * Open GitHub repository
- */
-function openRepository() {
-    window.open('https://github.com/valeriehernandez-7/QuakeX-EarthquakExplorer', '_blank')
-}
+import DatabaseIcon from 'vue-material-design-icons/Database.vue'
+import LeafletIcon from 'vue-material-design-icons/Leaf.vue'
+import WeatherPartlyCloudy from 'vue-material-design-icons/WeatherPartlyCloudy.vue'
+import MapMarkerRadius from 'vue-material-design-icons/MapMarkerRadius.vue'
 </script>
 
 <style scoped>
+/* ===== BASE STYLES ===== */
 .about-view {
     min-height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: #ffffff;
 }
 
 .about-container {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 0;
 }
 
-/* Header */
-.about-header {
+/* ===== HERO SECTION ===== */
+.hero-section {
+    padding: 80px 24px 60px;
     text-align: center;
-    padding: 3rem 0;
-    color: white;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.logo-section {
+.hero-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.hero-icon {
+    margin-bottom: 24px;
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 1rem;
 }
 
-.header-text h1 {
-    font-size: 3rem;
+.hero-title {
+    font-size: 3.5rem;
     font-weight: 700;
-    margin: 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    color: #1e293b;
+    margin: 0 0 16px 0;
+    letter-spacing: -0.02em;
 }
 
-.tagline {
+.hero-subtitle {
     font-size: 1.25rem;
-    margin: 0.5rem 0 0 0;
-    opacity: 0.95;
+    color: #64748b;
+    margin: 0 0 24px 0;
+    font-weight: 500;
 }
 
-/* Content Grid */
-.content-grid {
+.hero-description {
+    font-size: 1.125rem;
+    color: #475569;
+    line-height: 1.7;
+    margin: 0;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* ===== CONTENT WRAPPER ===== */
+.content-wrapper {
+    padding: 80px 24px;
+}
+
+.content-section {
+    max-width: 900px;
+    margin: 0 auto 80px auto;
+}
+
+.content-section:last-of-type {
+    margin-bottom: 0;
+}
+
+/* ===== SECTION TITLES ===== */
+.section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 32px 0;
+    letter-spacing: -0.01em;
+}
+
+/* ===== SECTION CONTENT ===== */
+.section-content p,
+.impact-content p,
+.developer-story p {
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    color: #475569;
+    margin: 0 0 20px 0;
+}
+
+.section-content p:last-child,
+.impact-content p:last-child,
+.developer-story p:last-child {
+    margin-bottom: 0;
+}
+
+.lead-text {
+    font-size: 1.25rem !important;
+    color: #334155 !important;
+    font-weight: 500;
+}
+
+/* ===== FEATURES GRID ===== */
+.features-grid {
     display: grid;
-    gap: 2rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 32px;
+    margin-top: 40px;
 }
 
-.about-card {
-    background: white;
+.feature-card {
+    padding: 32px 24px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.feature-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+}
+
+.feature-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.feature-description {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: #64748b;
+    margin: 0;
+}
+
+/* ===== IMPACT SECTION ===== */
+.impact-section {
+    background: #f8fafc;
+    padding: 60px 48px;
     border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 80px auto;
 }
 
-.card-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+/* ===== DEVELOPER SECTION ===== */
+.developer-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 40px;
+    background: #fafafa;
+}
+
+.developer-header {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.developer-name {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-color);
+    color: #1e293b;
+    margin: 0 0 16px 0;
 }
 
-.card-content {
+.developer-meta {
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
-}
-
-.card-content p {
-    line-height: 1.7;
-    color: var(--text-color);
-    margin: 0;
-}
-
-/* Features List */
-.features-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-}
-
-.feature-item {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-}
-
-.feature-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.feature-text strong {
-    color: var(--text-color);
-    font-size: 1.05rem;
-}
-
-.feature-text span {
-    color: var(--text-color-secondary);
-    font-size: 0.95rem;
-    line-height: 1.5;
-}
-
-/* Developer Section */
-.developer-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.developer-info h3 {
-    margin: 0 0 1rem 0;
-    color: var(--text-color);
-    font-size: 1.5rem;
-}
-
-.developer-details {
-    display: flex;
+    gap: 24px;
     flex-wrap: wrap;
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
+    align-items: center;
 }
 
-.detail-item {
+.location,
+.github-link {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
+    gap: 6px;
+    font-size: 0.9375rem;
+    color: #64748b;
 }
 
 .github-link {
-    color: #3b82f6;
     text-decoration: none;
     transition: color 0.2s;
 }
 
 .github-link:hover {
-    color: #2563eb;
-    text-decoration: underline;
+    color: #1e293b;
 }
 
-.developer-story {
-    line-height: 1.7;
-    color: var(--text-color);
-    margin: 0 0 1rem 0;
-}
-
-/* Richter Scale */
-.richter-card {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+/* ===== RICHTER SECTION ===== */
+.richter-section {
+    background: #f8fafc;
+    padding: 60px 48px;
+    border-radius: 12px;
 }
 
 .richter-content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 32px;
     align-items: center;
 }
 
@@ -603,204 +497,205 @@ function openRepository() {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
 }
 
-.richter-description {
+.richter-text {
     text-align: center;
-    line-height: 1.7;
-    color: var(--text-color);
+    font-size: 1.0625rem;
+    line-height: 1.8;
+    color: #475569;
     margin: 0;
+    max-width: 700px;
 }
 
-/* Technology Stack */
-.tech-list {
-    display: flex;
-    flex-direction: column;
-    gap: 2rem;
+/* ===== TECH SECTION ===== */
+.tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 50px;
+    margin-top: 40px;
 }
 
 .tech-item {
     display: flex;
-    gap: 1.5rem;
-    align-items: flex-start;
-}
-
-.tech-icon {
-    flex-shrink: 0;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--surface-50);
-    border-radius: 8px;
-}
-
-.tech-details {
-    flex: 1;
-    display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-}
-
-.tech-details strong {
-    font-size: 1.1rem;
-    color: var(--text-color);
-}
-
-.tech-details a {
-    color: #3b82f6;
-    text-decoration: none;
-    font-size: 0.9rem;
-    word-break: break-all;
-}
-
-.tech-details a:hover {
-    text-decoration: underline;
-}
-
-.tech-details p {
-    margin: 0;
-    color: var(--text-color-secondary);
-    line-height: 1.6;
-    font-size: 0.95rem;
-}
-
-/* Repository Card */
-.repo-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.repo-card :deep(.p-card-title) {
-    color: white;
-}
-
-.repo-section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
     align-items: center;
     text-align: center;
+    gap: 16px;
+    padding: 32px 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
 }
 
-.repo-section p {
-    color: rgba(255, 255, 255, 0.95);
-    font-size: 1.1rem;
-    line-height: 1.7;
+.tech-item:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.tech-item h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1e293b;
     margin: 0;
+}
+
+.tech-item p {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ===== CTA SECTION ===== */
+.cta-section {
+    margin: 80px auto;
+    padding: 60px 48px;
+    background: #1e293b;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+}
+
+.cta-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    color: white;
+}
+
+.cta-text {
+    font-size: 1.125rem;
+    line-height: 1.7;
+    margin: 0 0 32px 0;
+    color: #cbd5e1;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .github-button {
     background: white !important;
-    color: #667eea !important;
+    color: #1e293b !important;
     border: none !important;
     font-weight: 600;
-    padding: 0.75rem 2rem;
-    font-size: 1.05rem;
+    padding: 12px 32px;
+    font-size: 1rem;
 }
 
 .github-button:hover {
-    background: #f3f4f6 !important;
+    background: #f1f5f9 !important;
 }
 
-/* Academic Notice */
-.academic-card {
-    background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-    border: 2px solid #6366f1;
-}
-
+/* ===== ACADEMIC NOTICE ===== */
 .academic-notice {
+    max-width: 900px;
+    margin: 60px auto 0;
+    padding: 32px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.notice-content {
     display: flex;
-    gap: 1.5rem;
+    gap: 20px;
     align-items: flex-start;
 }
 
-.notice-text {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
 .notice-text strong {
-    font-size: 1.25rem;
-    color: #6366f1;
+    display: block;
+    font-size: 1.125rem;
+    color: #1e293b;
+    margin-bottom: 8px;
 }
 
 .notice-text p {
-    margin: 0;
+    font-size: 0.9375rem;
     line-height: 1.7;
-    color: var(--text-color);
+    color: #64748b;
+    margin: 0;
 }
 
-/* Footer */
+/* ===== FOOTER ===== */
 .about-footer {
     text-align: center;
-    padding: 3rem 0 1rem 0;
-    color: white;
+    padding: 60px 24px 40px;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 80px;
 }
 
 .about-footer p {
-    margin: 0.5rem 0;
-    opacity: 0.9;
+    font-size: 0.9375rem;
+    color: #64748b;
+    margin: 8px 0;
 }
 
-.footer-links {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
+.footer-year {
+    font-size: 0.875rem !important;
+    color: #94a3b8 !important;
 }
 
-.footer-links a {
-    color: white;
-    text-decoration: none;
-    transition: opacity 0.2s;
-}
-
-.footer-links a:hover {
-    opacity: 0.8;
-    text-decoration: underline;
-}
-
-/* Responsive */
+/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-    .about-container {
-        padding: 1rem;
+    .hero-section {
+        padding: 60px 20px 40px;
     }
 
-    .logo-section {
-        flex-direction: column;
-        gap: 1rem;
+    .hero-title {
+        font-size: 2.5rem;
     }
 
-    .header-text h1 {
-        font-size: 2rem;
+    .hero-subtitle {
+        font-size: 1.125rem;
     }
 
-    .tagline {
+    .hero-description {
         font-size: 1rem;
     }
 
-    .developer-details {
-        flex-direction: column;
-        gap: 0.75rem;
+    .content-wrapper {
+        padding: 60px 20px;
     }
 
-    .tech-item {
-        flex-direction: column;
-        gap: 1rem;
+    .content-section {
+        margin-bottom: 60px;
     }
 
-    .academic-notice {
-        flex-direction: column;
-        text-align: center;
+    .section-title {
+        font-size: 1.75rem;
     }
 
-    .footer-links {
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .impact-section,
+    .richter-section,
+    .cta-section {
+        padding: 40px 28px;
+    }
+
+    .developer-card {
+        padding: 28px;
+    }
+
+    .developer-meta {
         flex-direction: column;
-        gap: 0.5rem;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .tech-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+    }
+
+    .notice-content {
+        flex-direction: column;
+        gap: 16px;
     }
 }
 </style>

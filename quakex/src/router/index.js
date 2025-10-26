@@ -1,7 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import DrillTestView from '@/views/DrillTestView.vue' //TODO: delete after testing
-
 import MapView from '@/views/MapView.vue'
 import AnalyticsView from '@/views/AnalyticsView.vue'
 import AboutView from '@/views/AboutView.vue'
@@ -23,12 +21,6 @@ const router = createRouter({
             path: '/about',
             name: 'about',
             component: AboutView,
-        },
-        {
-            //TODO: delete after testing
-            path: '/test',
-            name: 'test',
-            component: DrillTestView,
         },
     ],
     scrollBehavior() {

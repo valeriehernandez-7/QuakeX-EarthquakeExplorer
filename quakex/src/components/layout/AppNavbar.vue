@@ -3,8 +3,8 @@
         <Toolbar>
             <template #start>
                 <div class="navbar-brand">
-                    <i class="pi pi-map-marker text-xl mr-2" style="color: #ef4444" />
-                    <span class="font-bold text-xl">QuakeX</span>
+                    <i class="pi pi-map-marker text-xl mr-2" style="color: #008080" />
+                    <span class="font-bold text-xl" style="color: #008080">QuakeX</span>
                 </div>
             </template>
 

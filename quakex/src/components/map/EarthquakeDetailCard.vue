@@ -1,5 +1,4 @@
 <template>
-    <!-- Solo mostrar el dialog cuando TODO esté cargado -->
     <Dialog
         v-model:visible="isVisible"
         :modal="true"
