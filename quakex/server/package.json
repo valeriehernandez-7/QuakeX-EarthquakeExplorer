@@ -1,12 +1,12 @@
 {
-    "name": "quakex-json-saver",
+    "name": "quakex-json-manager",
     "type": "module",
     "version": "1.0.0",
-    "description": "Minimal JSON file saver for QuakeX Apache Drill integration",
-    "main": "json-saver.js",
+    "description": "Minimal JSON file Manager for QuakeX Apache Drill integration",
+    "main": "json-manager.js",
     "scripts": {
-        "start": "node json-saver.js",
-        "dev": "node json-saver.js"
+        "start": "node json-manager.js",
+        "dev": "node json-manager.js"
     },
     "dependencies": {
         "express": "^5.1.0",

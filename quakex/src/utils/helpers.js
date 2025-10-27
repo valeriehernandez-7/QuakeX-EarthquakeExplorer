@@ -317,7 +317,7 @@ export function exportAsCSV(data, filename, columns = null) {
 }
 
 /**
- * Save data to JSON file via JSON Saver server for Apache Drill
+ * Save data to JSON file via JSON Manager server for Apache Drill
  * Falls back to browser download if server unavailable
  * @param {Array|Object} data - Data to save
  * @param {string} filename - JSON filename (e.g., 'earthquakes-2024-10.json')
@@ -344,7 +344,7 @@ export async function saveForDrill(data, filename) {
 
         throw new Error(`Server responded with ${response.status}: ${response.statusText}`)
     } catch (error) {
-        console.warn('JSON Saver server unavailable, falling back to download:', error.message)
+        console.warn('JSON Manager server unavailable, falling back to download:', error.message)
 
         const downloadSuccess = exportAsJSON(data, filename)
 

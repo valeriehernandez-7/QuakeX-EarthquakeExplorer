@@ -65,8 +65,8 @@ export const API_ENDPOINTS = {
     DRILL: import.meta.env.VITE_DRILL_API_URL,
 }
 
-// JSON Saver Server Configuration
-export const JSON_SAVER_CONFIG = {
+// JSON Manager Server Configuration
+export const JSON_MANAGER_CONFIG = {
     BASE_URL: 'http://localhost:3001',
     ENDPOINTS: {
         HEALTH: '/api/health',

@@ -1,5 +1,5 @@
 /**
- * JSON Saver Server
+ * JSON Manager Server
  * Minimal Express server for saving JSON files to data directory
  * Used by frontend to persist enriched data for Apache Drill queries
  */
@@ -40,7 +40,7 @@ app.use((req, res, next) => {
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'ok',
-        service: 'json-saver',
+        service: 'json-manager',
         version: '1.0.0',
         timestamp: new Date().toISOString(),
         dataDirectory: DATA_DIR
@@ -256,7 +256,7 @@ app.use((req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-    console.log('JSON Saver Server started successfully');
+    console.log('JSON Manager Server started successfully');
     console.log(`Local: http://localhost:${PORT}`);
     console.log(`Data directory: ${DATA_DIR}`);
     console.log('\nAvailable endpoints:');
