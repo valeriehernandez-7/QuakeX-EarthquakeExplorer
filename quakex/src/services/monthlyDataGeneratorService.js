@@ -19,14 +19,14 @@ export async function generateMonthlyData(monthKey) {
     console.log(`Starting monthly data generation for: ${monthKey}`)
 
     try {
-        // 1. Calculate date range for the month
+        // Calculate date range for the month
         const [year, month] = monthKey.split('-')
         const startDate = new Date(year, month - 1, 1)
         const endDate = new Date(year, month, 0) // Last day of month
 
         console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`)
 
-        // 2. Fetch earthquakes from USGS
+        // Fetch earthquakes from USGS
         console.log('Fetching earthquakes from USGS...')
         const earthquakes = await fetchEarthquakes({
             startTime: startDate,
@@ -42,10 +42,10 @@ export async function generateMonthlyData(monthKey) {
 
         console.log(`Fetched ${earthquakes.length} earthquakes, starting enrichment...`)
 
-        // 3. Enrich earthquakes with country and elevation data
+        // Enrich earthquakes with country and elevation data
         const enrichedEarthquakes = await enrichEarthquakesBatch(earthquakes)
 
-        // 4. Save for Apache Drill
+        // Save for Apache Drill
         const filename = `earthquakes-${monthKey}.json`
         const saveResult = await saveForDrill(enrichedEarthquakes, filename)
 

@@ -108,12 +108,8 @@ const refreshData = async () => {
 
 // Marker management
 const updateMarkers = () => {
-    if (!markerCluster) return // Solo verificar que existe el cluster
-
-    // Limpiar markers existentes (SIEMPRE, incluso si no hay resultados)
+    if (!markerCluster) return
     markerCluster.clearLayers()
-
-    // Agregar nuevos markers (si hay)
     store.filteredEarthquakes.forEach((earthquake) => {
         const marker = createEarthquakeMarker(earthquake)
         markerCluster.addLayer(marker)
