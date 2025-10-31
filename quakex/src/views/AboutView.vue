@@ -235,7 +235,7 @@
                             @click="
                                 () =>
                                     window.open(
-                                        'https://github.com/valeriehernandez-7/QuakeX',
+                                        'https://github.com/valeriehernandez-7/QuakeX-EarthquakeExplorer',
                                         '_blank',
                                     )
                             "
