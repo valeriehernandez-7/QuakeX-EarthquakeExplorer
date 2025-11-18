@@ -3,12 +3,17 @@
         <Toolbar>
             <template #start>
                 <div class="navbar-brand">
-                    <i class="pi pi-map-marker text-xl mr-2" style="color: #008080" />
+                    <svg fill="#008080"
+                        width="10%"
+                        viewBox="0 0 24 24"><a href="https://github.com/valeriehernandez-7/QuakeX-EarthquakeExplorer" target="_blank" rel="noopener noreferrer">
+                        <path d="M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8M3.05,13H1V11H3.05C3.5,6.83 6.83,3.5 11,3.05V1H13V3.05C17.17,3.5 20.5,6.83 20.95,11H23V13H20.95C20.5,17.17 17.17,20.5 13,20.95V23H11V20.95C6.83,20.5 3.5,17.17 3.05,13M12,5A7,7 0 0,0 5,12A7,7 0 0,0 12,19A7,7 0 0,0 19,12A7,7 0 0,0 12,5Z">
+                        </path></a>
+                    </svg>
                     <span class="font-bold text-xl" style="color: #008080">QuakeX</span>
                 </div>
             </template>
 
-            <template #center>
+            <template #end>
                 <div class="nav-links">
                     <Button
                         label="Map"
@@ -53,6 +58,7 @@ const route = useRoute()
 
 .navbar-brand {
     display: flex;
+    gap: 0.5rem;
     align-items: center;
 }
 

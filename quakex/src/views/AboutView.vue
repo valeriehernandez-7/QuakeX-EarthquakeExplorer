@@ -232,13 +232,7 @@
                             label="View on GitHub"
                             icon="pi pi-github"
                             class="github-button"
-                            @click="
-                                () =>
-                                    window.open(
-                                        'https://github.com/valeriehernandez-7/QuakeX-EarthquakeExplorer',
-                                        '_blank',
-                                    )
-                            "
+                            @click="openGitHub"
                         />
                     </div>
                 </section>
@@ -280,6 +274,13 @@ import DatabaseIcon from 'vue-material-design-icons/Database.vue'
 import LeafletIcon from 'vue-material-design-icons/Leaf.vue'
 import WeatherPartlyCloudy from 'vue-material-design-icons/WeatherPartlyCloudy.vue'
 import MapMarkerRadius from 'vue-material-design-icons/MapMarkerRadius.vue'
+
+const openGitHub = () => {
+    window.open(
+        'https://github.com/valeriehernandez-7/QuakeX-EarthquakeExplorer',
+        '_blank'
+    );
+};
 </script>
 
 <style scoped>
