@@ -2,7 +2,7 @@
 
 ### DEMO
 
-<video controls autoplay muted src="https://github.com/user-attachments/assets/">
+<video controls autoplay muted src="https://github.com/user-attachments/assets/aa3205f0-4aab-4c2c-a51f-406694677a65">
     Your browser does not support the video tag.
     <a href="https://github.com/valeriehernandez-7/QuakeX-EarthquakeExplorer/blob/main/docs/quakex_demo.mp4">Download the demo 📼</a> instead.
 </video>
